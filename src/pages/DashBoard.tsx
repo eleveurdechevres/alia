@@ -1,33 +1,34 @@
 import * as React from 'react';
 import { ClientSearchComponent } from './ClientSearchComponent';
+import { IClient } from 'src/interfaces/IClient';
 // import { ClientSummary } from './ClientSummary';
 // import { ClientsTable } from './Client/ClientsTable';
 // import selectStyles  from 'react-select/dist/react-select.css';
 
-const customStyles = {
-    overlay : {
-      position          : 'fixed',
-      top               : 0,
-      left              : 0,
-      right             : 0,
-      bottom            : 0,
-      backgroundColor   : 'rgba(255, 255, 255, 0.75)'
-    },
-    content : {
-      position                   : 'absolute',
-      top                        : '40px',
-      left                       : '40px',
-      right                      : '40px',
-      bottom                     : '40px',
-      border                     : '1px solid #ccc',
-      background                 : '#fff',
-      overflow                   : 'auto',
-      WebkitOverflowScrolling    : 'touch',
-      borderRadius               : '4px',
-      outline                    : 'none',
-      padding                    : '20px'
-    }
-};
+// const customStyles = {
+//     overlay : {
+//       position          : 'fixed',
+//       top               : 0,
+//       left              : 0,
+//       right             : 0,
+//       bottom            : 0,
+//       backgroundColor   : 'rgba(255, 255, 255, 0.75)'
+//     },
+//     content : {
+//       position                   : 'absolute',
+//       top                        : '40px',
+//       left                       : '40px',
+//       right                      : '40px',
+//       bottom                     : '40px',
+//       border                     : '1px solid #ccc',
+//       background                 : '#fff',
+//       overflow                   : 'auto',
+//       WebkitOverflowScrolling    : 'touch',
+//       borderRadius               : '4px',
+//       outline                    : 'none',
+//       padding                    : '20px'
+//     }
+// };
 
 export class DashBoard extends React.Component {
 
@@ -52,7 +53,7 @@ export class DashBoard extends React.Component {
         this.setState({modalIsOpen: false});
     }
     
-    handlerClientSearch = (client: string) => {
+    handlerClientSearch = (client: IClient) => {
         this.setState({ currentClient: client });
     }
 
@@ -74,6 +75,6 @@ export class DashBoard extends React.Component {
                     ALIA Footer
                 </footer>
                 </div>
-        )
+        );
     }
 }
