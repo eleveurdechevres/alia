@@ -1,8 +1,10 @@
 import * as React from 'react';
 import { ClientSearchComponent } from './ClientSearchComponent';
 import { IClient } from 'src/interfaces/IClient';
-// import { ClientSummary } from './ClientSummary';
-// import { ClientsTable } from './Client/ClientsTable';
+import { ClientSummary } from './ClientSummary';
+import { observable } from 'mobx';
+import { observer } from 'mobx-react';
+import { ClientsTable } from './Client/ClientsTable';
 // import selectStyles  from 'react-select/dist/react-select.css';
 
 // const customStyles = {
@@ -30,19 +32,18 @@ import { IClient } from 'src/interfaces/IClient';
 //     }
 // };
 
-export class DashBoard extends React.Component {
+@observer export class DashBoard extends React.Component<{}, {}> {
+
+    @observable currentClient: IClient = undefined;
+    // habitats: [];
+    @observable modalIsOpen: boolean = false;
 
     constructor(props: {}) {
         super(props);
-        this.state = {
-            currentClient: undefined,
-            habitats: [],
-            modalIsOpen: false
-        };
     }
 
     openModal = () => {
-        this.setState({modalIsOpen: true});
+        this.modalIsOpen = true;
     }
 
     afterOpenModal = () => {
@@ -50,16 +51,16 @@ export class DashBoard extends React.Component {
     }
 
     closeModal = () => {
-        this.setState({modalIsOpen: false});
+        this.modalIsOpen = false;
     }
     
     handlerClientSearch = (client: IClient) => {
-        this.setState({ currentClient: client });
+        this.currentClient = client;
     }
 
-    // handlerClientSelect= (client) => {
+    handlerClientSelect = (client: IClient) => {
     //     //this.getHabitatsForClient(client.id);    
-    // }
+    }
 
     render() {
         return (
@@ -68,9 +69,9 @@ export class DashBoard extends React.Component {
                     <p>ALIA Header</p>
                     <ClientSearchComponent handler={this.handlerClientSearch}/>
                     <br/>
-                    {/* <ClientSummary client={this.state.currentClient}/> */}
+                    <ClientSummary client={this.currentClient}/>
                 </header>
-                {/* <ClientsTable clients={[this.state.currentClient]} handler={this.handlerClientSelect}/> */}
+                <ClientsTable client={this.currentClient} handler={this.handlerClientSelect}/>
                 <footer>
                     ALIA Footer
                 </footer>

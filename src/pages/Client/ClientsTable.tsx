@@ -1,26 +1,31 @@
-import * as React from "react";
+import * as React from 'react';
 // import { render } from "react-dom";
 
 // Import React Table
-import ReactTable from "react-table";
-import "react-table/react-table.css";
+import ReactTable from 'react-table';
+import 'react-table/react-table.css';
 import { HabitatsTable } from '../Habitat/HabitatsTable';
+import { IClient } from 'src/interfaces/IClient';
+import { observable } from 'mobx';
+import { observer } from 'mobx-react';
 
-export class ClientsTable extends React.Component {
+interface IProps {
+    client: IClient;
+    handler: (client: IClient) => void;
+}
+@observer export class ClientsTable extends React.Component<IProps, {}> {
+
+    @observable client: IClient;
 
   // https://react-table.js.org/#/story/readme
-  constructor(props) {
+  constructor(props: IProps) {
       super(props);
-      this.state = {
-          clients: props.clients
-      };
+      this.client = props.client;
   }
 
-  componentWillReceiveProps(nextProps) {
-    if( nextProps !== this.props ) {
-        this.setState({
-            clients: nextProps.clients
-        });
+  componentWillReceiveProps(nextProps: IProps) {
+    if ( nextProps !== this.props ) {
+            this.client = nextProps.client;
     }
   }
 
@@ -29,9 +34,9 @@ export class ClientsTable extends React.Component {
   // adresse
   // email
   // telephone
-  onRowClick = (state, rowInfo, column, instance) => {
+  onRowClick = (state: any, rowInfo: any, column: any, instance: any) => {
     return {
-        onClick: e => {
+        onClick: (e: any) => {
           var client = rowInfo.original;
           this.props.handler( client );
           // console.log('A Td Element was clicked!')
@@ -44,28 +49,28 @@ export class ClientsTable extends React.Component {
   }
 
   render() {
-    const { clients } = this.state;
     const columns = [
-      { Header: "Id",
-        accessor: "id"
+      { Header: 'Id',
+        accessor: 'id'
       },
-      { Header: "Nom",
-        accessor: "nom"
+      { Header: 'Nom',
+        accessor: 'nom'
       },
-      { Header: "Adresse",
-        accessor: "adresse"
+      { Header: 'Adresse',
+        accessor: 'adresse'
       },
-      { Header: "email",
-        accessor: "email"
+      { Header: 'email',
+        accessor: 'email'
       },
-      { Header: "Téléphone",
-        accessor: "telephone"
+      { Header: 'Téléphone',
+        accessor: 'telephone'
       }
     ];
 
-    if( clients.length === 0 || ( clients.length === 1 && clients[0] === undefined ) ) {
+    // if ( this.clients.length === 0 || ( this.clients.length === 1 && this.clients[0] === undefined ) ) {
+    if ( this.client === undefined ) {
       return (
-        <div></div>
+        <div/>
       );
     }
 
@@ -73,7 +78,7 @@ export class ClientsTable extends React.Component {
 
       <div>
         <ReactTable
-          data={clients}
+          data={[this.client]}
           columns={columns}
           defaultPageSize={1}
           className="-striped -highlight"
@@ -90,4 +95,3 @@ export class ClientsTable extends React.Component {
     );
   }
 }
-
