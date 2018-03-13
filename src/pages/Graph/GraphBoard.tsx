@@ -248,84 +248,70 @@ interface ICrosshair {
 
     return (
       <div>
-          <table>
-            <tbody>
-              <tr>
-                <td>
-                  <svg width="100%" height={svgHeight}>
-                    <g transform={'translate(' + this.originGraphX + ',' + this.topMargin + ')'}>
-                      <g ref={(ref) => {this.brushRef = ref}}/>
-                      <Crosshair
-                        displayVertical={this.crosshair.verticalDisplayed}
-                        displayHorizontal={this.crosshair.horizontalDisplayed}
-                        top={0}
-                        bottom={1000}
-                        left={this.originGraphX}
-                        right={this.originGraphX + this.chartWidth}
+        <svg width="100%" height={svgHeight}>
+        <g transform={'translate(' + this.originGraphX + ',' + this.topMargin + ')'}>
+            <g ref={(ref) => {this.brushRef = ref}}/>
+            <Crosshair
+                displayVertical={this.crosshair.verticalDisplayed}
+                displayHorizontal={this.crosshair.horizontalDisplayed}
+                top={0}
+                bottom={1000}
+                left={this.originGraphX}
+                right={this.originGraphX + this.chartWidth}
+                xPosition={this.crosshair.xPosition}
+                yPosition={this.crosshair.yPosition}
+            />
+        </g>
+        <g transform={'translate(0,' + this.topMargin + ')'}>
+            <g ref={(ref) => {this.dateAxisRef = ref}} />
+            {
+            this.channels.map((data, index) => {
+                var originy = index * (this.chartHeight + this.interChart);
+                return (
+                
+                <g key={data.id} transform={'translate(0,' + originy + ')'}>
+                    <GraphChannel
+                        originGraphX={this.originGraphX} 
+                        originGraphY={this.originGraphY} 
+                        chartWidth={this.chartWidth} 
+                        chartHeight={this.chartHeight} 
+                        capteurId={this.capteur.id}
+                        channelData={data} 
+                        chartIndex={index} 
+                        interChart={this.interChart} 
+                        dateInterval={this.dateInterval} 
+                        handleMouseEvents={this.handleMouseEvents} 
+                        timeScale={this.getTimeScale()}
+                        displayValue={this.displayValue}
                         xPosition={this.crosshair.xPosition}
                         yPosition={this.crosshair.yPosition}
-                      />
-                    </g>
-                    <g transform={'translate(0,' + this.topMargin + ')'}>
-                      <g ref={(ref) => {this.dateAxisRef = ref}} />
-                      {
-                        this.channels.map((data, index) => {
-                          var originy = index * (this.chartHeight + this.interChart);
-                          return (
-                          
-                            <g key={data.id} transform={'translate(0,' + originy + ')'}>
-                              <GraphChannel
-                                originGraphX={this.originGraphX} 
-                                originGraphY={this.originGraphY} 
-                                chartWidth={this.chartWidth} 
-                                chartHeight={this.chartHeight} 
-                                capteurId={this.capteur.id}
-                                channelData={data} 
-                                chartIndex={index} 
-                                interChart={this.interChart} 
-                                dateInterval={this.dateInterval} 
-                                handleMouseEvents={this.handleMouseEvents} 
-                                timeScale={this.getTimeScale()}
-                                displayValue={this.displayValue}
-                                xPosition={this.crosshair.xPosition}
-                                yPosition={this.crosshair.yPosition}
-                                handleSelectedValue={this.handleSelectedValue}
-                              />
-                            </g>
-                          )
-                        })
-                      }
-                    </g>
-                    <g transform={'translate(' + this.originGraphX + ',0)'}>
-                      <g ref={(ref) => {this.globalBrushRef = ref}}/>
-                    </g>
-                  </svg>
-                </td>
-                <td className="align-top">
-                  <table>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <DatePicker
-                          selected={this.dateInterval.startDate}
-                          onChange={this.handleChangeStartDate}
-                          minDate={this.dateInterval.minDate}
-                          maxDate={this.dateInterval.maxDate}
-                          dateFormat="DD/MM/YYYY"
-                          placeholderText="Date de début"
-                        />
-                      </td>
-                      <td>
-                        <DatePicker
-                          selected={this.dateInterval.stopDate}
-                          onChange={this.handleChangeStopDate}
-                          minDate={this.dateInterval.minDate}
-                          maxDate={this.dateInterval.maxDate}
-                          dateFormat="DD/MM/YYYY"
-                          placeholderText="Date de fin"
-                        />
-                        </td>
-                      </tr>
+                        handleSelectedValue={this.handleSelectedValue}
+                    />
+                </g>
+                )
+            })
+            }
+        </g>
+        <g transform={'translate(' + this.originGraphX + ',0)'}>
+            <g ref={(ref) => {this.globalBrushRef = ref}}/>
+        </g>
+        </svg>
+        <DatePicker
+            selected={this.dateInterval.startDate}
+            onChange={this.handleChangeStartDate}
+            minDate={this.dateInterval.minDate}
+            maxDate={this.dateInterval.maxDate}
+            dateFormat="DD/MM/YYYY"
+            placeholderText="Date de début"
+        />
+        <DatePicker
+            selected={this.dateInterval.stopDate}
+            onChange={this.handleChangeStopDate}
+            minDate={this.dateInterval.minDate}
+            maxDate={this.dateInterval.maxDate}
+            dateFormat="DD/MM/YYYY"
+            placeholderText="Date de fin"
+        />
                       {/* <tr>
                         <td>
                           <TemperatureHumidity chartWidth='340' chartHeight='300'
@@ -345,12 +331,6 @@ interface ICrosshair {
                           <LuminosityTemperature chartWidth='100%' chartHeight='300'/>
                         </td>
                       </tr> */}
-                    </tbody>
-                  </table>
-                </td>
-              </tr>
-            </tbody>
-          </table>
       </div>
     );
 
