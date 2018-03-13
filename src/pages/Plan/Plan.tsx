@@ -113,7 +113,6 @@ interface IProps {
     }
 
     componentDidUpdate() {
-        console.log('componentDidUpdate')
         this.masqueLegendeCapteur();
 
         var image = d3.select(this.imageRef);
@@ -160,8 +159,8 @@ interface IProps {
     }
 
     openModal = (capteur: ICapteur) => {
-        this.modalIsOpen = true;
         this.capteurDisplayed = capteur;
+        this.modalIsOpen = true;
     }
 
     afterOpenModal = () => {
@@ -202,6 +201,7 @@ interface IProps {
     }
 
     render() {
+
         return (
             <div className="container">
                 <ReactModal  

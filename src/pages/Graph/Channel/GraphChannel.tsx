@@ -226,7 +226,7 @@ export class GraphChannel extends React.Component<IProps, IState> {
             .attr('fill', 'black')
             .style('text-anchor', 'middle')
             .attr('y', -9) 
-            .text((d) => { return d.toString() });
+            .text((d) => { return d === undefined ? ' ' : d.toString() });
     }
 
     drawTimeAxis() {

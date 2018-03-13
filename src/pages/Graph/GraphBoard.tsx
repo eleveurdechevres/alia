@@ -36,7 +36,7 @@ interface ICrosshair {
 @observer export class GraphBoard extends React.Component<IProps, {}> {
 
     @observable capteur: ICapteur = undefined;
-    @observable mapChannels: Map<GraphType, IChannel> = new Map<GraphType, IChannel>();
+    @observable mapChannels: Map<string, IChannel> = new Map<string, IChannel>();
     @observable channels: IChannel[] = [];
     @observable dateInterval: IDateInterval = {
         startDate: moment(),
@@ -55,6 +55,8 @@ interface ICrosshair {
         dataTimeMs: undefined,
         timeMs: undefined,
     }
+    @observable currentTemperature: number;
+    @observable currentHumidity: number;
 
     topMargin = 20;
     originGraphX = 150;
@@ -112,24 +114,6 @@ interface ICrosshair {
     constructor(props: IProps) {
         super(props);
         this.capteur = this.props.capteur;
-        // this.state = {
-        //     channels: [],
-        //     mapChannels: new Map(),
-        //     jsonData: [],
-        //     mapJsonData: new Map(),
-        //     },
-        //     crosshair: {
-        //         verticalDisplayed: false,
-        //         horizontalDisplayed: false,
-        //         xPosition: 0,
-        //         yPosition: 0
-        //     },
-        //     displayValue: {
-        //         display: false,
-        //         dataTimeMs: undefined,
-        //         timeMs: undefined,
-        //     }
-        // };
         this.loadCapteurChannels();
         this.getDateInterval(this.capteur.id)
 
@@ -151,7 +135,7 @@ interface ICrosshair {
                 this.channels = data;
                 data.forEach((channel) => {
                     var graphType = GraphType.getGraphTypeFromMeasuretype(channel.measure_type);
-                    this.mapChannels.set(graphType, channel);
+                    this.mapChannels.set(graphType.svgClass, channel);
                 })
             });
     }
@@ -166,14 +150,10 @@ interface ICrosshair {
                 var minDate = moment(data.minDate);
                 var maxDate = moment(data.maxDate);
 
-                this.setState({
-                    dateInterval: {
-                        startDate: minDate,
-                        stopDate: maxDate,
-                        minDate: minDate,
-                        maxDate: maxDate
-                    }
-                })
+                this.dateInterval.startDate = minDate;
+                this.dateInterval.stopDate = maxDate;
+                this.dateInterval.minDate = minDate;
+                this.dateInterval.maxDate = maxDate;
             }
         );
     }
@@ -198,34 +178,22 @@ interface ICrosshair {
         switch (eventType) {
             case 'mouseover':
             case 'mousemove':
-                this.setState({
-                crosshair: {
-                    verticalDisplayed: true,
-                    horizontalDisplayed: true,
-                    xPosition: xMouse,
-                    yPosition: yMouse
-                },
-                displayValue: {
-                    display: true,
-                    dataTimeMs: dataTimeMs,
-                    timeMs: timeMs,
-                }
-                })
+                this.crosshair.verticalDisplayed = true;    
+                this.crosshair.horizontalDisplayed = true;    
+                this.crosshair.xPosition = xMouse;    
+                this.crosshair.yPosition = yMouse;    
+                this.displayValue.display = true;
+                this.displayValue.dataTimeMs = dataTimeMs;
+                this.displayValue.timeMs = timeMs;
                 break;
             case 'mouseout':
-                this.setState({
-                crosshair: {
-                    verticalDisplayed: false,
-                    horizontalDisplayed: false,
-                    xPosition: xMouse,
-                    yPosition: yMouse
-                },
-                displayValue: {
-                    display: false,
-                    dataTimeMs: dataTimeMs,
-                    timeMs: timeMs,
-                    }
-                });
+                this.crosshair.verticalDisplayed = false;
+                this.crosshair.horizontalDisplayed = false;    
+                this.crosshair.xPosition = xMouse;    
+                this.crosshair.yPosition = yMouse;    
+                this.displayValue.display = false;
+                this.displayValue.dataTimeMs = dataTimeMs;
+                this.displayValue.timeMs = timeMs;
                 break;
 
             case 'click':
@@ -240,14 +208,10 @@ interface ICrosshair {
         // console.log("handle crosshairValues")
         switch (graphType) {
             case GraphType.HUMIDITE:
-                this.setState( {
-                currentHumidity: y
-                });
+                this.currentHumidity = y
                 break;
             case GraphType.TEMPERATURE:
-                this.setState( {
-                    currentTemperature: y
-                });
+                this.currentTemperature = y;
                 break;
             case GraphType.PRESENCE:
             case GraphType.LUMINOSITE:
