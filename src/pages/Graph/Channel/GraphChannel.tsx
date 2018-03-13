@@ -3,6 +3,7 @@ import * as d3 from 'd3';
 import { GraphType } from './GraphType';
 import { momentToSql, dataTimeString } from '../../../utils/DateUtils';
 import * as Moment from 'moment';
+import { observer } from 'mobx-react';
 
 interface IProps {
     originGraphX: number;
@@ -57,7 +58,7 @@ interface IDateInterval {
     maxDate: Moment.Moment
 };
 
-export class GraphChannel extends React.Component<IProps, IState> {
+@observer export class GraphChannel extends React.Component<IProps, IState> {
 
     chartRef: SVGGElement | null;
     chartContextRef: SVGGElement | null;
@@ -275,7 +276,8 @@ export class GraphChannel extends React.Component<IProps, IState> {
             
         }
 
-        if ( props.displayValue !== this.props.displayValue ) {
+        // if ( props.displayValue !== this.props.displayValue ) {
+        if ( props.displayValue.display ) {
             this.displayCrosshair(props.displayValue.display, props.displayValue.dataTimeMs, props.displayValue.timeMs);
         }
     }
@@ -316,7 +318,7 @@ export class GraphChannel extends React.Component<IProps, IState> {
                 {/* Display Y Value */}
                 <g ref={(ref) => {this.yValueDisplayedRef = ref}} opacity="0">
                     <rect x="0" y="20" width="50" height="20" stroke={this.state.graphType.color} strokeWidth="1" fill="white" />
-                    <text ref={(ref) => {this.yValueRef = ref}} x="25" y="20" fill="black" textAnchor="middle" alignmentBaseline="hanging" />
+                    <text ref={(ref) => {this.yValueRef = ref}} x="25" y="30" fill="black" textAnchor="middle" alignmentBaseline="central" />
                 </g>
                 {/* Chart */}
                 <g ref={(ref) => {this.chartRef = ref}} className={this.state.graphType.svgClass} transform={'translate(' + this.originGraphX + ',' + this.originGraphY + ')'}>
