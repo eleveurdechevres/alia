@@ -137,6 +137,7 @@ interface IDateInterval {
             .then((response) => response.json())
             .then((data) => {
 
+                this.mapValues.clear();
                 data.forEach((line: {date: string, valeur: number}) => {
                     var date = new Date(line.date);
                     date.setSeconds(0);
@@ -165,6 +166,7 @@ interface IDateInterval {
         // d3.curveCardinal
         // d3.curveMonotoneX
         // d3.curveCatmullRom
+        d3.select(this.chartRef).selectAll('path').remove();
         
         d3.select(this.chartRef).append('path')
             .datum(datum)
