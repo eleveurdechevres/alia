@@ -21,8 +21,9 @@ interface IProps {
         timeMsMouse: number, 
         dataTimeMs: number, 
         d3Event: any) => void;
-    timeScale: any;
-    displayValue: IDisplayValue;
+    domainTime: Date[];
+    displayCrossHairTime: boolean;
+    crosshairTime: ICrosshairTime;
     xPosition: number;
     yPosition: number;
     handleSelectedValue: (
@@ -34,8 +35,7 @@ interface IState {
     graphType: any;
 };
 
-export interface IDisplayValue {
-    display: boolean;
+export interface ICrosshairTime {
     dataTimeMs: number;
     timeMs: number;
 }
@@ -84,9 +84,10 @@ interface IDateInterval {
     chartHeight: number;
 
     mapValues = new Map<number, number>();
+    timeScale: any;
 
     lineFunction = d3.line<{date: Date, valeur: number}>()
-    .x((d) => { return this.props.timeScale(d.date); })
+    .x((d) => { return this.timeScale(d.date); })
     .y((d) => { return this.state.graphType.scaleFunction(d.valeur); })
     .curve(d3.curveStepAfter);
 
@@ -122,6 +123,8 @@ interface IDateInterval {
         this.originGraphY = this.props.originGraphY;
         this.chartWidth = this.props.chartWidth;
         this.chartHeight = this.props.chartHeight;
+
+        this.timeScale = d3.scaleTime().range([0, this.props.chartWidth]);
     }
 
     loadJsonFromAeroc = (capteurId: number, channelId: number, dateBegin: string, dateEnd: string) => {
@@ -185,7 +188,8 @@ interface IDateInterval {
         if ( this.overlayRef ) {
             xMouse = d3.mouse(this.overlayRef)[0];
             yMouse = d3.mouse(this.overlayRef)[1];
-            timeMsMouse = this.props.timeScale.invert(d3.mouse(this.overlayRef)[0]);
+            timeMsMouse = this.timeScale.invert(d3.mouse(this.overlayRef)[0]);
+
         }
 
         var keys = Array.from(this.mapValues.keys());
@@ -234,7 +238,7 @@ interface IDateInterval {
 
     drawTimeAxis() {
         d3.select(this.axisBottomRef)
-            .call(d3.axisBottom(this.props.timeScale)
+            .call(d3.axisBottom(this.timeScale)
                     .tickFormat(d3.timeFormat('%H:%M'))
                     // .ticks(d3.timeMinute.every(60))
                 )
@@ -259,6 +263,9 @@ interface IDateInterval {
     };
 
     shouldComponentUpdate(nextProps: IProps, nextState: IState) {
+        if ( nextProps.displayCrossHairTime !== this.props.displayCrossHairTime ) {
+            return true;
+        }
         return false;
     }
 
@@ -279,9 +286,16 @@ interface IDateInterval {
         }
 
         // if ( props.displayValue !== this.props.displayValue ) {
-        if ( props.displayValue.display ) {
-            this.displayCrosshair(props.displayValue.display, props.displayValue.dataTimeMs, props.displayValue.timeMs);
+        if ( props.displayCrossHairTime === true ) {
+            this.displayCrosshair(props.displayCrossHairTime, props.crosshairTime.dataTimeMs, props.crosshairTime.timeMs);
         }
+
+        if ( props.domainTime !== this.props.domainTime ) {
+            this.timeScale.domain(props.domainTime);
+            this.drawTimeAxis();
+            this.drawGraph(this.mapValues);
+            // this.forceUpdate();
+        };
     }
 
     displayCrosshair = (display: boolean, dataTimeMs: number, timeMs: number) => {
@@ -293,22 +307,21 @@ interface IDateInterval {
             .attr('opacity', opacity);
         d3.select(this.yValueRef)
             .text(value ? value.toString() : '')
-        
+
         // X Value
         var date = new Date(timeMs);
         var formattedDate = dataTimeString(date)
         // var time = date.getUTCHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
         d3.select(this.dateRef)
-            .text(formattedDate)
+            .text(formattedDate);
         d3.select(this.gDateRef)
-            .attr('transform', 'translate(' + (this.originGraphX + this.props.timeScale(new Date(date))) + ',' + (this.originGraphY + this.chartHeight - 18) + ')')
+            .attr('transform', 'translate(' + (this.originGraphX + this.timeScale(new Date(date))) + ',' + (this.originGraphY + this.chartHeight - 18) + ')')
             .attr('opacity', opacity);
 
         this.props.handleSelectedValue(this.state.graphType, value);
     }
 
     render() {
-
         return (
             <g ref={(ref) => ref}>
                 {/* Cadre */}
@@ -318,7 +331,7 @@ interface IDateInterval {
                     {this.props.channelData.measure_type + ' ' + this.props.channelData.unit}
                 </text>
                 {/* Display Y Value */}
-                <g ref={(ref) => {this.yValueDisplayedRef = ref}} opacity="0">
+                <g ref={(ref) => {this.yValueDisplayedRef = ref}} opacity={this.props.displayCrossHairTime ? 1 : 0}>
                     <rect x="0" y="20" width="50" height="20" stroke={this.state.graphType.color} strokeWidth="1" fill="white" />
                     <text ref={(ref) => {this.yValueRef = ref}} x="25" y="30" fill="black" textAnchor="middle" alignmentBaseline="central" />
                 </g>
@@ -331,7 +344,7 @@ interface IDateInterval {
                     <rect ref={(ref) => {this.overlayRef = ref}} x="0" y="0" width={this.chartWidth} height={this.chartHeight} stroke="lavender" fill="transparent"/> 
                 </g>
                 {/* X Crosshair Value */}
-                <g ref={(ref) => {this.gDateRef = ref}} opacity="0" pointerEvents="none">
+                <g ref={(ref) => {this.gDateRef = ref}} opacity={this.props.displayCrossHairTime ? 1 : 0} pointerEvents="none">
                     <rect rx="2" ry="2" x="-60" y="20" width="120" height="18" stroke="lavender" strokeWidth="1" fill="white" />
                     <text ref={(ref) => {this.dateRef = ref}} fontSize="12" x="0" y="22" fill="black" textAnchor="middle" alignmentBaseline="hanging" />
                 </g>

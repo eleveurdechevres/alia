@@ -4,7 +4,7 @@ import DatePicker from 'react-datepicker';
 import * as moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
 // import 'bootstrap/dist/css/bootstrap.min.css';
-import { GraphChannel, IDisplayValue } from './Channel/GraphChannel';
+import { GraphChannel, ICrosshairTime } from './Channel/GraphChannel';
 import * as d3 from 'd3';
 import { Crosshair } from './Crosshair';
 import { TemperatureHumidity } from './CrossGraph/TemperatureHumidity';
@@ -16,6 +16,7 @@ import { observer } from 'mobx-react';
 import { IChannel } from 'src/interfaces/IChannel';
 import * as csstips from 'csstips'; 
 import { style } from 'typestyle'; 
+import { ScaleTime } from 'd3';
 
 interface IProps {
     capteur: ICapteur;
@@ -52,10 +53,12 @@ interface ICrosshair {
         xPosition: 0,
         yPosition: 0
     }
-    @observable displayValue: IDisplayValue = {
-        display: false,
+
+    @observable displayCrossHairTime: boolean = false;
+
+    @observable crossHairTime: ICrosshairTime = {
         dataTimeMs: undefined,
-        timeMs: undefined,
+        timeMs: undefined
     }
     @observable currentTemperature: number;
     @observable currentHumidity: number;
@@ -76,38 +79,56 @@ interface ICrosshair {
     globalBrushRef : SVGGElement;
 
     brushed = () => {
-        console.log('BRUSHED1');
-        // var s = d3.event.selection || this.getTimeScale().range();
-        // console.log(s);
-        // d3.select(this.brushRef)
-        // .call(this.brush)
-        // .call(this.brush.clear());
-        // .call(this.globalBrush.move, this.getTimeScale().range())
+        if ( d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom' ) {
+            return; // ignore brush-by-zoom
+        }
+        var s = d3.event.selection;
+        if (s) {
+//            console.log([s[0], s[1]].map(this.timeScale.invert, this.timeScale.invert))
 
-        // console.log(s);
-        // x.domain(s.map(x2.invert, x2));
-        // focus.select(".area").attr("d", area);
-        // focus.select(".axis--x").call(xAxis);
-        // svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
-        //     .scale(width / (s[1] - s[0]))
-        //     .translate(-s[0], 0));
+            // d3.select(this.globalBrushRef)
+            //      .call(this.globalBrush)
+            //      .call(this.globalBrush.move, [s[0], s[1]].map(this.timeScale.invert, this.timeScale.invert))
+
+            // Masquer le brush detail
+            d3.select(this.brushRef)
+                .call(this.brush.move, null);
+
+            // d3.select(this.brushRef).call(this.brush.move, null);
+            
+            // d3.select(this.globalBrushRef)
+            //     .call(this.globalBrush)
+            //     // .transition(zoomTransition)
+            //     .call(this.globalBrush.move);
+            // this.updateHorizontalContext([s[0], s[1]].map(this.contextTimeScale.invert, this.contextTimeScale.invert));
+        }
     }
 
+    // updateHorizontalContext = (domain, transition) => {
+    //     var range = domain.map(this.xHorizontalContext, this.xHorizontalContext.invert);
+    //     var brush = d3.select(this.refGHorizontalBrush).call(this.horizontalBrush)
+    //     if( transition != null ) {
+    //         brush.transition(transition).call(this.horizontalBrush.move, range);
+    //     } else {
+    //         brush.call(this.horizontalBrush.move, range);
+    //     }
+    // }
+
     globalBrushed = () => {
-        console.log('global brushed');
-        // var s = d3.event.selection || this.getTimeScale().range();
-        // console.log(s);
-        // x.domain(s.map(x2.invert, x2));
-        // focus.select(".area").attr("d", area);
-        // focus.select(".axis--x").call(xAxis);
-        // svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
-        //     .scale(width / (s[1] - s[0]))
-        //     .translate(-s[0], 0));
+        if ( d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom' ) {
+            return; // ignore brush-by-zoom
+        }
+        var selection = d3.event.selection || this.contextTimeScale.range();
+        this.domainTime = selection.map(this.contextTimeScale.invert, this.contextTimeScale);
+        this.timeScale.domain(this.domainTime);
+        // this.timeScale.tickValues(selection.map(this.timeScale.invert, this.timeScale));
+        // this.updatePathes();
+        // this.drawDateAxis();
     }
 
     brush = d3.brushX()
         .extent([[0, 0], [this.chartWidth, 1000]])
-        .on('brush end', this.brushed);
+        .on('end', this.brushed);
 
     globalBrush = d3.brushX()
         .extent([[0, 0], [this.chartWidth, this.topMargin]])
@@ -156,6 +177,17 @@ interface ICrosshair {
                 this.dateInterval.stopDate = maxDate;
                 this.dateInterval.minDate = minDate;
                 this.dateInterval.maxDate = maxDate;
+                
+                // Update time scale
+                var domain = [this.dateInterval.startDate.toDate(), this.dateInterval.stopDate.toDate()];
+                var chartWidth = 1270;
+                var range = [0, chartWidth];
+                this.contextTimeScale = d3.scaleTime().domain(domain).range(range);
+                this.domainTime = domain;
+                this.timeScale = d3.scaleTime().domain(domain).range(range);
+
+                // Redraw Globlal Axis
+                this.drawDateAxis();
             }
         );
     }
@@ -173,7 +205,7 @@ interface ICrosshair {
             .call(this.brush)
         d3.select(this.globalBrushRef)
             .call(this.globalBrush)
-            .call(this.globalBrush.move, this.getTimeScale().range())
+            // .call(this.globalBrush.move, this.timeScale.range())
     }
 
     handleMouseEvents = (xMouse: number, yMouse: number, timeMs: number, dataTimeMs: number, eventType: string) => {
@@ -184,18 +216,18 @@ interface ICrosshair {
                 this.crosshair.horizontalDisplayed = true;    
                 this.crosshair.xPosition = xMouse;    
                 this.crosshair.yPosition = yMouse;    
-                this.displayValue.display = true;
-                this.displayValue.dataTimeMs = dataTimeMs;
-                this.displayValue.timeMs = timeMs;
+                this.displayCrossHairTime = true;
+                this.crossHairTime.dataTimeMs = dataTimeMs;
+                this.crossHairTime.timeMs = timeMs;
                 break;
             case 'mouseout':
                 this.crosshair.verticalDisplayed = false;
                 this.crosshair.horizontalDisplayed = false;    
                 this.crosshair.xPosition = xMouse;    
                 this.crosshair.yPosition = yMouse;    
-                this.displayValue.display = false;
-                this.displayValue.dataTimeMs = dataTimeMs;
-                this.displayValue.timeMs = timeMs;
+                this.displayCrossHairTime = false;
+                this.crossHairTime.dataTimeMs = dataTimeMs;
+                this.crossHairTime.timeMs = timeMs;
                 break;
 
             case 'click':
@@ -220,27 +252,19 @@ interface ICrosshair {
         }
     }
 
-    getTimeScale = () => {
-        var domain = [this.dateInterval.startDate.toDate(), this.dateInterval.stopDate.toDate()];
-        var chartWidth = 1270;
-        var range = [0, chartWidth];
-
-        return d3.scaleTime().domain(domain).range(range);
-    }
+    contextTimeScale: ScaleTime<number, number> = d3.scaleTime();
+    timeScale: ScaleTime<number, number> = d3.scaleTime();
+    @observable domainTime: Date[];
 
     drawDateAxis = () => {
         d3.select(this.dateAxisRef)
             .attr('transform', 'translate(' + this.originGraphX + ',0)')
-            .call(d3.axisTop(this.getTimeScale())
+            .call(d3.axisTop(this.contextTimeScale)
                 .tickFormat(d3.timeFormat('%d/%m/%Y'))
                 // .ticks(d3.timeHour.every(24))
                 )
             .selectAll('text');
     }
-
-  componentDidUpdate() {
-    this.drawDateAxis();
-  }
 
   render() {
 
@@ -283,8 +307,9 @@ interface ICrosshair {
                                 interChart={this.interChart} 
                                 dateInterval={this.dateInterval} 
                                 handleMouseEvents={this.handleMouseEvents} 
-                                timeScale={this.getTimeScale()}
-                                displayValue={this.displayValue}
+                                domainTime={this.domainTime}
+                                displayCrossHairTime={this.displayCrossHairTime}
+                                crosshairTime={this.crossHairTime}
                                 xPosition={this.crosshair.xPosition}
                                 yPosition={this.crosshair.yPosition}
                                 handleSelectedValue={this.handleSelectedValue}
