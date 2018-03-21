@@ -47,6 +47,7 @@ interface Ixy {
     A2EnveloppeRef: SVGElement;
     A3EnveloppeRef: SVGElement;
     A4EnveloppeRef: SVGElement;
+    legendsRef: SVGElement;
 
     startDate: string = undefined;
     stopDate: string = undefined;
@@ -152,7 +153,32 @@ interface Ixy {
                 .attr('fill', 'none')
                 .attr('stroke', 'gray')
                 .attr('stroke-width', 1);
-            }
+        }
+        this.drawTextAt ('10%', 40, 10, -15);
+        this.drawTextAt ('20%', 40, 20, -40);
+        this.drawTextAt ('30%', 40, 30, -50);
+        this.drawTextAt ('40%', 38, 40, -55);
+        this.drawTextAt ('50%', 35.2, 50, -60);
+        this.drawTextAt ('60%', 32.9, 60, -61);
+        this.drawTextAt ('70%', 30.8, 70, -62);
+        this.drawTextAt ('80%', 29, 80, -63);
+        this.drawTextAt ('90%', 27.5, 90, -63);
+        this.drawTextAt ('100%', 26, 100, -64);
+    }
+
+    drawTextAt = (text: string, η: number, φ: number, rotation: number) => {
+        var gRef = d3.select(this.legendsRef);
+        gRef.append('text')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('font-size', 10)
+            .attr('font-weight', 'bold')
+            .attr('fill', 'blue')
+            .text(text)
+            .attr('alignment-baseline', 'text-before-edge')
+            .attr('dominant-baseline', 'text-before-edge')
+            .attr('text-anchor', 'begin')
+            .attr('transform', 'translate(' + (this.scaleX(η)) + ', ' + (this.scaleY(get_x_from_η_φ(η, φ))) + ') rotate(' + rotation + ')');
     }
 
     drawReferenceCourbesEnthalpie = () => {
@@ -407,6 +433,7 @@ interface Ixy {
                         <g ref={(ref) => {this.A3EnveloppeRef = ref}}/>
                         <g ref={(ref) => {this.A4EnveloppeRef = ref}}/>
                     </g>
+                    <g ref={(ref) => {this.legendsRef = ref}}/>
                 </g>
             </svg>
         )

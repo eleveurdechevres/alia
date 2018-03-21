@@ -84,35 +84,18 @@ interface ICrosshair {
         }
         var s = d3.event.selection;
         if (s) {
-//            console.log([s[0], s[1]].map(this.timeScale.invert, this.timeScale.invert))
-
-            // d3.select(this.globalBrushRef)
-            //      .call(this.globalBrush)
-            //      .call(this.globalBrush.move, [s[0], s[1]].map(this.timeScale.invert, this.timeScale.invert))
+            var dateInterval = [s[0], s[1]].map(this.timeScale.invert);
+            var range = dateInterval.map(this.contextTimeScale);
 
             // Masquer le brush detail
             d3.select(this.brushRef)
                 .call(this.brush.move, null);
 
-            // d3.select(this.brushRef).call(this.brush.move, null);
-            
-            // d3.select(this.globalBrushRef)
-            //     .call(this.globalBrush)
-            //     // .transition(zoomTransition)
-            //     .call(this.globalBrush.move);
-            // this.updateHorizontalContext([s[0], s[1]].map(this.contextTimeScale.invert, this.contextTimeScale.invert));
+            // 
+            var brush = d3.select(this.globalBrushRef).call(this.globalBrush);
+            brush.transition().call(this.globalBrush.move, range);
         }
     }
-
-    // updateHorizontalContext = (domain, transition) => {
-    //     var range = domain.map(this.xHorizontalContext, this.xHorizontalContext.invert);
-    //     var brush = d3.select(this.refGHorizontalBrush).call(this.horizontalBrush)
-    //     if( transition != null ) {
-    //         brush.transition(transition).call(this.horizontalBrush.move, range);
-    //     } else {
-    //         brush.call(this.horizontalBrush.move, range);
-    //     }
-    // }
 
     globalBrushed = () => {
         if ( d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom' ) {
@@ -202,10 +185,16 @@ interface ICrosshair {
 
     componentDidMount() {
         d3.select(this.brushRef)
+            .on('dblclick.zoom', this.resetZoom)
             .call(this.brush)
         d3.select(this.globalBrushRef)
             .call(this.globalBrush)
             // .call(this.globalBrush.move, this.timeScale.range())
+    }
+
+    resetZoom = () => {
+        var brush = d3.select(this.globalBrushRef).call(this.globalBrush);
+        brush.transition().call(this.globalBrush.move, [0, this.chartWidth]);
     }
 
     handleMouseEvents = (xMouse: number, yMouse: number, timeMs: number, dataTimeMs: number, eventType: string) => {
@@ -289,6 +278,7 @@ interface ICrosshair {
                     />
                 </g>
                 <g transform={'translate(0,' + this.topMargin + ')'}>
+
                     <g ref={(ref) => {this.dateAxisRef = ref}} />
                     {
                     this.channels.map((data, index) => {

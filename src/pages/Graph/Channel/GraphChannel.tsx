@@ -4,6 +4,7 @@ import { GraphType } from './GraphType';
 import { momentToSql, dataTimeString } from '../../../utils/DateUtils';
 import * as Moment from 'moment';
 import { observer } from 'mobx-react';
+import { observable } from 'mobx';
 
 interface IProps {
     originGraphX: number;
@@ -31,10 +32,6 @@ interface IProps {
         y: number | undefined ) => void;
 };
 
-interface IState {
-    graphType: any;
-};
-
 export interface ICrosshairTime {
     dataTimeMs: number;
     timeMs: number;
@@ -58,8 +55,11 @@ interface IDateInterval {
     maxDate: Moment.Moment
 };
 
-@observer export class GraphChannel extends React.Component<IProps, IState> {
+@observer export class GraphChannel extends React.Component<IProps, {}> {
 
+    @observable graphType: any = undefined;
+
+    gChartRef: SVGGElement | null;
     chartRef: SVGGElement | null;
     chartContextRef: SVGGElement | null;
     overlayRef: SVGRectElement  | null;
@@ -75,6 +75,9 @@ interface IDateInterval {
 
     axisBottomRef: SVGGElement | null;
 
+    refGVerticalBrushDetail: SVGGElement | null;
+    verticalBrushDetail: d3.BrushBehavior<{}>;
+
     startDate: string;
     stopDate: string;
 
@@ -87,9 +90,9 @@ interface IDateInterval {
     timeScale: any;
 
     lineFunction = d3.line<{date: Date, valeur: number}>()
-    .x((d) => { return this.timeScale(d.date); })
-    .y((d) => { return this.state.graphType.scaleFunction(d.valeur); })
-    .curve(d3.curveStepAfter);
+        .x((d) => { return this.timeScale(d.date); })
+        .y((d) => { return this.graphType.scaleFunction(d.valeur); })
+        .curve(d3.curveLinear);
 
     // <GraphChannel
     //     capteurId
@@ -116,15 +119,19 @@ interface IDateInterval {
 
     constructor(props: IProps) {
         super(props);
-        this.state = {
-            graphType: GraphType.getGraphTypeFromMeasuretype(this.props.channelData.measure_type)
-        }
+        this.graphType = GraphType.getGraphTypeFromMeasuretype(this.props.channelData.measure_type)
+
         this.originGraphX = this.props.originGraphX;
         this.originGraphY = this.props.originGraphY;
         this.chartWidth = this.props.chartWidth;
         this.chartHeight = this.props.chartHeight;
 
         this.timeScale = d3.scaleTime().range([0, this.props.chartWidth]);
+
+        this.verticalBrushDetail = d3.brushY()
+            .extent([[0, 0], [30 + this.chartWidth, this.chartHeight]])
+            .on('end', this.verticalBrushedDetail);
+
     }
 
     loadJsonFromAeroc = (capteurId: number, channelId: number, dateBegin: string, dateEnd: string) => {
@@ -173,11 +180,31 @@ interface IDateInterval {
         
         d3.select(this.chartRef).append('path')
             .datum(datum)
+            .attr('clip-path', 'url(#id_clipPath)')
             .attr('d', this.lineFunction)
             .attr('fill', 'none')
-            .attr('stroke', this.state.graphType.color)
+            .attr('stroke', this.graphType.color)
             .attr('stroke-width', 1);
     };
+
+    verticalBrushedDetail = () => {
+        var s = d3.event.selection;
+        if (s) {
+            // Masque le brush
+            d3.select(this.refGVerticalBrushDetail).call(this.verticalBrushDetail.move, null);
+            
+            var domainBrushed = [s[0], s[1]].map(this.graphType.scaleFunction.invert);
+            this.graphType.scaleFunction.domain(domainBrushed);
+            this.drawYAxis();
+            this.drawGraph(this.mapValues);
+        }
+    }
+
+    resetZoomY = () => {
+        this.graphType.scaleFunction.domain(this.graphType.domain);
+        this.drawYAxis();
+        this.drawGraph(this.mapValues);
+    }
 
     handleMouseEvents = () => {
 
@@ -200,7 +227,7 @@ interface IDateInterval {
             case 'mouseover':
             case 'mousemove':
                 // var yValue = this.state.graphType.scaleFunction.invert(yMouse);
-                var yValue = this.state.graphType.getYValue(yMouse);
+                var yValue = this.graphType.getYValue(yMouse);
                 
                 d3.select(this.horizontalCrosshairValueRef)
                     .text(yValue)
@@ -220,20 +247,28 @@ interface IDateInterval {
     }
 
     computeYScale = () => {
-        var yDomain = this.state.graphType.domain;
+        var yDomain = this.graphType.domain;
         var yRange = [0, this.chartHeight];
-        this.state.graphType.scaleFunction.domain(yDomain).range(yRange);
+        this.graphType.scaleFunction.domain(yDomain).range(yRange);
     }
 
     drawYAxis = () => {
 
-        d3.select(this.chartRef)
-            .call(d3.axisLeft(this.state.graphType.scaleFunction).tickValues(this.state.graphType.tickValues))
+        var axis = d3.axisLeft(this.graphType.scaleFunction)
+        
+        if ( this.graphType.tickValues !== undefined ) {
+            axis.tickValues(this.graphType.tickValues);
+        }
+            
+        d3.select(this.chartRef).call(axis)
             .append('text')
             .attr('fill', 'black')
             .style('text-anchor', 'middle')
             .attr('y', -9) 
             .text((d) => { return d === undefined ? ' ' : d.toString() });
+        d3.select(this.chartRef)
+            .selectAll('text')
+            .attr('pointer-events', 'none');
     }
 
     drawTimeAxis() {
@@ -243,9 +278,18 @@ interface IDateInterval {
                     // .ticks(d3.timeMinute.every(60))
                 )
             .selectAll('text')
+            .attr('pointer-events', 'none');
     }
     
     componentDidMount() {
+
+        d3.select(this.gChartRef)
+            .append('clipPath')
+            .attr('id', 'id_clipPath')
+            .append('rect')
+            .attr('width', this.chartWidth)
+            .attr('height', this.chartHeight)
+            .attr('fill', 'white');
 
         d3.select(this.overlayRef)
             .attr('fill', 'transparent')
@@ -257,12 +301,19 @@ interface IDateInterval {
 
         this.computeYScale();
         this.drawYAxis();
-    
+
+        d3.select(this.refGVerticalBrushDetail)
+            .on('dblclick.zoom', this.resetZoomY)
+        // .on("mouseover", this.displayCrosshairY)
+        // .on("mousemove", this.displayCrosshairY)
+        // .on("mouseout", this.displayCrosshairY)
+        .call(this.verticalBrushDetail);
+
         // this.drawContext();
         // this.drawContextAxis();
     };
 
-    shouldComponentUpdate(nextProps: IProps, nextState: IState) {
+    shouldComponentUpdate(nextProps: IProps, nextState: {}) {
         if ( nextProps.displayCrossHairTime !== this.props.displayCrossHairTime ) {
             return true;
         }
@@ -292,8 +343,8 @@ interface IDateInterval {
 
         if ( props.domainTime !== this.props.domainTime ) {
             this.timeScale.domain(props.domainTime);
-            this.drawTimeAxis();
             this.drawGraph(this.mapValues);
+            this.drawTimeAxis();
             // this.forceUpdate();
         };
     }
@@ -318,12 +369,12 @@ interface IDateInterval {
             .attr('transform', 'translate(' + (this.originGraphX + this.timeScale(new Date(date))) + ',' + (this.originGraphY + this.chartHeight - 18) + ')')
             .attr('opacity', opacity);
 
-        this.props.handleSelectedValue(this.state.graphType, value);
+        this.props.handleSelectedValue(this.graphType, value);
     }
 
     render() {
         return (
-            <g ref={(ref) => ref}>
+            <g ref={(ref) => this.gChartRef = ref}>
                 {/* Cadre */}
                 <rect x={this.originGraphX} y={this.originGraphY} width={this.chartWidth} height={this.chartHeight} stroke="lavender" fill="transparent" strokeWidth="1" shapeRendering="crispEdges"/> 
                 {/* Legende */}
@@ -332,12 +383,13 @@ interface IDateInterval {
                 </text>
                 {/* Display Y Value */}
                 <g ref={(ref) => {this.yValueDisplayedRef = ref}} opacity={this.props.displayCrossHairTime ? 1 : 0}>
-                    <rect x="0" y="20" width="50" height="20" stroke={this.state.graphType.color} strokeWidth="1" fill="white" />
+                    <rect x="0" y="20" width="50" height="20" stroke={this.graphType.color} strokeWidth="1" fill="white" />
                     <text ref={(ref) => {this.yValueRef = ref}} x="25" y="30" fill="black" textAnchor="middle" alignmentBaseline="central" />
                 </g>
                 {/* Chart */}
-                <g ref={(ref) => {this.chartRef = ref}} className={this.state.graphType.svgClass} transform={'translate(' + this.originGraphX + ',' + this.originGraphY + ')'}>
+                <g ref={(ref) => {this.chartRef = ref}} className={this.graphType.svgClass} transform={'translate(' + this.originGraphX + ',' + this.originGraphY + ')'}>
                     <g ref={(ref) => {this.axisBottomRef = ref}} transform={'translate(0,' + this.chartHeight + ')'} />
+                    <g ref={(ref) => {this.refGVerticalBrushDetail = ref}} transform={'translate(-30,0)'}/>
                 </g>
                 {/* Overlay */}
                 <g transform={'translate(' + this.originGraphX + ',' + this.originGraphY + ')'}>
