@@ -75,27 +75,7 @@ interface ICrosshair {
 
     //  verticalCrosshairRef :SVGGElement;
     //  verticalCrosshairLineRef : SVGGElement;
-    brushRef : SVGGElement;
     globalBrushRef : SVGGElement;
-
-    brushed = () => {
-        if ( d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom' ) {
-            return; // ignore brush-by-zoom
-        }
-        var s = d3.event.selection;
-        if (s) {
-            var dateInterval = [s[0], s[1]].map(this.timeScale.invert);
-            var range = dateInterval.map(this.contextTimeScale);
-
-            // Masquer le brush detail
-            d3.select(this.brushRef)
-                .call(this.brush.move, null);
-
-            // 
-            var brush = d3.select(this.globalBrushRef).call(this.globalBrush);
-            brush.transition().call(this.globalBrush.move, range);
-        }
-    }
 
     globalBrushed = () => {
         if ( d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom' ) {
@@ -109,9 +89,11 @@ interface ICrosshair {
         // this.drawDateAxis();
     }
 
-    brush = d3.brushX()
-        .extent([[0, 0], [this.chartWidth, 1000]])
-        .on('end', this.brushed);
+    applyGlobalBrush = (dateInterval: {}[]) => {
+        var range = dateInterval.map(this.contextTimeScale);
+        var brush = d3.select(this.globalBrushRef).call(this.globalBrush);
+        brush.transition().call(this.globalBrush.move, range);
+    }
 
     globalBrush = d3.brushX()
         .extent([[0, 0], [this.chartWidth, this.topMargin]])
@@ -184,9 +166,6 @@ interface ICrosshair {
     }
 
     componentDidMount() {
-        d3.select(this.brushRef)
-            .on('dblclick.zoom', this.resetZoom)
-            .call(this.brush)
         d3.select(this.globalBrushRef)
             .call(this.globalBrush)
             // .call(this.globalBrush.move, this.timeScale.range())
@@ -280,7 +259,6 @@ interface ICrosshair {
         <div className={style(csstips.fillParent)}>
             <svg width="100%" height={svgHeight}>
                 <g transform={'translate(' + this.originGraphX + ',' + this.topMargin + ')'}>
-                    <g ref={(ref) => {this.brushRef = ref}}/>
                     <Crosshair
                         displayVertical={this.crosshair.verticalDisplayed}
                         top={0}
@@ -316,6 +294,8 @@ interface ICrosshair {
                                 xPosition={this.crosshair.xPosition}
                                 yPosition={this.crosshair.yPosition}
                                 handleSelectedValue={this.handleSelectedValue}
+                                applyGlobalBrush={this.applyGlobalBrush}
+                                resetZoom={this.resetZoom}
                             />
                         </g>
                         )

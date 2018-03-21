@@ -32,6 +32,8 @@ interface IProps {
     handleSelectedValue: (
         graphType: any,
         y: number | undefined ) => void;
+    applyGlobalBrush: (dateInterval: {}[]) => void;
+    resetZoom: () => void;
 };
 
 export interface ICrosshairTime {
@@ -65,7 +67,6 @@ interface IDateInterval {
     chartRef: SVGGElement | null;
     chartContextRef: SVGGElement | null;
     overlayChartRef: SVGRectElement  | null;
-    overlayXAxisRef: SVGRectElement  | null;
 
     yValueDisplayedRef: SVGGElement | null;
     yValueRef: SVGGElement | null;
@@ -79,7 +80,10 @@ interface IDateInterval {
     axisBottomRef: SVGGElement | null;
 
     refGVerticalBrushDetail: SVGGElement | null;
+    refGHorizontalBrushDetail : SVGGElement;
+
     verticalBrushDetail: d3.BrushBehavior<{}>;
+    horizontalBrushDetail: d3.BrushBehavior<{}>;
 
     startDate: string;
     stopDate: string;
@@ -134,7 +138,10 @@ interface IDateInterval {
         this.verticalBrushDetail = d3.brushY()
             .extent([[0, 0], [30 + this.chartWidth, this.chartHeight]])
             .on('end', this.verticalBrushedDetail);
-
+        
+        this.horizontalBrushDetail = d3.brushX()
+            .extent([[0, 0], [this.chartWidth, this.chartHeight + this.props.interChart]])
+            .on('end', this.horizontalBrushedDetail);
     }
 
     loadJsonFromAeroc = (capteurId: number, channelId: number, dateBegin: string, dateEnd: string) => {
@@ -200,6 +207,22 @@ interface IDateInterval {
             this.graphType.scaleFunction.domain(domainBrushed);
             this.drawYAxis();
             this.drawGraph(this.mapValues);
+        }
+    }
+
+    horizontalBrushedDetail = () => {
+        if ( d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom' ) {
+            return; // ignore brush-by-zoom
+        }
+        var s = d3.event.selection;
+        if (s) {
+            var dateInterval = [s[0], s[1]].map(this.timeScale.invert);
+
+            this.props.applyGlobalBrush(dateInterval);
+
+            // Masquer le brush detail
+            d3.select(this.refGHorizontalBrushDetail)
+                .call(this.horizontalBrushDetail.move, null);
         }
     }
 
@@ -302,14 +325,16 @@ interface IDateInterval {
             .on('click', this.handleChartMouseEvents)
             .on('dblclick', this.handleChartMouseEvents);
 
-        d3.select(this.overlayXAxisRef)
+        d3.select(this.refGHorizontalBrushDetail)
+            .call(this.horizontalBrushDetail)
             .on('mouseover', this.handleChartMouseEvents)
             .on('mouseout', this.handleChartMouseEvents)
             .on('mousemove', this.handleChartMouseEvents)
             .on('click', this.handleChartMouseEvents)
-            .on('dblclick', this.handleChartMouseEvents);
+            .on('dblclick.zoom', this.props.resetZoom)
 
         d3.select(this.refGVerticalBrushDetail)
+            .call(this.verticalBrushDetail)
             .on('mouseover', this.handleChartMouseEvents)
             .on('mouseout', this.handleChartMouseEvents)
             .on('mousemove', this.handleChartMouseEvents)
@@ -317,12 +342,6 @@ interface IDateInterval {
 
         this.computeYScale();
         this.drawYAxis();
-
-        d3.select(this.refGVerticalBrushDetail)
-        // .on("mouseover", this.displayCrosshairY)
-        // .on("mousemove", this.displayCrosshairY)
-        // .on("mouseout", this.displayCrosshairY)
-        .call(this.verticalBrushDetail);
 
         // this.drawContext();
         // this.drawContextAxis();
@@ -403,41 +422,33 @@ interface IDateInterval {
                 </g>
                 {/* Chart */}
                 <g ref={(ref) => {this.chartRef = ref}} className={this.graphType.svgClass} transform={'translate(' + this.originGraphX + ',' + this.originGraphY + ')'}>
-                    <g ref={(ref) => {this.axisBottomRef = ref}} transform={'translate(0,' + this.chartHeight + ')'} />
+                    <g ref={(ref) => {this.refGHorizontalBrushDetail = ref}}/>
+                    <g ref={(ref) => {this.axisBottomRef = ref}} transform={'translate(0,' + this.chartHeight + ')'}/>
                     <g ref={(ref) => {this.refGVerticalBrushDetail = ref}} transform={'translate(-30,0)'} cursor="none"/>
                 </g>
-                {/* Overlay */}
+                {/* Chart Overlay */}
                 <g transform={'translate(' + this.originGraphX + ',' + this.originGraphY + ')'}>
                     <rect
                         ref={(ref) => {this.overlayChartRef = ref}}
                         x="0"
                         y="0"
                         width={this.chartWidth}
-                        height={this.chartHeight + this.props.interChart}
+                        height={this.chartHeight}
                         stroke="lavender"
                         fill="transparent"
                         cursor="none"
                     />
-                    <rect
-                        ref={(ref) => {this.overlayXAxisRef = ref}}
-                        x="0"
-                        y={this.chartHeight}
-                        width={this.chartWidth}
-                        height={this.props.interChart}
-                        stroke="transparent"
-                        fill="transparent"
-                        cursor="none"
-                    />
                 </g>
+
                 {/* Y Crosshair Value */}
                 <g ref={(ref) => {this.ghorizontalCrosshairRef = ref}} opacity="0" pointerEvents="none">
                     <line x1="0" x2={this.chartWidth} y1="0" y2="0" stroke="lavender" strokeWidth="1" shapeRendering="crispEdges"/> 
-                    <rect rx="2" ry="2" x="-30" y="-8" width="30" height="18" stroke="lavender" strokeWidth="1" fill="white" />
+                    <rect rx="2" ry="2" x="-30" y="-8" width="30" height="18" stroke="lavender" strokeWidth="1" fill="white" opacity={0.5}/>
                     <text ref={(ref) => {this.horizontalCrosshairValueRef = ref}} fontSize="12" x="-15" y="-4" fill="black" textAnchor="middle" alignmentBaseline="hanging" />
                 </g>
                 {/* X Crosshair Value */}
                 <g ref={(ref) => {this.gDateRef = ref}} opacity={this.props.displayCrossHairTime ? 1 : 0} pointerEvents="none">
-                    <rect rx="2" ry="2" x="-60" y="20" width="120" height="18" stroke="lavender" strokeWidth="1" fill="white" />
+                    <rect rx="2" ry="2" x="-60" y="20" width="120" height="18" stroke="lavender" strokeWidth="1" fill="white" opacity={0.5}/>
                     <text ref={(ref) => {this.dateRef = ref}} fontSize="12" x="0" y="22" fill="black" textAnchor="middle" alignmentBaseline="hanging" />
                 </g>
             </g>
