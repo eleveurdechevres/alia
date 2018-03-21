@@ -2,23 +2,20 @@ import * as React from 'react';
 
 interface IProps {
     displayVertical: boolean;
-    displayHorizontal: boolean;
     top: number;
     bottom: number;
-    left: number;
-    right: number;
     xPosition: number;
     yPosition: number;
 }
 
 export class Crosshair extends React.Component<IProps, {}> {
     
-    constructor(props: any) {
+    constructor(props: IProps) {
         super(props);
         this.props = props;
     }
 
-    shouldComponentUpdate(nextProps: any, nextState: any) {
+    shouldComponentUpdate(nextProps: IProps, nextState: {}) {
         if ( nextProps !== this.props ) {
             return true;
         }

@@ -197,26 +197,20 @@ interface ICrosshair {
         brush.transition().call(this.globalBrush.move, [0, this.chartWidth]);
     }
 
-    handleMouseEvents = (xMouse: number, yMouse: number, timeMs: number, dataTimeMs: number, eventType: string) => {
+    displayCrossHairX = (xMouse: number, timeMs: number, dataTimeMs: number, eventType: string) => {
         switch (eventType) {
             case 'mouseover':
             case 'mousemove':
+            case 'drag':
                 this.crosshair.verticalDisplayed = true;    
-                this.crosshair.horizontalDisplayed = true;    
                 this.crosshair.xPosition = xMouse;    
-                this.crosshair.yPosition = yMouse;    
                 this.displayCrossHairTime = true;
                 this.crossHairTime.dataTimeMs = dataTimeMs;
                 this.crossHairTime.timeMs = timeMs;
                 break;
             case 'mouseout':
                 this.crosshair.verticalDisplayed = false;
-                this.crosshair.horizontalDisplayed = false;    
-                this.crosshair.xPosition = xMouse;    
-                this.crosshair.yPosition = yMouse;    
                 this.displayCrossHairTime = false;
-                this.crossHairTime.dataTimeMs = dataTimeMs;
-                this.crossHairTime.timeMs = timeMs;
                 break;
 
             case 'click':
@@ -226,18 +220,39 @@ interface ICrosshair {
         }
     }
 
-    handleSelectedValue = (graphType: GraphType, y: number) => {
+    displayCrossHairY = (yMouse: number, eventType: string) => {
+        switch (eventType) {
+            case 'mouseover':
+            case 'mousemove':
+            case 'drag':
+                this.crosshair.horizontalDisplayed = true;    
+                this.crosshair.yPosition = yMouse;    
+                break;
+            case 'mouseout':
+                this.crosshair.horizontalDisplayed = false;
+                this.crosshair.yPosition = yMouse;    
+                break;
+
+            case 'click':
+            case 'dblclick':
+            default:
+                break;
+        }
+    }
+
+    handleSelectedValue = (graphType: any, y: number) => {
         this.crosshairValues.set(graphType, y);
-        switch (graphType) {
-            case GraphType.HUMIDITE:
+        switch (graphType.svgClass) {
+            case GraphType.HUMIDITE.svgClass:
                 this.currentHumidity = y
                 break;
-            case GraphType.TEMPERATURE:
+            case GraphType.TEMPERATURE.svgClass:
                 this.currentTemperature = y;
                 break;
-            case GraphType.PRESENCE:
-            case GraphType.LUMINOSITE:
+            case GraphType.PRESENCE.svgClass:
+            case GraphType.LUMINOSITE.svgClass:
             default:
+                break;
         }
     }
 
@@ -268,11 +283,8 @@ interface ICrosshair {
                     <g ref={(ref) => {this.brushRef = ref}}/>
                     <Crosshair
                         displayVertical={this.crosshair.verticalDisplayed}
-                        displayHorizontal={this.crosshair.horizontalDisplayed}
                         top={0}
                         bottom={1000}
-                        left={this.originGraphX}
-                        right={this.originGraphX + this.chartWidth}
                         xPosition={this.crosshair.xPosition}
                         yPosition={this.crosshair.yPosition}
                     />
@@ -296,7 +308,8 @@ interface ICrosshair {
                                 chartIndex={index} 
                                 interChart={this.interChart} 
                                 dateInterval={this.dateInterval} 
-                                handleMouseEvents={this.handleMouseEvents} 
+                                displayCrossHairX={this.displayCrossHairX} 
+                                displayCrossHairY={this.displayCrossHairY} 
                                 domainTime={this.domainTime}
                                 displayCrossHairTime={this.displayCrossHairTime}
                                 crosshairTime={this.crossHairTime}
