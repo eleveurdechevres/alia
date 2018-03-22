@@ -34,6 +34,7 @@ const customStyles = {
 };
 
 interface IProps {
+    habitatId: number;
     id: number;
 }
 
@@ -211,7 +212,7 @@ interface IProps {
                     contentLabel="Example Modal"
                     style={customStyles}
                 >
-                    <GraphBoard capteur={this.capteurDisplayed}/>
+                    <GraphBoard habitatId={this.props.habitatId} capteur={this.capteurDisplayed}/>
                     {/* {this.graphContent} */}
                 </ReactModal >
                 <svg ref={(ref) => {this.svgRef = ref}} width={this.width} height={this.height}>

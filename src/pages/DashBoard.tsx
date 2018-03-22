@@ -66,15 +66,13 @@ import { ClientsTable } from './Client/ClientsTable';
         return (
             <div>
                 <header>
-                    <p>ALIA Header</p>
+                    <p>ALIA chart analysis</p>
                     <ClientSearchComponent handler={this.handlerClientSearch}/>
                     <br/>
                     <ClientSummary client={this.currentClient}/>
                 </header>
                 <ClientsTable client={this.currentClient} handler={this.handlerClientSelect}/>
-                <footer>
-                    ALIA Footer
-                </footer>
+                <footer/>
                 </div>
         );
     }

@@ -13,7 +13,7 @@ export function momentToSql(myMoment: moment.Moment) {
 }
 
 export function dataTimeString(date: any) {
-    return moment(date).format('MM/DD/YYYY hh:mm:ss');
+    return moment(date).format('DD/MM/YYYY hh:mm:ss');
 }
 
 export function dateWithoutSeconds(sqlDate: any) {

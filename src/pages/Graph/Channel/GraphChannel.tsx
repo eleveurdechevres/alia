@@ -11,6 +11,7 @@ interface IProps {
     originGraphY: number;
     chartWidth: number;
     chartHeight: number;
+    habitatId: number;
     capteurId: number;
     channelData: IChannelData;
     chartIndex: number;
@@ -33,7 +34,7 @@ interface IProps {
         graphType: any,
         y: number | undefined ) => void;
     applyGlobalBrush: (dateInterval: {}[]) => void;
-    resetZoom: () => void;
+    resetZoomX: () => void;
 };
 
 export interface ICrosshairTime {
@@ -66,14 +67,15 @@ interface IDateInterval {
     gChartRef: SVGGElement | null;
     chartRef: SVGGElement | null;
     chartContextRef: SVGGElement | null;
-    overlayChartRef: SVGRectElement  | null;
+    overlayChartRef: SVGGElement  | null;
 
     yValueDisplayedRef: SVGGElement | null;
     yValueRef: SVGGElement | null;
 
-    ghorizontalCrosshairRef: SVGGElement | null;
+    gHorizontalCrosshairRef: SVGGElement | null;
     horizontalCrosshairValueRef: SVGGElement | null;
 
+    gVerticalCrosshairRef: SVGGElement | null;
     gDateRef: SVGGElement | null;
     dateRef: SVGGElement | null;
 
@@ -82,6 +84,7 @@ interface IDateInterval {
     refGVerticalBrushDetail: SVGGElement | null;
     refGHorizontalBrushDetail : SVGGElement;
 
+    xyBrush: d3.BrushBehavior<{}>;
     verticalBrushDetail: d3.BrushBehavior<{}>;
     horizontalBrushDetail: d3.BrushBehavior<{}>;
 
@@ -94,12 +97,10 @@ interface IDateInterval {
     chartHeight: number;
 
     mapValues = new Map<number, number>();
+    mapMeteo = new Map<number, number>();
     timeScale: any;
 
-    lineFunction = d3.line<{date: Date, valeur: number}>()
-        .x((d) => { return this.timeScale(d.date); })
-        .y((d) => { return this.graphType.scaleFunction(d.valeur); })
-        .curve(d3.curveLinear);
+    lineFunction: d3.Line<{ date: Date; valeur: number; }>;
 
     // <GraphChannel
     //     capteurId
@@ -135,6 +136,10 @@ interface IDateInterval {
 
         this.timeScale = d3.scaleTime().range([0, this.props.chartWidth]);
 
+        this.xyBrush = d3.brush()
+            .extent([[0, 0], [this.chartWidth, this.chartHeight]])
+            .on('end', this.xyBrushed);
+
         this.verticalBrushDetail = d3.brushY()
             .extent([[0, 0], [30 + this.chartWidth, this.chartHeight]])
             .on('end', this.verticalBrushedDetail);
@@ -142,9 +147,15 @@ interface IDateInterval {
         this.horizontalBrushDetail = d3.brushX()
             .extent([[0, 0], [this.chartWidth, this.chartHeight + this.props.interChart]])
             .on('end', this.horizontalBrushedDetail);
+
+        this.lineFunction = d3.line<{date: Date, valeur: number}>()
+            .x((d) => { return this.timeScale(d.date); })
+            .y((d) => { return this.graphType.scaleFunction(d.valeur); })
+            .curve(this.graphType.interpolation);
+    
     }
 
-    loadJsonFromAeroc = (capteurId: number, channelId: number, dateBegin: string, dateEnd: string) => {
+    loadJsonDataFromAeroc = (capteurId: number, channelId: number, dateBegin: string, dateEnd: string) => {
         // LOAD DATA from AEROC
         // date_begin=2017/12/09 20:13:04&date_end=2018/01/24 21:19:06
         // console.log('http://test.ideesalter.com/alia_readMesure.php?capteur_id=' + capteurId 
@@ -172,6 +183,27 @@ interface IDateInterval {
             });
     }
 
+    loadJsonMeteoFromAeroc = (habitatId: number, channelId: number, dateBegin: string, dateEnd: string) => {
+        var request = 'http://test.ideesalter.com/alia_readMeteo.php?habitat_id=' + habitatId
+            + '&channel_id=' + channelId + '&date_begin=' + dateBegin + '&date_end=' + dateEnd;
+        return fetch(request)
+            .then((response) => response.json())
+            .then((data) => {
+
+                this.mapMeteo.clear();
+                data.forEach((line: {date: string, valeur: number}) => {
+                    var date = new Date(line.date);
+                    date.setSeconds(0);
+                    date.setMilliseconds(0);
+                    date.setUTCMilliseconds(0);
+                    date.setUTCSeconds(0);
+                    this.mapMeteo.set(date.getTime(), line.valeur);
+                })
+
+                this.drawMeteo(this.mapMeteo);
+            });
+    }
+
     drawGraph = (data: Map<number, number>) => {
 
         var datum: {date: Date, valeur: number}[] = [];
@@ -186,10 +218,11 @@ interface IDateInterval {
         // d3.curveCardinal
         // d3.curveMonotoneX
         // d3.curveCatmullRom
-        d3.select(this.chartRef).selectAll('path').remove();
+        d3.select(this.chartRef).selectAll('path').filter('.pathValuesClass').remove();
         
         d3.select(this.chartRef).append('path')
             .datum(datum)
+            .attr('class', 'pathValuesClass')
             .attr('clip-path', 'url(#id_clipPath)')
             .attr('d', this.lineFunction)
             .attr('fill', 'none')
@@ -197,24 +230,70 @@ interface IDateInterval {
             .attr('stroke-width', 1);
     };
 
-    verticalBrushedDetail = () => {
-        var s = d3.event.selection;
+    drawMeteo = (data: Map<number, number>) => {
+        var datum: {date: Date, valeur: number}[] = [];
+        data.forEach(
+            (valeur: number, timeMs: number) => { datum.push( {date: new Date(timeMs), valeur: valeur} ) }
+        );
+        if ( datum.length > 2 ) {
+
+            var min = this.graphType.domain[1];
+            var firstDate: Date = datum[0].date;
+            var lastDate: Date = datum[datum.length - 1].date;
+            var firstElement = {date: firstDate, valeur: min};
+            var lastElement = {date: lastDate, valeur: min};
+            datum.unshift(firstElement);
+            datum.push(lastElement);
+            d3.select(this.chartRef).selectAll('path').filter('.pathMeteoClass').remove();
+            
+            d3.select(this.chartRef).append('path')
+                .datum(datum)
+                .attr('class', 'pathMeteoClass')
+                .attr('clip-path', 'url(#id_clipPath)')
+                .attr('d', this.lineFunction)
+                .attr('fill', this.graphType.color)
+                .attr('stroke', this.graphType.color)
+                .attr('stroke-width', 1)
+                .attr('opacity', '0.1');
+        }
+    }
+
+    xyBrushed = () => {
+        var s: [Array<number>, Array<number>] = d3.event.selection;
+        if ( s ) {
+            // Masque le brush
+            d3.select(this.overlayChartRef).call(this.xyBrush.move, null);
+
+            var startPoint: Array<number> = s[0];
+            var endPoint: Array<number> = s[1];
+            var xSelection: Array<number> = [startPoint[0], endPoint[0]]; 
+            var ySelection: Array<number> = [startPoint[1], endPoint[1]]; 
+            this.horizontalBrushedDetail(xSelection);
+            this.verticalBrushedDetail(ySelection);
+        }
+    }
+
+    verticalBrushedDetail = (s: Array<number> | undefined) => {
+        if ( s === undefined) {
+            s = d3.event.selection;
+        }
         if (s) {
             // Masque le brush
             d3.select(this.refGVerticalBrushDetail).call(this.verticalBrushDetail.move, null);
             
-            var domainBrushed = [s[0], s[1]].map(this.graphType.scaleFunction.invert);
-            this.graphType.scaleFunction.domain(domainBrushed);
+            var yDomainBrushed = [s[0], s[1]].map(this.graphType.scaleFunction.invert);
+            this.graphType.scaleFunction.domain(yDomainBrushed);
             this.drawYAxis();
+            this.drawTimeAxis();
             this.drawGraph(this.mapValues);
+            this.drawMeteo(this.mapMeteo);
         }
     }
 
-    horizontalBrushedDetail = () => {
-        if ( d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom' ) {
-            return; // ignore brush-by-zoom
+    horizontalBrushedDetail = (s: Array<number> | undefined) => {
+        if ( s === undefined) {
+            s = d3.event.selection;
         }
-        var s = d3.event.selection;
         if (s) {
             var dateInterval = [s[0], s[1]].map(this.timeScale.invert);
 
@@ -226,27 +305,42 @@ interface IDateInterval {
         }
     }
 
+    resetZoomXY = () => {
+        this.props.resetZoomX();
+        this.resetZoomY();
+    }
     resetZoomY = () => {
         this.graphType.scaleFunction.domain(this.graphType.domain);
         this.drawYAxis();
+        this.drawTimeAxis();
         this.drawGraph(this.mapValues);
+        this.drawMeteo(this.mapMeteo);
     }
 
-    handleChartMouseEvents = () => {
+    handleXYMouseEvents = () => {
+        this.handleXMouseEvents();
+        this.handleYMouseEvents();
+    }
 
+    handleXMouseEvents = () => {
         var xMouse = 0;
-        var yMouse = 0;
         var timeMsMouse = 0;
-
-        if ( this.overlayChartRef ) {
-            xMouse = d3.mouse(this.overlayChartRef)[0];
-            yMouse = d3.mouse(this.overlayChartRef)[1];
-            timeMsMouse = this.timeScale.invert(d3.mouse(this.overlayChartRef)[0]);
+        if ( this.refGHorizontalBrushDetail ) {
+            xMouse = d3.mouse(this.refGHorizontalBrushDetail)[0];
+            timeMsMouse = this.timeScale.invert(xMouse);
         }
-
         var keys = Array.from(this.mapValues.keys());
         var indexTimeMs = d3.bisectLeft(keys, timeMsMouse);
         var dataTimeMs = keys[indexTimeMs];
+        this.props.displayCrossHairX(xMouse, timeMsMouse, dataTimeMs, d3.event.type);
+    }
+
+    handleYMouseEvents = () => {
+        var yMouse = 0;
+
+        if ( this.refGHorizontalBrushDetail ) {
+            yMouse = d3.mouse(this.refGHorizontalBrushDetail)[1];
+        }
 
         switch (d3.event.type) {
             case 'mouseover':
@@ -256,19 +350,18 @@ interface IDateInterval {
                 
                 d3.select(this.horizontalCrosshairValueRef)
                     .text(yValue)
-                d3.select(this.ghorizontalCrosshairRef)
+                d3.select(this.gHorizontalCrosshairRef)
                     .attr('transform', 'translate(' + this.originGraphX + ',' + yMouse + ')')
                     .attr('opacity', 1);
                 break;
             case 'mouseout':
-                d3.select(this.ghorizontalCrosshairRef)
+                d3.select(this.gHorizontalCrosshairRef)
                     .attr('opacity', 0);
                 break;
             default:
                 break;
 
         }
-        this.props.displayCrossHairX(xMouse, timeMsMouse, dataTimeMs, d3.event.type);
         this.props.displayCrossHairY(yMouse, d3.event.type);
     }
 
@@ -301,7 +394,7 @@ interface IDateInterval {
         d3.select(this.axisBottomRef)
             .call(d3.axisBottom(this.timeScale)
                     .tickFormat(d3.timeFormat('%H:%M'))
-                    // .ticks(d3.timeMinute.every(60))
+                    .ticks(15)
                 )
             .selectAll('text')
             .attr('pointer-events', 'none');
@@ -318,26 +411,24 @@ interface IDateInterval {
             .attr('fill', 'white');
 
         d3.select(this.overlayChartRef)
-            .attr('fill', 'transparent')
-            .on('mouseover', this.handleChartMouseEvents)
-            .on('mouseout', this.handleChartMouseEvents)
-            .on('mousemove', this.handleChartMouseEvents)
-            .on('click', this.handleChartMouseEvents)
-            .on('dblclick', this.handleChartMouseEvents);
+            .call(this.xyBrush)
+            .on('mouseover', this.handleXYMouseEvents)
+            .on('mouseout', this.handleXYMouseEvents)
+            .on('mousemove', this.handleXYMouseEvents)
+            .on('dblclick', this.resetZoomXY);
 
         d3.select(this.refGHorizontalBrushDetail)
             .call(this.horizontalBrushDetail)
-            .on('mouseover', this.handleChartMouseEvents)
-            .on('mouseout', this.handleChartMouseEvents)
-            .on('mousemove', this.handleChartMouseEvents)
-            .on('click', this.handleChartMouseEvents)
-            .on('dblclick.zoom', this.props.resetZoom)
+            .on('mouseover', this.handleXMouseEvents)
+            .on('mouseout', this.handleXMouseEvents)
+            .on('mousemove', this.handleXMouseEvents)
+            .on('dblclick.zoom', this.props.resetZoomX)
 
         d3.select(this.refGVerticalBrushDetail)
             .call(this.verticalBrushDetail)
-            .on('mouseover', this.handleChartMouseEvents)
-            .on('mouseout', this.handleChartMouseEvents)
-            .on('mousemove', this.handleChartMouseEvents)
+            .on('mouseover', this.handleYMouseEvents)
+            .on('mouseout', this.handleYMouseEvents)
+            .on('mousemove', this.handleYMouseEvents)
             .on('dblclick.zoom', this.resetZoomY)
 
         this.computeYScale();
@@ -348,9 +439,10 @@ interface IDateInterval {
     };
 
     shouldComponentUpdate(nextProps: IProps, nextState: {}) {
-        if ( nextProps.displayCrossHairTime !== this.props.displayCrossHairTime ) {
-            return true;
-        }
+        // if ( nextProps.displayCrossHairTime !== this.props.displayCrossHairTime ) {
+        //     console.log('shouldUpdate')
+        //     return true;
+        // }
         return false;
     }
 
@@ -366,24 +458,22 @@ interface IDateInterval {
             // this.loadJsonFromAeroc(props.capteurId, props.channelData.id, '2017/12/11 00:00:00', '2017/12/11 23:59:00');
             // this.loadJsonFromAeroc(props.capteurId, props.channelData.id, '2017/12/12 00:00:00', '2017/12/12 23:59:00');
             // this.loadJsonFromAeroc(props.capteurId, props.channelData.id, '2017/12/13 00:00:00', '2017/12/13 23:59:00');
-            this.loadJsonFromAeroc(props.capteurId, props.channelData.id, startDate, stopDate);
-            
+            this.loadJsonDataFromAeroc(props.capteurId, props.channelData.id, startDate, stopDate);
+            this.loadJsonMeteoFromAeroc(props.habitatId, props.channelData.id, startDate, stopDate);
         }
 
-        // if ( props.displayValue !== this.props.displayValue ) {
-        if ( props.displayCrossHairTime === true ) {
-            this.displayCrosshair(props.displayCrossHairTime, props.crosshairTime.dataTimeMs, props.crosshairTime.timeMs);
-        }
+        this.displayVerticalCrosshair(props.displayCrossHairTime, props.crosshairTime.dataTimeMs, props.crosshairTime.timeMs);
 
         if ( props.domainTime !== this.props.domainTime ) {
             this.timeScale.domain(props.domainTime);
             this.drawGraph(this.mapValues);
+            this.drawMeteo(this.mapMeteo);
             this.drawTimeAxis();
             // this.forceUpdate();
         };
     }
 
-    displayCrosshair = (display: boolean, dataTimeMs: number, timeMs: number) => {
+    displayVerticalCrosshair = (display: boolean, dataTimeMs: number, timeMs: number) => {
         var opacity = display ? 1 : 0;
         var value = this.mapValues.get(dataTimeMs);
 
@@ -397,11 +487,12 @@ interface IDateInterval {
         var date = new Date(timeMs);
         var formattedDate = dataTimeString(date)
         // var time = date.getUTCHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+        var translateX = this.originGraphX + this.timeScale(new Date(date));
         d3.select(this.dateRef)
             .text(formattedDate);
-        d3.select(this.gDateRef)
-            .attr('transform', 'translate(' + (this.originGraphX + this.timeScale(new Date(date))) + ',' + (this.originGraphY + this.chartHeight - 18) + ')')
-            .attr('opacity', opacity);
+        d3.select(this.gVerticalCrosshairRef)
+            .attr('transform', 'translate(' + translateX + ',0)')
+        .attr('opacity', opacity);
 
         this.props.handleSelectedValue(this.graphType, value);
     }
@@ -428,28 +519,30 @@ interface IDateInterval {
                 </g>
                 {/* Chart Overlay */}
                 <g transform={'translate(' + this.originGraphX + ',' + this.originGraphY + ')'}>
-                    <rect
-                        ref={(ref) => {this.overlayChartRef = ref}}
-                        x="0"
-                        y="0"
-                        width={this.chartWidth}
-                        height={this.chartHeight}
-                        stroke="lavender"
-                        fill="transparent"
-                        cursor="none"
-                    />
+                    <g ref={(ref) => {this.overlayChartRef = ref}} cursor="none"/>
                 </g>
 
                 {/* Y Crosshair Value */}
-                <g ref={(ref) => {this.ghorizontalCrosshairRef = ref}} opacity="0" pointerEvents="none">
-                    <line x1="0" x2={this.chartWidth} y1="0" y2="0" stroke="lavender" strokeWidth="1" shapeRendering="crispEdges"/> 
-                    <rect rx="2" ry="2" x="-30" y="-8" width="30" height="18" stroke="lavender" strokeWidth="1" fill="white" opacity={0.5}/>
-                    <text ref={(ref) => {this.horizontalCrosshairValueRef = ref}} fontSize="12" x="-15" y="-4" fill="black" textAnchor="middle" alignmentBaseline="hanging" />
+                <g ref={(ref) => {this.gHorizontalCrosshairRef = ref}} opacity="0" pointerEvents="none">
+                    <line x1="0" x2={this.chartWidth} y1="0" y2="0" stroke="RebeccaPurple" strokeWidth="1" shapeRendering="crispEdges"/> 
+                    <rect rx="2" ry="2" x="-30" y="-8" width="30" height="18" stroke="RebeccaPurple" strokeWidth="1" fill="RebeccaPurple" opacity={0.7}/>
+                    <text ref={(ref) => {this.horizontalCrosshairValueRef = ref}} fontSize="12" x="-15" y="-4" fill="white" textAnchor="middle" alignmentBaseline="hanging" />
                 </g>
                 {/* X Crosshair Value */}
-                <g ref={(ref) => {this.gDateRef = ref}} opacity={this.props.displayCrossHairTime ? 1 : 0} pointerEvents="none">
-                    <rect rx="2" ry="2" x="-60" y="20" width="120" height="18" stroke="lavender" strokeWidth="1" fill="white" opacity={0.5}/>
-                    <text ref={(ref) => {this.dateRef = ref}} fontSize="12" x="0" y="22" fill="black" textAnchor="middle" alignmentBaseline="hanging" />
+                <g ref={(ref) => {this.gVerticalCrosshairRef = ref}} pointerEvents="none">
+                    <line
+                        x1={0}
+                        x2={0}
+                        y1={0}
+                        y2={this.chartHeight + this.props.interChart}
+                        stroke="RebeccaPurple"
+                        strokeWidth="1"
+                        shapeRendering="crispEdges"
+                    />
+                    <g ref={(ref) => {this.gDateRef = ref}}>
+                        <rect rx="2" ry="2" x="-60" y={this.chartHeight} width="120" height="18" stroke="RebeccaPurple" strokeWidth="1" fill="RebeccaPurple" opacity={0.7}/>
+                        <text ref={(ref) => {this.dateRef = ref}} fontSize="12" x="0" y={this.chartHeight + 10} fill="white" textAnchor="middle" alignmentBaseline="middle" />
+                    </g>
                 </g>
             </g>
         )

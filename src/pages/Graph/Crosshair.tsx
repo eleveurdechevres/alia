@@ -25,17 +25,17 @@ export class Crosshair extends React.Component<IProps, {}> {
         return (
             <g pointerEvents="none">
                 {/* Ligne verticale */}
-                <g opacity={this.props.displayVertical ? 1 : 0}>
+                {/* <g opacity={this.props.displayVertical ? 1 : 0}>
                     <line
                         x1={this.props.xPosition}
                         x2={this.props.xPosition}
                         y1={this.props.top}
                         y2={this.props.bottom}
-                        stroke="lavender"
+                        stroke="RebeccaPurple"
                         strokeWidth="1"
                         shapeRendering="crispEdges"
                     />
-                </g>
+                </g> */}
                 {/* Ligne Horizontale */}
                 {/* <g display={this.props.displayHorizontal}>
                     <line x1={this.props.left}

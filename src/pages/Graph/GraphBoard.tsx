@@ -19,6 +19,7 @@ import { style } from 'typestyle';
 import { ScaleTime } from 'd3';
 
 interface IProps {
+    habitatId: number;
     capteur: ICapteur;
 }
 
@@ -171,7 +172,7 @@ interface ICrosshair {
             // .call(this.globalBrush.move, this.timeScale.range())
     }
 
-    resetZoom = () => {
+    resetZoomX = () => {
         var brush = d3.select(this.globalBrushRef).call(this.globalBrush);
         brush.transition().call(this.globalBrush.move, [0, this.chartWidth]);
     }
@@ -180,8 +181,7 @@ interface ICrosshair {
         switch (eventType) {
             case 'mouseover':
             case 'mousemove':
-            case 'drag':
-                this.crosshair.verticalDisplayed = true;    
+                this.crosshair.verticalDisplayed = true;
                 this.crosshair.xPosition = xMouse;    
                 this.displayCrossHairTime = true;
                 this.crossHairTime.dataTimeMs = dataTimeMs;
@@ -191,9 +191,6 @@ interface ICrosshair {
                 this.crosshair.verticalDisplayed = false;
                 this.displayCrossHairTime = false;
                 break;
-
-            case 'click':
-            case 'dblclick':
             default:
                 break;
         }
@@ -281,6 +278,7 @@ interface ICrosshair {
                                 originGraphY={this.originGraphY} 
                                 chartWidth={this.chartWidth} 
                                 chartHeight={this.chartHeight} 
+                                habitatId={this.props.habitatId}
                                 capteurId={this.capteur.id}
                                 channelData={data} 
                                 chartIndex={index} 
@@ -295,7 +293,7 @@ interface ICrosshair {
                                 yPosition={this.crosshair.yPosition}
                                 handleSelectedValue={this.handleSelectedValue}
                                 applyGlobalBrush={this.applyGlobalBrush}
-                                resetZoom={this.resetZoom}
+                                resetZoomX={this.resetZoomX}
                             />
                         </g>
                         )
