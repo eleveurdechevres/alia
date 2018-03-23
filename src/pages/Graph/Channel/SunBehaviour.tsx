@@ -14,7 +14,8 @@ interface IProps {
 
     render() {
         return (
-            <circle cx="100" cy="100" r="50" stroke="black"/>
+            <div/>
+            // <circle cx="100" cy="100" r="50" stroke="black"/>
         )
     }
 }
