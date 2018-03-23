@@ -247,6 +247,10 @@ interface ICrosshair {
     }
 
   render() {
+    // for ( var currentMoment: moment.Moment = this.dateInterval.startDate.clone().hour(0).minute(0).second(0).millisecond(0) ;
+    //     currentMoment <= this.dateInterval.stopDate ; currentMoment.add(1, 'days') ) {
+    //     console.log(currentMoment.toDate());
+    // }
 
     var svgHeight = this.channels.length * this.chartHeight
       + (this.channels.length - 1) * this.interChart + 200;

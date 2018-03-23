@@ -15,7 +15,7 @@ export const GraphType = {
       svgClass: 'temperature',
       svgContextClass: 'temperatureContext',
       domain: [40, -10],
-      interpolation: d3.curveCatmullRom,
+      interpolation: d3.curveMonotoneX,
 //      tickValues: [15, 20, 25],
       scaleFunction: d3.scaleLinear(),
       getYValue: (yMouse: number) => Math.round(GraphType.TEMPERATURE.scaleFunction.invert(yMouse) * 10) / 10,

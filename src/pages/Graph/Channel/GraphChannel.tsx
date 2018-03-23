@@ -5,6 +5,7 @@ import { momentToSql, dataTimeString } from '../../../utils/DateUtils';
 import * as Moment from 'moment';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
+import { SunBehaviour } from 'src/pages/Graph/Channel/SunBehaviour';
 
 interface IProps {
     originGraphX: number;
@@ -88,8 +89,8 @@ interface IDateInterval {
     verticalBrushDetail: d3.BrushBehavior<{}>;
     horizontalBrushDetail: d3.BrushBehavior<{}>;
 
-    startDate: string;
-    stopDate: string;
+    @observable startDate: string;
+    @observable stopDate: string;
 
     originGraphX: number;
     originGraphY: number;
@@ -519,6 +520,7 @@ interface IDateInterval {
                 </g>
                 {/* Chart Overlay */}
                 <g transform={'translate(' + this.originGraphX + ',' + this.originGraphY + ')'}>
+                    <SunBehaviour startDate={this.startDate} stopDate={this.stopDate}/>
                     <g ref={(ref) => {this.overlayChartRef = ref}} cursor="none"/>
                 </g>
 
