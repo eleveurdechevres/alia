@@ -109,7 +109,7 @@ interface IProps {
           className="-striped -highlight"
           getTrProps={this.handleEventsOnPlan}
           SubComponent={ row => {
-            return (<Plan habitatId={this.habitat.id} id={row.original.id} />);
+            return (<Plan habitat={this.habitat} id={row.original.id} />);
           }}
         />
         <br />

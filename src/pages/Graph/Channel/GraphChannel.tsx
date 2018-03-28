@@ -5,14 +5,14 @@ import { momentToSql, dataTimeString } from '../../../utils/DateUtils';
 import * as Moment from 'moment';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
-import { SunBehaviour } from 'src/pages/Graph/Channel/SunBehaviour';
+import { IHabitat } from 'src/interfaces/IHabitat';
 
 interface IProps {
     originGraphX: number;
     originGraphY: number;
     chartWidth: number;
     chartHeight: number;
-    habitatId: number;
+    habitat: IHabitat;
     capteurId: number;
     channelData: IChannelData;
     chartIndex: number;
@@ -178,7 +178,6 @@ interface IDateInterval {
                     date.setUTCSeconds(0);
                     this.mapValues.set(date.getTime(), line.valeur);
                 })
-
                 this.drawGraph(this.mapValues);
                 this.drawTimeAxis();
             });
@@ -460,7 +459,7 @@ interface IDateInterval {
             // this.loadJsonFromAeroc(props.capteurId, props.channelData.id, '2017/12/12 00:00:00', '2017/12/12 23:59:00');
             // this.loadJsonFromAeroc(props.capteurId, props.channelData.id, '2017/12/13 00:00:00', '2017/12/13 23:59:00');
             this.loadJsonDataFromAeroc(props.capteurId, props.channelData.id, startDate, stopDate);
-            this.loadJsonMeteoFromAeroc(props.habitatId, props.channelData.id, startDate, stopDate);
+            this.loadJsonMeteoFromAeroc(props.habitat.id, props.channelData.id, startDate, stopDate);
         }
 
         this.displayVerticalCrosshair(props.displayCrossHairTime, props.crosshairTime.dataTimeMs, props.crosshairTime.timeMs);
@@ -520,7 +519,6 @@ interface IDateInterval {
                 </g>
                 {/* Chart Overlay */}
                 <g transform={'translate(' + this.originGraphX + ',' + this.originGraphY + ')'}>
-                    <SunBehaviour startDate={this.startDate} stopDate={this.stopDate}/>
                     <g ref={(ref) => {this.overlayChartRef = ref}} cursor="none"/>
                 </g>
 

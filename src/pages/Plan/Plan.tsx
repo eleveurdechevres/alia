@@ -7,6 +7,7 @@ import { GraphBoard } from '../Graph/GraphBoard';
 import { observable, autorun } from 'mobx';
 import { observer } from 'mobx-react';
 import { ICapteur } from 'src/interfaces/ICapteur';
+import { IHabitat } from 'src/interfaces/IHabitat';
 
 const customStyles = {
     overlay : {
@@ -34,7 +35,7 @@ const customStyles = {
 };
 
 interface IProps {
-    habitatId: number;
+    habitat: IHabitat;
     id: number;
 }
 
@@ -212,7 +213,7 @@ interface IProps {
                     contentLabel="Example Modal"
                     style={customStyles}
                 >
-                    <GraphBoard habitatId={this.props.habitatId} capteur={this.capteurDisplayed}/>
+                    <GraphBoard habitat={this.props.habitat} capteur={this.capteurDisplayed}/>
                     {/* {this.graphContent} */}
                 </ReactModal >
                 <svg ref={(ref) => {this.svgRef = ref}} width={this.width} height={this.height}>

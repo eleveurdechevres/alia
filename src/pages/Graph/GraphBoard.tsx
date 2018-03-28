@@ -17,9 +17,11 @@ import { IChannel } from 'src/interfaces/IChannel';
 import * as csstips from 'csstips'; 
 import { style } from 'typestyle'; 
 import { ScaleTime } from 'd3';
+import { SunBehaviour } from 'src/pages/Graph/Channel/SunBehaviour';
+import { IHabitat } from 'src/interfaces/IHabitat';
 
 interface IProps {
-    habitatId: number;
+    habitat: IHabitat;
     capteur: ICapteur;
 }
 
@@ -282,7 +284,7 @@ interface ICrosshair {
                                 originGraphY={this.originGraphY} 
                                 chartWidth={this.chartWidth} 
                                 chartHeight={this.chartHeight} 
-                                habitatId={this.props.habitatId}
+                                habitat={this.props.habitat}
                                 capteurId={this.capteur.id}
                                 channelData={data} 
                                 chartIndex={index} 
@@ -337,6 +339,14 @@ interface ICrosshair {
                 channelYType={GraphType.HUMIDITE}
                 currentHumidity={this.currentHumidity}
                 currentTemperature={this.currentTemperature}
+            />
+            <SunBehaviour
+                chartWidth={340}
+                chartHeight={300}
+                habitat={this.props.habitat}
+                startDate={this.dateInterval.startDate.toString()}
+                stopDate={this.dateInterval.stopDate.toString()}
+                crossHairTime={this.crossHairTime}
             />
           </div>
       </div>
