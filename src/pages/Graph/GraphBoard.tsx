@@ -19,6 +19,7 @@ import { style } from 'typestyle';
 import { ScaleTime } from 'd3';
 import { SunBehaviour } from 'src/pages/Graph/Channel/SunBehaviour';
 import { IHabitat } from 'src/interfaces/IHabitat';
+import { SunBehaviourManager } from 'src/managers/SunBehaviourManager';
 
 interface IProps {
     habitat: IHabitat;
@@ -65,6 +66,7 @@ interface ICrosshair {
     }
     @observable currentTemperature: number;
     @observable currentHumidity: number;
+    sunBehaviourManager: SunBehaviourManager;
 
     topMargin = 20;
     originGraphX = 150;
@@ -106,7 +108,7 @@ interface ICrosshair {
         super(props);
         this.capteur = this.props.capteur;
         this.loadCapteurChannels();
-        this.getDateInterval(this.capteur.id)
+        this.getDateInterval(this.capteur.id);
 
         // CAPTEUR : {
         //   capteur_reference_id:"AEO_ZW100"
@@ -131,11 +133,11 @@ interface ICrosshair {
             });
     }
 
-    getDateInterval = (id: number) => {
-        if (!id) {
+    getDateInterval = (capteurId: number) => {
+        if (!capteurId) {
             return Promise.resolve({ dateInterval: {startDate: undefined, stopDate: undefined} });
         }
-        return fetch(`http://test.ideesalter.com/alia_searchDateIntervalMissionForCapteur.php?id=${id}`)
+        return fetch(`http://test.ideesalter.com/alia_searchDateIntervalMissionForCapteur.php?id=${capteurId}`)
             .then((response) => response.json())
             .then((data) => {
                 var minDate = moment(data.minDate);
@@ -146,6 +148,8 @@ interface ICrosshair {
                 this.dateInterval.minDate = minDate;
                 this.dateInterval.maxDate = maxDate;
                 
+                this.sunBehaviourManager = new SunBehaviourManager(this.props.habitat, this.dateInterval.startDate.toDate(), this.dateInterval.stopDate.toDate())
+
                 // Update time scale
                 var domain = [this.dateInterval.startDate.toDate(), this.dateInterval.stopDate.toDate()];
                 var chartWidth = 1270;
@@ -188,6 +192,9 @@ interface ICrosshair {
                 this.displayCrossHairTime = true;
                 this.crossHairTime.dataTimeMs = dataTimeMs;
                 this.crossHairTime.timeMs = timeMs;
+                if ( this.sunBehaviourManager ) {
+                    this.sunBehaviourManager.isDay(new Date(timeMs));
+                }
                 break;
             case 'mouseout':
                 this.crosshair.verticalDisplayed = false;
@@ -300,6 +307,7 @@ interface ICrosshair {
                                 handleSelectedValue={this.handleSelectedValue}
                                 applyGlobalBrush={this.applyGlobalBrush}
                                 resetZoomX={this.resetZoomX}
+                                sunBehaviourManager={this.sunBehaviourManager}
                             />
                         </g>
                         )
@@ -343,10 +351,8 @@ interface ICrosshair {
             <SunBehaviour
                 chartWidth={340}
                 chartHeight={300}
-                habitat={this.props.habitat}
-                startDate={this.dateInterval.startDate.toString()}
-                stopDate={this.dateInterval.stopDate.toString()}
                 crossHairTime={this.crossHairTime}
+                sunBehaviourManager={this.sunBehaviourManager}
             />
           </div>
       </div>

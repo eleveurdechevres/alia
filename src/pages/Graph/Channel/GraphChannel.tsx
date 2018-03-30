@@ -6,6 +6,7 @@ import * as Moment from 'moment';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
 import { IHabitat } from 'src/interfaces/IHabitat';
+import { SunBehaviourManager, ISunriseSunset } from 'src/managers/SunBehaviourManager';
 
 interface IProps {
     originGraphX: number;
@@ -36,6 +37,7 @@ interface IProps {
         y: number | undefined ) => void;
     applyGlobalBrush: (dateInterval: {}[]) => void;
     resetZoomX: () => void;
+    sunBehaviourManager: SunBehaviourManager
 };
 
 export interface ICrosshairTime {
@@ -72,6 +74,9 @@ interface IDateInterval {
 
     yValueDisplayedRef: SVGGElement | null;
     yValueRef: SVGGElement | null;
+
+    moyenneDiurneRef: SVGTSpanElement | null;
+    moyenneNocturneRef: SVGTSpanElement | null;
 
     gHorizontalCrosshairRef: SVGGElement | null;
     horizontalCrosshairValueRef: SVGGElement | null;
@@ -170,14 +175,40 @@ interface IDateInterval {
             .then((data) => {
 
                 this.mapValues.clear();
+                var nbNuit: number = 0;
+                var nbJour: number = 0;
+                var totalJour: number = 0;
+                var totalNuit: number = 0;
                 data.forEach((line: {date: string, valeur: number}) => {
                     var date = new Date(line.date);
                     date.setSeconds(0);
                     date.setMilliseconds(0);
                     date.setUTCMilliseconds(0);
                     date.setUTCSeconds(0);
+                    if (this.props.sunBehaviourManager) {
+                        if ( this.props.sunBehaviourManager.isDay(date) ) {
+                            nbJour ++;
+                            totalJour += line.valeur * 1;
+                        } else {
+                            nbNuit ++;
+                            totalNuit += line.valeur * 1;
+                        }
+                    }
                     this.mapValues.set(date.getTime(), line.valeur);
-                })
+                });
+                let moyenneJour: number = totalJour / nbJour;
+                let moyenneNuit: number = totalNuit / nbNuit;
+                let unit = this.props.channelData.unit;
+                let decimals = 2;
+                if (this.graphType.svgClass === 'presence') {
+                    moyenneJour *=  100;
+                    moyenneNuit *=  100;
+                    unit = '%';
+                    decimals = 0;
+                }
+                d3.select(this.moyenneDiurneRef).text(moyenneJour.toFixed(decimals) + ' ' + unit);
+                d3.select(this.moyenneNocturneRef).text(moyenneNuit.toFixed(decimals) + ' ' + unit);
+                this.drawSunBehaviour();
                 this.drawGraph(this.mapValues);
                 this.drawTimeAxis();
             });
@@ -202,6 +233,66 @@ interface IDateInterval {
 
                 this.drawMeteo(this.mapMeteo);
             });
+    }
+
+    drawSunBehaviour = () => {
+        if ( this.props.sunBehaviourManager ) {
+            d3.select(this.chartRef).selectAll('path').filter('.sunriseSunsetClass').remove();
+            this.props.sunBehaviourManager.getSunriseSunsetData().forEach ((data: ISunriseSunset) => {
+                let sunrise = data.sunrise;
+                let solar_noon = data.solar_noon;
+                let sunset = data.sunset;
+                
+                // d3.select(this.chartRef).append('rect')
+                //     .attr('class', 'sunriseSunsetClass')
+                //     .attr('clip-path', 'url(#id_clipPath)')
+                //     .attr('x', this.timeScale(sunrise))
+                //     .attr('y', 0)
+                //     .attr('width', this.timeScale(sunset) - this.timeScale(sunrise))
+                //     .attr('height', this.chartHeight)
+                //     .attr('fill', 'yellow')
+                //     .attr('stroke', 'yellow')
+                //     .attr('opacity', '0.2')
+                //     .attr('stroke-width', 1);
+        
+                var sunBehaviour = d3.line<Date>()
+                    .x((d, i) => { return this.timeScale(d); })
+                    .y((d, i) => { 
+                        switch (i) {
+                            case 0:
+                            case 2:
+                                return this.chartHeight;
+                            case 1:
+                            default:
+                                return this.originGraphY;
+                        }
+                     })
+                    .curve(d3.curveMonotoneX);
+
+                d3.select(this.chartRef).append('path')
+                    .datum([sunrise, solar_noon, sunset])
+                    .attr('class', 'sunriseSunsetClass')
+                    .attr('clip-path', 'url(#id_clipPath)')
+                    .attr('d', sunBehaviour)
+                    .attr('fill', 'yellow')
+                    .attr('fill-opacity', '0.3')
+                    .attr('stroke', 'yellow')
+                    .attr('stroke-opacity', '1')
+                    .attr('stroke-width', 1);
+    
+                // d3.select(this.chartRef).append('rect')
+                //     .attr('class', 'sunriseSunsetClass')
+                //     .attr('clip-path', 'url(#id_clipPath)')
+                //     .attr('x', this.timeScale(sunrise))
+                //     .attr('y', 0)
+                //     .attr('width', this.timeScale(sunset) - this.timeScale(sunrise))
+                //     .attr('height', this.chartHeight)
+                //     .attr('fill', 'yellow')
+                //     .attr('stroke', 'yellow')
+                //     .attr('opacity', '0.2')
+                //     .attr('stroke-width', 1);
+            });
+        }
     }
 
     drawGraph = (data: Map<number, number>) => {
@@ -254,7 +345,7 @@ interface IDateInterval {
                 .attr('fill', this.graphType.color)
                 .attr('stroke', this.graphType.color)
                 .attr('stroke-width', 1)
-                .attr('opacity', '0.1');
+                .attr('opacity', '0.3');
         }
     }
 
@@ -285,6 +376,7 @@ interface IDateInterval {
             this.graphType.scaleFunction.domain(yDomainBrushed);
             this.drawYAxis();
             this.drawTimeAxis();
+            this.drawSunBehaviour();
             this.drawGraph(this.mapValues);
             this.drawMeteo(this.mapMeteo);
         }
@@ -313,6 +405,7 @@ interface IDateInterval {
         this.graphType.scaleFunction.domain(this.graphType.domain);
         this.drawYAxis();
         this.drawTimeAxis();
+        this.drawSunBehaviour();
         this.drawGraph(this.mapValues);
         this.drawMeteo(this.mapMeteo);
     }
@@ -466,6 +559,7 @@ interface IDateInterval {
 
         if ( props.domainTime !== this.props.domainTime ) {
             this.timeScale.domain(props.domainTime);
+            this.drawSunBehaviour();
             this.drawGraph(this.mapValues);
             this.drawMeteo(this.mapMeteo);
             this.drawTimeAxis();
@@ -501,7 +595,16 @@ interface IDateInterval {
         return (
             <g ref={(ref) => this.gChartRef = ref}>
                 {/* Cadre */}
-                <rect x={this.originGraphX} y={this.originGraphY} width={this.chartWidth} height={this.chartHeight} stroke="lavender" fill="transparent" strokeWidth="1" shapeRendering="crispEdges"/> 
+                <rect
+                    x={this.originGraphX}
+                    y={this.originGraphY}
+                    width={this.chartWidth}
+                    height={this.chartHeight}
+                    stroke="lavender"
+                    fill="white"
+                    strokeWidth="1"
+                    shapeRendering="crispEdges"
+                />
                 {/* Legende */}
                 <text x="0" y="0" fill="black" textAnchor="start" alignmentBaseline="hanging">
                     {this.props.channelData.measure_type + ' ' + this.props.channelData.unit}
@@ -510,6 +613,15 @@ interface IDateInterval {
                 <g ref={(ref) => {this.yValueDisplayedRef = ref}} opacity={this.props.displayCrossHairTime ? 1 : 0}>
                     <rect x="0" y="20" width="50" height="20" stroke={this.graphType.color} strokeWidth="1" fill="white" />
                     <text ref={(ref) => {this.yValueRef = ref}} x="25" y="30" fill="black" textAnchor="middle" alignmentBaseline="central" />
+                </g>
+                {/* Moyennes */}
+                <g>
+                    <text fontSize="12" x="0" y="60" fill="purple">
+                        <tspan x="0" dy="0">Moyenne diurne</tspan>
+                        <tspan x="0" dy="20" ref={(ref) => {this.moyenneDiurneRef = ref}}/>
+                        <tspan x="0" dy="40">Moyenne nocture</tspan>
+                        <tspan x="0" dy="20" ref={(ref) => {this.moyenneNocturneRef = ref}}/>
+                    </text>
                 </g>
                 {/* Chart */}
                 <g ref={(ref) => {this.chartRef = ref}} className={this.graphType.svgClass} transform={'translate(' + this.originGraphX + ',' + this.originGraphY + ')'}>

@@ -33,7 +33,7 @@ interface Ixy {
 
 @observer export class TemperatureHumidity extends React.Component<IProps, {}> {
 
-    mapValues = new Map();
+    mapValues: Map<Date, {x: number, y: number}> = new Map();
     chartRef: SVGElement;
     referenceChartsHumidityRef: SVGElement;
     referenceChartsEnthalpieRef: SVGElement;
@@ -107,7 +107,7 @@ interface Ixy {
 
                     data.forEach((line: ICrossValue) => {
                         var date = dateWithoutSeconds(line.date);
-                        this.mapValues.set(date.getTime(), {x: line.channel1, y: line.channel2});
+                        this.mapValues.set(date, {x: line.channel1, y: line.channel2});
                         this.datum.push( {x: line.channel1, y: line.channel2} )
                     })
             
@@ -414,28 +414,30 @@ interface Ixy {
             displayCrosshair = false;
         }
         return (
-            <svg width={this.props.chartWidth} height={this.props.chartHeight}>
-                <rect x="0" y="0" width={this.props.chartWidth} height={this.props.chartHeight} fill="white" stroke="black"/>
-                <g>
-                    <g ref={(ref) => {this.referenceChartsHumidityRef = ref}}/>
-                    <g ref={(ref) => {this.referenceChartsEnthalpieRef = ref}}/>
-                    <g ref={(ref) => {this.referenceChartsTemperatureEnthalpieRef = ref}}/>
-                    <g ref={(ref) => {this.chartRef = ref}}/>
-                    <g ref={(ref) => {this.xAxisRef = ref}} transform={'translate(0,' + this.props.chartHeight + ')'}/>
-                    <g ref={(ref) => {this.yAxisRef = ref}} transform={'translate(' + this.props.chartWidth + ', 0)'}/>
-                    <g ref={(ref) => {this.currentCrosshairRef = ref}} transform={translateCrosshair} opacity={displayCrosshair ? 1 : 'none'}>
-                        <circle cx="0" cy="0" r="5" fill="red"/>
+            <div>
+                <svg width={this.props.chartWidth} height={this.props.chartHeight}>
+                    <rect x="0" y="0" width={this.props.chartWidth} height={this.props.chartHeight} fill="white" stroke="black"/>
+                    <g>
+                        <g ref={(ref) => {this.referenceChartsHumidityRef = ref}}/>
+                        <g ref={(ref) => {this.referenceChartsEnthalpieRef = ref}}/>
+                        <g ref={(ref) => {this.referenceChartsTemperatureEnthalpieRef = ref}}/>
+                        <g ref={(ref) => {this.chartRef = ref}}/>
+                        <g ref={(ref) => {this.xAxisRef = ref}} transform={'translate(0,' + this.props.chartHeight + ')'}/>
+                        <g ref={(ref) => {this.yAxisRef = ref}} transform={'translate(' + this.props.chartWidth + ', 0)'}/>
+                        <g ref={(ref) => {this.currentCrosshairRef = ref}} transform={translateCrosshair} opacity={displayCrosshair ? 1 : 'none'}>
+                            <circle cx="0" cy="0" r="5" fill="red"/>
+                        </g>
+                        <g ref={(ref) => {this.enveloppesRef = ref}}>
+                            <g ref={(ref) => {this.A0EnveloppeRef = ref}}/>
+                            <g ref={(ref) => {this.A1EnveloppeRef = ref}}/>
+                            <g ref={(ref) => {this.A2EnveloppeRef = ref}}/>
+                            <g ref={(ref) => {this.A3EnveloppeRef = ref}}/>
+                            <g ref={(ref) => {this.A4EnveloppeRef = ref}}/>
+                        </g>
+                        <g ref={(ref) => {this.legendsRef = ref}}/>
                     </g>
-                    <g ref={(ref) => {this.enveloppesRef = ref}}>
-                        <g ref={(ref) => {this.A0EnveloppeRef = ref}}/>
-                        <g ref={(ref) => {this.A1EnveloppeRef = ref}}/>
-                        <g ref={(ref) => {this.A2EnveloppeRef = ref}}/>
-                        <g ref={(ref) => {this.A3EnveloppeRef = ref}}/>
-                        <g ref={(ref) => {this.A4EnveloppeRef = ref}}/>
-                    </g>
-                    <g ref={(ref) => {this.legendsRef = ref}}/>
-                </g>
-            </svg>
+                </svg>
+            </div>
         )
     }
 }
