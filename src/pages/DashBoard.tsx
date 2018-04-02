@@ -5,7 +5,9 @@ import { ClientSummary } from './ClientSummary';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { ClientsTable } from './Client/ClientsTable';
-// import selectStyles  from 'react-select/dist/react-select.css';
+import { TestComponent } from 'src/pages/TestComponent';
+import { style } from 'typestyle/lib';
+import * as csstips from 'csstips'; 
 
 // const customStyles = {
 //     overlay : {
@@ -64,16 +66,21 @@ import { ClientsTable } from './Client/ClientsTable';
 
     render() {
         return (
-            <div>
-                <header>
+            <div className={style(csstips.vertical, csstips.flex, csstips.fillParent)}>
+                <div className={style(csstips.flex1)}>
                     <p>ALIA chart analysis</p>
                     <ClientSearchComponent handler={this.handlerClientSearch}/>
                     <br/>
                     <ClientSummary client={this.currentClient}/>
-                </header>
-                <ClientsTable client={this.currentClient} handler={this.handlerClientSelect}/>
-                <footer/>
                 </div>
+                <div className={style(csstips.flex)}>
+                    <ClientsTable client={this.currentClient} handler={this.handlerClientSelect}/>
+                </div>
+                {/* TESTS */}
+                <div className={style(csstips.width(600), csstips.vertical, csstips.height(400))}>
+                    <TestComponent />
+                </div>
+            </div>
         );
     }
 }

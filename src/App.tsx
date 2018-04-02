@@ -1,6 +1,8 @@
 import * as React from 'react';
 import './App.css';
 import { DashBoard } from './pages/DashBoard';
+// import * as csstips from 'csstips'; 
+// import { style } from 'typestyle/lib';
 
 class App extends React.Component {
   constructor(props: {}) {
@@ -9,7 +11,7 @@ class App extends React.Component {
   
   render() {
     return (
-      <div className="App">
+      <div className={'App'}>
         <DashBoard />
       </div>
     );

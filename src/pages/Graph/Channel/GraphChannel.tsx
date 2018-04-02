@@ -7,6 +7,7 @@ import { observer } from 'mobx-react';
 import { observable } from 'mobx';
 import { IHabitat } from 'src/interfaces/IHabitat';
 import { SunBehaviourManager, ISunriseSunset } from 'src/managers/SunBehaviourManager';
+import { Icon, Colors } from '@blueprintjs/core';
 
 interface IProps {
     originGraphX: number;
@@ -37,7 +38,8 @@ interface IProps {
         y: number | undefined ) => void;
     applyGlobalBrush: (dateInterval: {}[]) => void;
     resetZoomX: () => void;
-    sunBehaviourManager: SunBehaviourManager
+    sunBehaviourManager: SunBehaviourManager;
+    setMeteo: (graphType: string, value: number) => void;
 };
 
 export interface ICrosshairTime {
@@ -89,6 +91,9 @@ interface IDateInterval {
 
     refGVerticalBrushDetail: SVGGElement | null;
     refGHorizontalBrushDetail : SVGGElement;
+    
+    sunIcon: Icon;
+    sunMode: boolean = false;
 
     xyBrush: d3.BrushBehavior<{}>;
     verticalBrushDetail: d3.BrushBehavior<{}>;
@@ -104,6 +109,10 @@ interface IDateInterval {
 
     mapValues = new Map<number, number>();
     mapMeteo = new Map<number, number>();
+    
+    valuesKeys: number[];
+    meteokeys: number[];
+
     timeScale: any;
 
     lineFunction: d3.Line<{ date: Date; valeur: number; }>;
@@ -196,6 +205,8 @@ interface IDateInterval {
                     }
                     this.mapValues.set(date.getTime(), line.valeur);
                 });
+                this.valuesKeys = Array.from(this.mapValues.keys());
+
                 let moyenneJour: number = totalJour / nbJour;
                 let moyenneNuit: number = totalNuit / nbNuit;
                 let unit = this.props.channelData.unit;
@@ -208,9 +219,9 @@ interface IDateInterval {
                 }
                 d3.select(this.moyenneDiurneRef).text(moyenneJour.toFixed(decimals) + ' ' + unit);
                 d3.select(this.moyenneNocturneRef).text(moyenneNuit.toFixed(decimals) + ' ' + unit);
-                this.drawSunBehaviour();
                 this.drawGraph(this.mapValues);
                 this.drawTimeAxis();
+                this.updateSunBehaviour();
             });
     }
 
@@ -230,14 +241,18 @@ interface IDateInterval {
                     date.setUTCSeconds(0);
                     this.mapMeteo.set(date.getTime(), line.valeur);
                 })
+                this.meteokeys = Array.from(this.mapMeteo.keys())
 
                 this.drawMeteo(this.mapMeteo);
             });
     }
 
+    clearSunBehaviour = () => {
+        d3.select(this.chartRef).selectAll('path').filter('.sunriseSunsetClass').remove();
+    }
+
     drawSunBehaviour = () => {
         if ( this.props.sunBehaviourManager ) {
-            d3.select(this.chartRef).selectAll('path').filter('.sunriseSunsetClass').remove();
             this.props.sunBehaviourManager.getSunriseSunsetData().forEach ((data: ISunriseSunset) => {
                 let sunrise = data.sunrise;
                 let solar_noon = data.solar_noon;
@@ -376,9 +391,9 @@ interface IDateInterval {
             this.graphType.scaleFunction.domain(yDomainBrushed);
             this.drawYAxis();
             this.drawTimeAxis();
-            this.drawSunBehaviour();
             this.drawGraph(this.mapValues);
             this.drawMeteo(this.mapMeteo);
+            this.updateSunBehaviour();
         }
     }
 
@@ -405,9 +420,9 @@ interface IDateInterval {
         this.graphType.scaleFunction.domain(this.graphType.domain);
         this.drawYAxis();
         this.drawTimeAxis();
-        this.drawSunBehaviour();
         this.drawGraph(this.mapValues);
         this.drawMeteo(this.mapMeteo);
+        this.updateSunBehaviour();
     }
 
     handleXYMouseEvents = () => {
@@ -422,10 +437,12 @@ interface IDateInterval {
             xMouse = d3.mouse(this.refGHorizontalBrushDetail)[0];
             timeMsMouse = this.timeScale.invert(xMouse);
         }
-        var keys = Array.from(this.mapValues.keys());
-        var indexTimeMs = d3.bisectLeft(keys, timeMsMouse);
-        var dataTimeMs = keys[indexTimeMs];
-        this.props.displayCrossHairX(xMouse, timeMsMouse, dataTimeMs, d3.event.type);
+        
+        if ( this.valuesKeys ) {
+            var indexTimeMs = d3.bisectLeft(this.valuesKeys, timeMsMouse);
+            var dataTimeMs = this.valuesKeys[indexTimeMs];
+            this.props.displayCrossHairX(xMouse, timeMsMouse, dataTimeMs, d3.event.type);
+        }
     }
 
     handleYMouseEvents = () => {
@@ -557,12 +574,19 @@ interface IDateInterval {
 
         this.displayVerticalCrosshair(props.displayCrossHairTime, props.crosshairTime.dataTimeMs, props.crosshairTime.timeMs);
 
+        // Meteo
+        if ( this.meteokeys ) {
+            var indexMeteoTimeMs = d3.bisectLeft(this.meteokeys, props.crosshairTime.dataTimeMs);
+            var meteoKey = this.meteokeys[indexMeteoTimeMs];
+            this.props.setMeteo(this.graphType.svgClass, this.mapMeteo.get(meteoKey));
+        }
+
         if ( props.domainTime !== this.props.domainTime ) {
             this.timeScale.domain(props.domainTime);
-            this.drawSunBehaviour();
             this.drawGraph(this.mapValues);
             this.drawMeteo(this.mapMeteo);
             this.drawTimeAxis();
+            this.updateSunBehaviour();
             // this.forceUpdate();
         };
     }
@@ -591,6 +615,25 @@ interface IDateInterval {
         this.props.handleSelectedValue(this.graphType, value);
     }
 
+    toggleSunMode = () => {
+        this.sunMode = !this.sunMode;
+        this.sunIcon.setState({color: this.sunMode ? Colors.GOLD3 : Colors.GRAY1});
+        this.forceUpdate();
+
+        if ( this.sunMode ) {
+            this.drawSunBehaviour();
+        } else {
+            this.clearSunBehaviour();
+        }
+    }
+
+    updateSunBehaviour = () => {
+        if ( this.sunMode ) {
+            this.clearSunBehaviour();
+            this.drawSunBehaviour();
+        }
+    }
+
     render() {
         return (
             <g ref={(ref) => this.gChartRef = ref}>
@@ -614,6 +657,9 @@ interface IDateInterval {
                     <rect x="0" y="20" width="50" height="20" stroke={this.graphType.color} strokeWidth="1" fill="white" />
                     <text ref={(ref) => {this.yValueRef = ref}} x="25" y="30" fill="black" textAnchor="middle" alignmentBaseline="central" />
                 </g>
+                <foreignObject x="60" y="20">
+                    <Icon ref={(ref) => {this.sunIcon = ref}} icon="flash" onClick={this.toggleSunMode} iconSize={Icon.SIZE_LARGE} color={this.sunMode ? Colors.GOLD3 : Colors.GRAY1}/>
+                </foreignObject>
                 {/* Moyennes */}
                 <g>
                     <text fontSize="12" x="0" y="60" fill="purple">

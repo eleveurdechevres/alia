@@ -65,7 +65,13 @@ interface ICrosshair {
         timeMs: undefined
     }
     @observable currentTemperature: number;
-    @observable currentHumidity: number;
+    @observable currentHumidity: number = undefined;
+
+    @observable meteoTemperature: number = undefined;
+    @observable meteoHumidity: number = undefined;
+    @observable meteoDirectionVent: number = undefined;
+    @observable meteoVitesseVent: number = undefined;
+
     sunBehaviourManager: SunBehaviourManager;
 
     topMargin = 20;
@@ -241,6 +247,19 @@ interface ICrosshair {
         }
     }
 
+    setMeteo = (graphType: string, value: number) => {
+        switch (graphType) {
+            case 'temperature':
+                this.meteoTemperature = value;
+                break;
+            case 'humidite':
+                this.meteoHumidity = value;
+                break;
+            default:
+                break;
+        }
+    }
+
     contextTimeScale: ScaleTime<number, number> = d3.scaleTime();
     timeScale: ScaleTime<number, number> = d3.scaleTime();
     @observable domainTime: Date[];
@@ -308,6 +327,7 @@ interface ICrosshair {
                                 applyGlobalBrush={this.applyGlobalBrush}
                                 resetZoomX={this.resetZoomX}
                                 sunBehaviourManager={this.sunBehaviourManager}
+                                setMeteo={this.setMeteo}
                             />
                         </g>
                         )
@@ -319,7 +339,7 @@ interface ICrosshair {
                 </g>
             </svg>
         </div>
-        <div className={style(csstips.content, csstips.vertical)}>
+        <div className={style(csstips.flex, csstips.vertical)}>
             <DatePicker
                 selected={this.dateInterval.startDate}
                 onChange={this.handleChangeStartDate}
@@ -348,15 +368,17 @@ interface ICrosshair {
                 currentHumidity={this.currentHumidity}
                 currentTemperature={this.currentTemperature}
             />
-            <SunBehaviour
-                chartWidth={340}
-                chartHeight={300}
-                crossHairTime={this.crossHairTime}
-                sunBehaviourManager={this.sunBehaviourManager}
-            />
+            <div className={style(csstips.width(340), csstips.fillParent, csstips.vertical, csstips.height(300))}>
+                <SunBehaviour
+                    time={new Date(this.crossHairTime.timeMs)}
+                    sunBehaviourManager={this.sunBehaviourManager}
+                    humidite={this.meteoHumidity}
+                    directionVent={this.meteoDirectionVent}
+                    vitesseVent={this.meteoVitesseVent}
+                />
+            </div>
           </div>
       </div>
     );
-
   }
 }
