@@ -11,15 +11,17 @@ import { TemperatureHumidity } from './CrossGraph/TemperatureHumidity';
 // import { LuminosityTemperature } from './CrossGraph/LuminosityTemperature';
 import { GraphType } from './Channel/GraphType';
 import { ICapteur } from 'src/interfaces/ICapteur';
-import { observable } from 'mobx';
+import { observe, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { IChannel } from 'src/interfaces/IChannel';
 import * as csstips from 'csstips'; 
 import { style } from 'typestyle'; 
 import { ScaleTime } from 'd3';
-import { SunBehaviour } from 'src/pages/Graph/Channel/SunBehaviour';
+import { MeteoBehaviour } from 'src/pages/Graph/Channel/MeteoBehaviour';
 import { IHabitat } from 'src/interfaces/IHabitat';
 import { SunBehaviourManager } from 'src/managers/SunBehaviourManager';
+import { GraphDataManager, IMesure } from 'src/managers/GraphDataManager';
+// import { GraphDataManager, IMesure } from 'src/managers/GraphDataManager';
 
 interface IProps {
     habitat: IHabitat;
@@ -41,6 +43,8 @@ interface ICrosshair {
 }
 
 @observer export class GraphBoard extends React.Component<IProps, {}> {
+
+    graphDataManager: GraphDataManager = new GraphDataManager();
 
     @observable capteur: ICapteur = undefined;
     @observable mapChannels: Map<string, IChannel> = new Map<string, IChannel>();
@@ -124,6 +128,22 @@ interface ICrosshair {
         //   id:"1"
         //   plan_id:"1"
         // }
+        observe (this.dateInterval, () => {
+            
+            let dateBegin = this.dateInterval.startDate.toDate();
+            let dateEnd = this.dateInterval.stopDate.toDate();
+            this.graphDataManager.loadVitesseVentFromAeroc(this.props.habitat.id, dateBegin, dateEnd, (mesures: IMesure[]) => {
+                // console.log(mesures);
+            });
+            this.graphDataManager.loadDirectionVentFromAeroc(this.props.habitat.id, dateBegin, dateEnd, (mesures: IMesure[]) => {
+                // console.log(mesures);
+            });
+        });
+        // let graphDataManager: GraphDataManager = new GraphDataManager();
+        // let habitatId = 1;
+        // let dateBegin: Date = new Date(2017, 12, 20);
+        // let dateEnd: Date = new Date(2017, 12, 24);
+        
     }
 
     loadCapteurChannels = () => {
@@ -193,15 +213,20 @@ interface ICrosshair {
         switch (eventType) {
             case 'mouseover':
             case 'mousemove':
+                let date = new Date(timeMs);
                 this.crosshair.verticalDisplayed = true;
                 this.crosshair.xPosition = xMouse;    
                 this.displayCrossHairTime = true;
                 this.crossHairTime.dataTimeMs = dataTimeMs;
                 this.crossHairTime.timeMs = timeMs;
                 if ( this.sunBehaviourManager ) {
-                    this.sunBehaviourManager.isDay(new Date(timeMs));
+                    this.sunBehaviourManager.isDay(date);
                 }
+                this.meteoDirectionVent = this.graphDataManager.getDirectionVent(date);
+                this.meteoVitesseVent = this.graphDataManager.getVitesseVent(date);
+                
                 break;
+                
             case 'mouseout':
                 this.crosshair.verticalDisplayed = false;
                 this.displayCrossHairTime = false;
@@ -368,13 +393,14 @@ interface ICrosshair {
                 currentHumidity={this.currentHumidity}
                 currentTemperature={this.currentTemperature}
             />
-            <div className={style(csstips.width(340), csstips.fillParent, csstips.vertical, csstips.height(300))}>
-                <SunBehaviour
+            <div className={style(csstips.width(340), csstips.vertical, csstips.height(300))}>
+                <MeteoBehaviour
                     time={new Date(this.crossHairTime.timeMs)}
                     sunBehaviourManager={this.sunBehaviourManager}
                     humidite={this.meteoHumidity}
                     directionVent={this.meteoDirectionVent}
                     vitesseVent={this.meteoVitesseVent}
+                    temperature={this.meteoTemperature}
                 />
             </div>
           </div>

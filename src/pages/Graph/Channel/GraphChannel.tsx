@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as d3 from 'd3';
 import { GraphType } from './GraphType';
-import { momentToSql, dataTimeString } from '../../../utils/DateUtils';
+import { momentToSql, dateTimeString } from '../../../utils/DateUtils';
 import * as Moment from 'moment';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
@@ -248,7 +248,11 @@ interface IDateInterval {
     }
 
     clearSunBehaviour = () => {
-        d3.select(this.chartRef).selectAll('path').filter('.sunriseSunsetClass').remove();
+        d3.select(this.chartRef).selectAll('path')
+            .filter('.sunriseSunsetClass')
+//            .transition()
+//            .attr('fill-opacity', '0')
+            .remove();
     }
 
     drawSunBehaviour = () => {
@@ -288,12 +292,14 @@ interface IDateInterval {
                     .datum([sunrise, solar_noon, sunset])
                     .attr('class', 'sunriseSunsetClass')
                     .attr('clip-path', 'url(#id_clipPath)')
-                    .attr('d', sunBehaviour)
                     .attr('fill', 'yellow')
-                    .attr('fill-opacity', '0.3')
                     .attr('stroke', 'yellow')
                     .attr('stroke-opacity', '1')
-                    .attr('stroke-width', 1);
+                    .attr('stroke-width', 1)
+                    .attr('d', sunBehaviour)
+                    .attr('fill-opacity', '0')
+                    .transition()
+                        .attr('fill-opacity', '0.3')
     
                 // d3.select(this.chartRef).append('rect')
                 //     .attr('class', 'sunriseSunsetClass')
@@ -356,11 +362,11 @@ interface IDateInterval {
                 .datum(datum)
                 .attr('class', 'pathMeteoClass')
                 .attr('clip-path', 'url(#id_clipPath)')
-                .attr('d', this.lineFunction)
                 .attr('fill', this.graphType.color)
                 .attr('stroke', this.graphType.color)
                 .attr('stroke-width', 1)
-                .attr('opacity', '0.3');
+                .attr('opacity', '0.3')
+                .attr('d', this.lineFunction);
         }
     }
 
@@ -603,7 +609,7 @@ interface IDateInterval {
 
         // X Value
         var date = new Date(timeMs);
-        var formattedDate = dataTimeString(date)
+        var formattedDate = dateTimeString(date)
         // var time = date.getUTCHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
         var translateX = this.originGraphX + this.timeScale(new Date(date));
         d3.select(this.dateRef)

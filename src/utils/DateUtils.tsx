@@ -12,11 +12,11 @@ export function momentToSql(myMoment: moment.Moment) {
     return sqlDate;
 }
 
-export function dataTimeString(date: Date) {
-    return moment(date).format('DD/MM/YYYY hh:mm:ss');
+export function dateToSql(date: Date) {
+    return moment(date).format('YYYY/MM/DD hh:mm:ss');
 }
 
-export function dataTimeStrings(date: Date) {
+export function dateTimeString(date: Date) {
     return moment(date).format('DD/MM/YYYY hh:mm:ss');
 }
 

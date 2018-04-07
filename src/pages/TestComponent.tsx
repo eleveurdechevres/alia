@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { style } from 'typestyle/lib';
 import * as csstips from 'csstips'; 
-import { SunBehaviour } from 'src/pages/Graph/Channel/SunBehaviour';
+import { MeteoBehaviour } from 'src/pages/Graph/Channel/MeteoBehaviour';
 import { SunBehaviourManager } from 'src/managers/SunBehaviourManager';
 import { IHabitat } from 'src/interfaces/IHabitat';
 import { NumericInput } from '@blueprintjs/core'
@@ -17,9 +17,10 @@ interface IProps {
     sunBehaviourManager: SunBehaviourManager;
     @observable crossHairTime: undefined;
 
-    @observable humidite: number = undefined;
+    @observable humidite: number = 0;
     @observable directionVent: number = undefined;
     @observable vitesseVent: number = undefined;
+    @observable temperature: number = 0;
 
     refSunBehaviour: SVGSVGElement;
     center: HTMLElement;
@@ -45,6 +46,22 @@ interface IProps {
                 <div>
                     <table>
                         <tbody>
+                            <tr>
+                                <td>
+                                    Température
+                                </td>
+                                <td>
+                                    <NumericInput
+                                        stepSize={1}
+                                        // labelStepSize={100}
+                                        value={this.temperature}
+                                        min={-20}
+                                        max={40}
+                                        onValueChange={(temperature) => {this.temperature = temperature}}
+                                    />
+                                </td>
+                                <td>%</td>
+                            </tr>
                             <tr>
                                 <td>
                                     Humidité
@@ -97,12 +114,13 @@ interface IProps {
                     </table>
                 </div>    
                 <div className={style(csstips.flex, csstips.fillParent)}>
-                    <SunBehaviour
+                    <MeteoBehaviour
                         sunBehaviourManager={this.sunBehaviourManager}
                         time={new Date()}
                         humidite={this.humidite}
                         directionVent={this.directionVent}
                         vitesseVent={this.vitesseVent}
+                        temperature={this.temperature}
                     />
                 </div>
             </div>

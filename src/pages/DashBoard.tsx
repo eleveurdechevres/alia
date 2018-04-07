@@ -8,7 +8,6 @@ import { ClientsTable } from './Client/ClientsTable';
 // import { TestComponent } from 'src/pages/TestComponent';
 import { style } from 'typestyle/lib';
 import * as csstips from 'csstips'; 
-
 // const customStyles = {
 //     overlay : {
 //       position          : 'fixed',
@@ -77,7 +76,7 @@ import * as csstips from 'csstips';
                     <ClientsTable client={this.currentClient} handler={this.handlerClientSelect}/>
                 </div>
                 {/* TESTS */}
-                {/* <div className={style(csstips.width(600), csstips.vertical, csstips.height(400))}>
+                {/* <div className={style(csstips.width(340), csstips.vertical, csstips.height(300))}>
                     <TestComponent />
                 </div> */}
             </div>

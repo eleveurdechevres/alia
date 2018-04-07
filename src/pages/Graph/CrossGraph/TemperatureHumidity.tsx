@@ -403,16 +403,25 @@ interface Ixy {
         this.drawA2Enveloppe();
     }
 
-    render() {
+    componentDidUpdate() {
+
         var translateX = this.scaleX(this.props.currentTemperature);
         var translateY = this.scaleY(get_x_from_η_φ (this.props.currentTemperature, this.props.currentHumidity));
-        var translateCrosshair = 'translate(0,0)';
+        var translateCrosshair = 'translate(-10,-10)';
         var displayCrosshair = false;
 
         if (translateX !== NaN && translateY !== NaN) {
             translateCrosshair = 'translate(' + translateX + ',' + translateY + ')';
             displayCrosshair = false;
         }
+        d3.select(this.currentCrosshairRef)
+            .transition()
+            .attr('transform', translateCrosshair)
+            .attr('opacity', displayCrosshair ? 1 : 'none');
+
+    }
+
+    render() {
         return (
             <div>
                 <svg width={this.props.chartWidth} height={this.props.chartHeight}>
@@ -424,7 +433,11 @@ interface Ixy {
                         <g ref={(ref) => {this.chartRef = ref}}/>
                         <g ref={(ref) => {this.xAxisRef = ref}} transform={'translate(0,' + this.props.chartHeight + ')'}/>
                         <g ref={(ref) => {this.yAxisRef = ref}} transform={'translate(' + this.props.chartWidth + ', 0)'}/>
-                        <g ref={(ref) => {this.currentCrosshairRef = ref}} transform={translateCrosshair} opacity={displayCrosshair ? 1 : 'none'}>
+                        <g
+                            ref={(ref) => {this.currentCrosshairRef = ref}}
+                            transform="tranlate(-10, -10)"
+                            opacity="0"
+                        >
                             <circle cx="0" cy="0" r="5" fill="red"/>
                         </g>
                         <g ref={(ref) => {this.enveloppesRef = ref}}>
