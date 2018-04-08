@@ -1,5 +1,5 @@
 import { IHabitat } from 'src/interfaces/IHabitat';
-import { dateFormat } from 'src/utils/DateUtils';
+import { dateFormat, decimalTime } from 'src/utils/DateUtils';
 
 export interface ISunriseSunset {
     sunrise: Date;
@@ -12,6 +12,7 @@ export interface ISunriseSunset {
     nautical_twilight_end: Date;
     astronomical_twilight_begin: Date;
     astronomical_twilight_end: Date;
+    sunHeight: (date: Date) => number;
 }
 
 export class SunBehaviourManager {
@@ -47,17 +48,37 @@ export class SunBehaviourManager {
             .then((response) => response.json())
             .then((data: {}) => {
                 if ( data && data['status'] === 'OK' ) {
+                    
+                    let sunrise: Date = new Date(data['results']['sunrise']);
+                    let sunset: Date = new Date(data['results']['sunset']);
+                    let solar_noon: Date = new Date(data['results']['solar_noon']);
+                    let day_length: number = data['results']['day_length'];
+                    let civil_twilight_begin: Date = new Date(data['results']['civil_twilight_begin']);
+                    let civil_twilight_end: Date = new Date(data['results']['civil_twilight_end']);
+                    let nautical_twilight_begin: Date = new Date(data['results']['nautical_twilight_begin']);
+                    let nautical_twilight_end: Date = new Date(data['results']['nautical_twilight_end']);
+                    let astronomical_twilight_begin: Date = new Date(data['results']['astronomical_twilight_begin']);
+                    let astronomical_twilight_end: Date = new Date(data['results']['astronomical_twilight_end']);
+                
                     let answer: ISunriseSunset = {
-                        sunrise: new Date(data['results']['sunrise']),
-                        sunset: new Date(data['results']['sunset']),
-                        solar_noon: new Date(data['results']['solar_noon']),
-                        day_length: data['results']['day_length'],
-                        civil_twilight_begin: new Date(data['results']['civil_twilight_begin']),
-                        civil_twilight_end: new Date(data['results']['civil_twilight_end']),
-                        nautical_twilight_begin: new Date(data['results']['nautical_twilight_begin']),
-                        nautical_twilight_end: new Date(data['results']['nautical_twilight_end']),
-                        astronomical_twilight_begin: new Date(data['results']['astronomical_twilight_begin']),
-                        astronomical_twilight_end: new Date(data['results']['astronomical_twilight_end']),
+                        sunrise: sunrise,
+                        sunset: sunset,
+                        solar_noon: solar_noon,
+                        day_length: day_length,
+                        civil_twilight_begin: civil_twilight_begin,
+                        civil_twilight_end: civil_twilight_end,
+                        nautical_twilight_begin: nautical_twilight_begin,
+                        nautical_twilight_end: nautical_twilight_end,
+                        astronomical_twilight_begin: astronomical_twilight_begin,
+                        astronomical_twilight_end: astronomical_twilight_end,
+                        sunHeight: (currentDate: Date) => {
+                            let time: number = decimalTime(currentDate);
+                            let noonTime: number = decimalTime(solar_noon);
+                            let sunriseTime: number = decimalTime(sunrise);
+                            let sunHeight: number = -Math.cos(2 * Math.PI * (time - noonTime + 12) / 24) + Math.cos(6.28 * (sunriseTime - noonTime + 12) / 24)
+                            // TODO : penser à mettre à l'échelle
+                            return sunHeight;
+                        }
                     }
                     this.mapSunriseSunset.set(date.toString(), answer);
                 }

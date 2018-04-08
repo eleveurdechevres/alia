@@ -276,15 +276,15 @@ interface IDateInterval {
         
                 var sunBehaviour = d3.line<Date>()
                     .x((d, i) => { return this.timeScale(d); })
-                    .y((d, i) => { 
-                        switch (i) {
-                            case 0:
-                            case 2:
-                                return this.chartHeight;
-                            case 1:
-                            default:
-                                return this.originGraphY;
-                        }
+                    .y((d, i) => { return this.chartHeight - this.chartHeight * data.sunHeight(d)
+                        // switch (i) {
+                        //     case 0:
+                        //     case 2:
+                        //         return this.chartHeight;
+                        //     case 1:
+                        //     default:
+                        //         return this.originGraphY;
+                        // }
                      })
                     .curve(d3.curveMonotoneX);
 
