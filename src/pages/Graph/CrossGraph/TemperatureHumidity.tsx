@@ -7,6 +7,9 @@ import { IChannel } from 'src/interfaces/IChannel';
 import { ICrossValue } from 'src/interfaces/ICrossValue';
 import { ScaleLinear } from 'd3';
 import { observer } from 'mobx-react';
+import { SvgCheckBox } from 'src/pages/Graph/SvgComponents/SvgCheckBox';
+import { observable } from 'mobx';
+import { Colors } from '@blueprintjs/core';
 
 interface IProps {
     chartWidth: number;
@@ -31,23 +34,33 @@ interface Ixy {
     y: number;
 }
 
+export enum EnumAlarm {
+    confort = 'Confort',
+    qualiteAir = 'Qualité de l\'air'
+}
+
 @observer export class TemperatureHumidity extends React.Component<IProps, {}> {
 
     mapValues: Map<Date, {x: number, y: number}> = new Map();
-    chartRef: SVGElement;
-    referenceChartsHumidityRef: SVGElement;
-    referenceChartsEnthalpieRef: SVGElement;
-    referenceChartsTemperatureEnthalpieRef: SVGElement;
+    chartRef: SVGGElement;
+    referenceChartsHumidityRef: SVGGElement;
+    referenceChartsEnthalpieRef: SVGGElement;
+    referenceChartsTemperatureEnthalpieRef: SVGGElement;
     xAxisRef: SVGElement;
     yAxisRef: SVGElement;
-    currentCrosshairRef: SVGElement;
-    enveloppesRef: SVGElement;
-    A0EnveloppeRef: SVGElement;
-    A1EnveloppeRef: SVGElement;
-    A2EnveloppeRef: SVGElement;
-    A3EnveloppeRef: SVGElement;
-    A4EnveloppeRef: SVGElement;
-    legendsRef: SVGElement;
+    currentCrosshairRef: SVGGElement;
+    enveloppesConfortRef: SVGGElement;
+    enveloppesQualiteAirRef: SVGGElement;
+    A0EnveloppeRef: SVGGElement;
+    A1EnveloppeRef: SVGGElement;
+    A2EnveloppeRef: SVGGElement;
+    A3EnveloppeRef: SVGGElement;
+    A4EnveloppeRef: SVGGElement;
+    Z1Enveloppe: SVGGElement;
+    Z2Enveloppe: SVGGElement;
+    Z3Acariens: SVGGElement;
+    legendsRef: SVGGElement;
+    checkBoxes: SVGGElement;
 
     startDate: string = undefined;
     stopDate: string = undefined;
@@ -56,6 +69,8 @@ interface Ixy {
     scaleY: ScaleLinear<number, number>;
 
     datum: Ixy[] = [];
+
+    @observable alarmSelected: EnumAlarm = EnumAlarm.confort;
 
     constructor(props: IProps) {
         super(props);
@@ -239,12 +254,13 @@ interface Ixy {
             {η: 18, x: get_x_from_η_φ(18, 60)},  // η=20, φ=60%
             {η: 18, x: 6.2},
         ];
-        this.drawEnveloppe( this.A0EnveloppeRef, dataA0);
+        this.drawEnveloppe( this.A0EnveloppeRef, dataA0, Colors.GREEN3, Colors.GREEN5);
         d3.select(this.A0EnveloppeRef).append('text')
             .attr('x', this.scaleX(24))
             .attr('y', this.scaleY(10.5))
+            .attr('font-weight', 'bold')
             .attr('font-size', '10')
-            .attr('fill', 'black')
+            .attr('fill', Colors.GREEN3)
             .text('A0');
     }
 
@@ -265,12 +281,13 @@ interface Ixy {
             {η: 15,   x: get_x_from_η_φ(15, 80)},
             {η: 15,   x: get_x_from_η_φ(15, 20)},
         ];
-        this.drawEnveloppe( this.A1EnveloppeRef, dataA1);
+        this.drawEnveloppe( this.A1EnveloppeRef, dataA1, Colors.ORANGE3, Colors.ORANGE5);
         d3.select(this.A1EnveloppeRef).append('text')
             .attr('x', this.scaleX(27))
             .attr('y', this.scaleY(12.5))
+            .attr('font-weight', 'bold')
             .attr('font-size', '10')
-            .attr('fill', 'black')
+            .attr('fill', Colors.ORANGE3)
             .text('A1');
     }
 
@@ -297,13 +314,78 @@ interface Ixy {
             {η: 10,   x: get_x_from_η_φ(10, 80)},
             {η: 10,   x: get_x_from_η_φ(10, 20)},
         ];
-        this.drawEnveloppe( this.A2EnveloppeRef, dataA2);
+        this.drawEnveloppe( this.A2EnveloppeRef, dataA2, Colors.RED3, Colors.RED5);
         d3.select(this.A2EnveloppeRef).append('text')
             .attr('x', this.scaleX(31))
             .attr('y', this.scaleY(16))
+            .attr('font-weight', 'bold')
             .attr('font-size', 10)
-            .attr('fill', 'black')
+            .attr('fill', Colors.RED3)
             .text('A2');
+    }
+
+    drawZ1Enveloppe = () => {
+        var dataZ1 = [
+            {η: 15,   x: get_x_from_η_φ(15, 40)},
+            {η: 17.5, x: get_x_from_η_φ(17.5, 40)},
+            {η: 20,   x: get_x_from_η_φ(20, 40)},
+            {η: 22.5, x: get_x_from_η_φ(22.5, 40)},
+            {η: 25,   x: get_x_from_η_φ(25, 40)},
+            {η: 28,   x: get_x_from_η_φ(28, 40)},
+            {η: 28,   x: 0},
+            {η: 15,   x: 0},
+            {η: 15,   x: get_x_from_η_φ(15, 40)},
+        ];
+        this.drawEnveloppe( this.Z1Enveloppe, dataZ1, Colors.BLUE3, Colors.BLUE5);
+        d3.select(this.Z1Enveloppe).append('text')
+            .attr('x', this.scaleX(29))
+            .attr('y', this.scaleY(8))
+            .attr('font-size', 10)
+            .attr('font-weight', 'bold')
+            .attr('fill', Colors.BLUE3)
+            .text('Z1');
+    }
+
+    drawZ2Enveloppe = () => {
+        var dataZ2 = [
+            {η: 15,   x: get_x_from_η_φ(15, 100)},
+            {η: 17.5, x: get_x_from_η_φ(17.5, 100)},
+            {η: 20,   x: get_x_from_η_φ(20, 100)},
+            {η: 23,   x: get_x_from_η_φ(23, 100)},
+            {η: 23,   x: get_x_from_η_φ(23, 70)},
+            {η: 20,   x: get_x_from_η_φ(20, 70)},
+            {η: 17.5, x: get_x_from_η_φ(17.5, 70)},
+            {η: 15,   x: get_x_from_η_φ(15, 70)},
+            {η: 15,   x: get_x_from_η_φ(15, 100)},
+        ];
+        this.drawEnveloppe( this.Z2Enveloppe, dataZ2, Colors.ORANGE3, Colors.ORANGE5);
+        d3.select(this.Z2Enveloppe).append('text')
+            .attr('x', this.scaleX(12))
+            .attr('y', this.scaleY(8))
+            .attr('font-size', 10)
+            .attr('font-weight', 'bold')
+            .attr('fill', Colors.ORANGE3)
+            .text('Z2');
+    }
+
+    drawZ3Enveloppe = () => {
+        var dataZ2 = [
+            {η: 23, x: get_x_from_η_φ(23, 100)},
+            {η: 25, x: get_x_from_η_φ(25, 100)},
+            {η: 27, x: get_x_from_η_φ(27, 100)},
+            {η: 27, x: get_x_from_η_φ(27, 70)},
+            {η: 25, x: get_x_from_η_φ(25, 70)},
+            {η: 23, x: get_x_from_η_φ(23, 70)},
+            {η: 23, x: get_x_from_η_φ(23, 100)},
+        ];
+        this.drawEnveloppe( this.Z2Enveloppe, dataZ2, Colors.RED3, Colors.RED3);
+        d3.select(this.Z2Enveloppe).append('text')
+            .attr('x', this.scaleX(28))
+            .attr('y', this.scaleY(18))
+            .attr('font-size', 10)
+            .attr('font-weight', 'bold')
+            .attr('fill', Colors.RED3)
+            .text('Z3');
     }
 
     isInA0 = (η: number, φ: number) => {
@@ -340,21 +422,54 @@ interface Ixy {
         // TODO ?
     }
 
-    drawEnveloppe = (ref: SVGElement, data: Iηx[]) => {
+    isInZ1Secheresse = (η: number, φ: number) => {
+        if ( φ > 40 ) { return false };
+        if ( η < 15) { return false };
+        if ( η > 28 ) { return false };
+        return true;
+    }
+
+    isInZ23BacteriesChampignons = (η: number, φ: number) => {
+        if ( φ < 70 ) { return false };
+        if ( η < 15) { return false };
+        if ( η > 28 ) { return false };
+        return true;
+    }
+
+    isInZ3Acariens = (η: number, φ: number) => {
+        if ( φ < 70 ) { return false };
+        if ( η < 23) { return false };
+        if ( η > 28 ) { return false };
+        return true;
+    }
+
+    drawEnveloppe = (ref: SVGElement, data: Iηx[], colorStroke: string, colorFill: string) => {
         d3.select(ref)
             .datum(data)
             .append('path')
             .attr('d', this.lineFunction_η_x)
-            .attr('fill', 'none')
-            .attr('stroke', 'black')
-            .attr('stroke-width', 1);
+            .attr('fill', 'white')
+            .attr('fill-opacity', 0)
+            .attr('stroke', colorStroke)
+            .attr('stroke-width', 1)
+            .attr('stroke-opacity', 1)
+            .attr('interpolate', 'basis-closed')
+            .on('mouseover', function() {d3.select(this).transition().attr('fill', colorFill).attr('fill-opacity', 0.2)})
+            .on('mouseout', function() {d3.select(this).transition().attr('fill', 'white').attr('fill-opacity', 0)});
     }
 
     functionColor = (d: Ixy) => {
-        if ( this.isInA0(d.x, d.y) ) { return 'green' };
-        if ( this.isInA1(d.x, d.y) ) { return 'orange' };
-        if ( this.isInA2(d.x, d.y) ) { return 'red' };
-        return 'darkred';
+        if ( this.alarmSelected === EnumAlarm.confort ) {
+            if ( this.isInA0(d.x, d.y) ) { return 'green' };
+            if ( this.isInA1(d.x, d.y) ) { return 'orange' };
+            if ( this.isInA2(d.x, d.y) ) { return 'red' };
+            return 'darkred';
+        } else {
+            if ( this.isInZ1Secheresse(d.x, d.y) ) { return 'red' };
+            if ( this.isInZ23BacteriesChampignons(d.x, d.y) ) { return 'red' };
+            if ( this.isInZ3Acariens(d.x, d.y) ) { return 'red' };
+            return 'gray';
+        }
     }
 
     drawGraph = () => {
@@ -390,6 +505,20 @@ interface Ixy {
             // .text(function(d) { return d });
     }
 
+    selectAlarm = (alarm: EnumAlarm) => {
+        this.alarmSelected = alarm;
+        this.drawGraph();
+    }
+
+    drawEnveloppes = () => {
+        this.drawA0Enveloppe();
+        this.drawA1Enveloppe();
+        this.drawA2Enveloppe();
+        this.drawZ1Enveloppe();
+        this.drawZ2Enveloppe();
+        this.drawZ3Enveloppe();
+    }
+
     shouldComponentUpdate() {
         return true;
     }
@@ -398,9 +527,8 @@ interface Ixy {
         this.drawReferenceCourbesHumidite();
         this.drawReferenceCourbesEnthalpie();
         this.drawReferenceCourbesTemperatureEnthalpie();
-        this.drawA0Enveloppe();
-        this.drawA1Enveloppe();
-        this.drawA2Enveloppe();
+
+        this.drawEnveloppes();
     }
 
     componentDidUpdate() {
@@ -418,7 +546,6 @@ interface Ixy {
             .transition()
             .attr('transform', translateCrosshair)
             .attr('opacity', displayCrosshair ? 1 : 'none');
-
     }
 
     render() {
@@ -438,16 +565,35 @@ interface Ixy {
                             transform="tranlate(-10, -10)"
                             opacity="0"
                         >
-                            <circle cx="0" cy="0" r="5" fill="red"/>
+                            <circle cx="0" cy="0" r="5" stroke="white" fill="steelblue"/>
                         </g>
-                        <g ref={(ref) => {this.enveloppesRef = ref}}>
-                            <g ref={(ref) => {this.A0EnveloppeRef = ref}}/>
-                            <g ref={(ref) => {this.A1EnveloppeRef = ref}}/>
+                        <g ref={(ref) => {this.enveloppesConfortRef = ref}} opacity={this.alarmSelected === EnumAlarm.confort ? 1 : 0}>
                             <g ref={(ref) => {this.A2EnveloppeRef = ref}}/>
-                            <g ref={(ref) => {this.A3EnveloppeRef = ref}}/>
-                            <g ref={(ref) => {this.A4EnveloppeRef = ref}}/>
+                            <g ref={(ref) => {this.A1EnveloppeRef = ref}}/>
+                            <g ref={(ref) => {this.A0EnveloppeRef = ref}}/>
+                        </g>
+                        <g ref={(ref) => {this.enveloppesQualiteAirRef = ref}} opacity={this.alarmSelected === EnumAlarm.qualiteAir ? 1 : 0}>
+                            <g ref={(ref) => {this.Z1Enveloppe = ref}}/>
+                            <g ref={(ref) => {this.Z2Enveloppe = ref}}/>
+                            <g ref={(ref) => {this.Z3Acariens = ref}}/>
                         </g>
                         <g ref={(ref) => {this.legendsRef = ref}}/>
+                        <g ref={(ref) => {this.checkBoxes = ref}}>
+                            <g transform="translate(10,10)">
+                                <SvgCheckBox
+                                    alarm={EnumAlarm.confort}
+                                    selected={this.alarmSelected === EnumAlarm.confort}
+                                    handleSelect={() => this.selectAlarm(EnumAlarm.confort)}
+                                />
+                            </g>
+                            <g transform="translate(10,25)">
+                                <SvgCheckBox
+                                    alarm={EnumAlarm.qualiteAir}
+                                    selected={this.alarmSelected === EnumAlarm.qualiteAir}
+                                    handleSelect={() => this.selectAlarm(EnumAlarm.qualiteAir)}
+                                />
+                            </g>
+                        </g>
                     </g>
                 </svg>
             </div>
