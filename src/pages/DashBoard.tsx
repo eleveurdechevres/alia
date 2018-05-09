@@ -5,7 +5,7 @@ import { ClientSummary } from './ClientSummary';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { ClientsTable } from './Client/ClientsTable';
-// import { TestComponent } from 'src/pages/TestComponent';
+import { TestComponent } from 'src/pages/tests/TestComponent';
 import { style } from 'typestyle/lib';
 import * as csstips from 'csstips'; 
 // const customStyles = {
@@ -76,9 +76,9 @@ import * as csstips from 'csstips';
                     <ClientsTable client={this.currentClient} handler={this.handlerClientSelect}/>
                 </div>
                 {/* TESTS */}
-                {/* <div className={style(csstips.width(340), csstips.vertical, csstips.height(300))}>
+                <div className={style(csstips.width(340), csstips.vertical, csstips.height(300))}>
                     <TestComponent />
-                </div> */}
+                </div>
             </div>
         );
     }

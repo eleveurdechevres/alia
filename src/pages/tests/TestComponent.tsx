@@ -8,6 +8,7 @@ import { NumericInput } from '@blueprintjs/core'
 import '@blueprintjs/core/lib/css/blueprint.css';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
+import { GraphPollutions } from 'src/pages/Graph/Pollutions/GraphPollutions';
 
 interface IProps {
 }
@@ -122,6 +123,9 @@ interface IProps {
                         vitesseVent={this.vitesseVent}
                         temperature={this.temperature}
                     />
+                </div>
+                <div className={style(csstips.flex, csstips.fillParent)}>
+                    <GraphPollutions humidity={this.humidite}/>
                 </div>
             </div>
         );

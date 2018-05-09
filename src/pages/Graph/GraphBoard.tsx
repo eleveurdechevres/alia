@@ -21,6 +21,7 @@ import { MeteoBehaviour } from 'src/pages/Graph/Channel/MeteoBehaviour';
 import { IHabitat } from 'src/interfaces/IHabitat';
 import { SunBehaviourManager } from 'src/managers/SunBehaviourManager';
 import { GraphDataManager, IMesure } from 'src/managers/GraphDataManager';
+import { GraphPollutions } from 'src/pages/Graph/Pollutions/GraphPollutions';
 // import { GraphDataManager, IMesure } from 'src/managers/GraphDataManager';
 
 interface IProps {
@@ -402,6 +403,11 @@ interface ICrosshair {
                     vitesseVent={this.meteoVitesseVent}
                     temperature={this.meteoTemperature}
                 />
+            </div>
+            <div className={style(csstips.width(340), csstips.vertical, csstips.height(300))}>
+            <div className={style(csstips.flex, csstips.fillParent)}>
+                    <GraphPollutions humidity={this.currentHumidity}/>
+                </div>
             </div>
           </div>
       </div>
