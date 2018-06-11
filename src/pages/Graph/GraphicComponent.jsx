@@ -180,10 +180,10 @@ export class GraphicComponent extends Component {
   componentDidUpdate() {
 
     // Presence capteur 1
-    console.log(this.state)
-    console.log(this.state.mapJsonData)
-    console.log(this.state.mapJsonData.get("1"))
-    console.log(this.state.mapJsonData.get("1").get("1"))
+    // console.log(this.state)
+    // console.log(this.state.mapJsonData)
+    // console.log(this.state.mapJsonData.get("1"))
+    // console.log(this.state.mapJsonData.get("1").get("1"))
     var capteur1Channel1 = this.state.mapJsonData.get("1").get("1");
     // Temperature capteur 1
     var capteur1Channel2 = this.state.mapJsonData.get("1").get("2");
@@ -227,7 +227,7 @@ export class GraphicComponent extends Component {
   loadJsonFromAeroc(dateBegin, dateEnd, callback = null) {
       // LOAD DATA from AEROC
     $.getJSON('http://test.ideesalter.com/alia_readMesure.php?date_begin=' + dateBegin + '&date_end=' + dateEnd, function(data) {
-      console.log('http://test.ideesalter.com/alia_readMesure.php?date_begin=' + dateBegin + '&date_end=' + dateEnd);
+      //console.log('http://test.ideesalter.com/alia_readMesure.php?date_begin=' + dateBegin + '&date_end=' + dateEnd);
       let mapCapteurs = this.state.mapJsonData;
       data.forEach((item, index) => {
         item.date = new Date(item.date).setSeconds(0, 0);
@@ -314,8 +314,6 @@ export class GraphicComponent extends Component {
     //var capteur1Channel1 = this.state.mapJsonData.get("1").get("1");
     //var presenceGraph = d3.select('.' + GraphType.PRESENCE.svgClass);
     //var path = presenceGraph.selectAll('path');
-    console.log(d3.select("GraphicComponent"));
-    console.log("mouseMove " + d3.mouse(this)[0] + " : " + x0);
     // var i = bisectDate(capteur1Channel1, x0, 1);
     // var d0 = capteur1Channel1[i - 1];
     // var d1 = capteur1Channel1[i];

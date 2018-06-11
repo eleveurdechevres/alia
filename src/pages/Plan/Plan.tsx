@@ -8,6 +8,7 @@ import { observable, autorun } from 'mobx';
 import { observer } from 'mobx-react';
 import { ICapteur } from 'src/interfaces/ICapteur';
 import { IHabitat } from 'src/interfaces/IHabitat';
+import { IMission } from 'src/interfaces/IMission';
 
 const customStyles = {
     overlay : {
@@ -37,6 +38,7 @@ const customStyles = {
 interface IProps {
     habitat: IHabitat;
     id: number;
+    mission: IMission;
 }
 
 @observer export class Plan extends React.Component<IProps, {}> {
@@ -45,6 +47,7 @@ interface IProps {
     // Display values on mouseover : https://bl.ocks.org/mbostock/3902569
 
     planId: number;
+    missionId: number;
     @observable planImage: string = undefined;
     @observable width: number = undefined;
     @observable height: number = undefined;
@@ -62,6 +65,7 @@ interface IProps {
         super(props);
 
         this.planId = props.id;
+        this.missionId = props.mission.id;
 
         autorun(() => {
             if ( this.planImage ) {
@@ -85,12 +89,12 @@ interface IProps {
         );
     }
 
-    getCapteursForPlan = (planId: number) => {
+    getCapteursForPlan = (planId: number, missionId: number) => {
         if (!planId) {
             return Promise.resolve({ capteurs: [] });
         }
     
-        return fetch(`http://test.ideesalter.com/alia_searchCapteursForPlan.php?plan_id=${planId}`)
+        return fetch(`http://test.ideesalter.com/alia_searchCapteursForPlan.php?plan_id=${planId}&mission_id=${missionId}`)
             .then((response) => response.json())
             .then((capteurs) => {
                 this.capteurs = capteurs;
@@ -100,7 +104,7 @@ interface IProps {
 
     componentDidMount() {
         this.getPlan(this.planId);
-        this.getCapteursForPlan(this.planId);
+        this.getCapteursForPlan(this.planId, this.missionId);
     }
 
     getImageSize = (data: string) => {
@@ -213,7 +217,7 @@ interface IProps {
                     contentLabel="Example Modal"
                     style={customStyles}
                 >
-                    <GraphBoard habitat={this.props.habitat} capteur={this.capteurDisplayed}/>
+                    <GraphBoard habitat={this.props.habitat} capteur={this.capteurDisplayed} mission={this.props.mission} />
                     {/* {this.graphContent} */}
                 </ReactModal >
                 <svg ref={(ref) => {this.svgRef = ref}} width={this.width} height={this.height}>

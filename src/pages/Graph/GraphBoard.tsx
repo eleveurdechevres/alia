@@ -22,11 +22,13 @@ import { IHabitat } from 'src/interfaces/IHabitat';
 import { SunBehaviourManager } from 'src/managers/SunBehaviourManager';
 import { GraphDataManager, IMesure } from 'src/managers/GraphDataManager';
 import { GraphPollutions } from 'src/pages/Graph/Pollutions/GraphPollutions';
+import { IMission } from 'src/interfaces/IMission';
 // import { GraphDataManager, IMesure } from 'src/managers/GraphDataManager';
 
 interface IProps {
     habitat: IHabitat;
     capteur: ICapteur;
+    mission: IMission;
 }
 
 export interface IDateInterval {
@@ -119,8 +121,8 @@ interface ICrosshair {
         super(props);
         this.capteur = this.props.capteur;
         this.loadCapteurChannels();
-        this.getDateInterval(this.capteur.id);
-
+        // this.getDateInterval(this.capteur.id);
+        this.getDateIntervalMission(this.capteur.id);
         // CAPTEUR : {
         //   capteur_reference_id:"AEO_ZW100"
         //   coordonneePlanX:"500"
@@ -189,6 +191,30 @@ interface ICrosshair {
                 this.drawDateAxis();
             }
         );
+    }
+
+    getDateIntervalMission = (capteurId: number) => {
+        if (!capteurId) {
+            return Promise.resolve({ dateInterval: {startDate: undefined, stopDate: undefined} });
+        }
+        this.dateInterval.startDate = moment(this.props.mission.date_debut);
+        this.dateInterval.stopDate = moment(this.props.mission.date_fin);
+        this.dateInterval.minDate = moment(this.props.mission.date_debut);
+        this.dateInterval.maxDate = moment(this.props.mission.date_fin);
+        
+        this.sunBehaviourManager = new SunBehaviourManager(this.props.habitat, this.dateInterval.startDate.toDate(), this.dateInterval.stopDate.toDate())
+
+        // Update time scale
+        var domain = [this.dateInterval.startDate.toDate(), this.dateInterval.stopDate.toDate()];
+        var chartWidth = 1270;
+        var range = [0, chartWidth];
+        this.contextTimeScale = d3.scaleTime().domain(domain).range(range);
+        this.domainTime = domain;
+        this.timeScale = d3.scaleTime().domain(domain).range(range);
+
+        // Redraw Globlal Axis
+        this.drawDateAxis();
+        return Promise.resolve({ dateInterval: {startDate: this.dateInterval.startDate, stopDate: this.dateInterval.stopDate} });
     }
 
     handleChangeStartDate = (date: moment.Moment) => {

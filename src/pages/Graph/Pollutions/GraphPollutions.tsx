@@ -14,7 +14,6 @@ export class GraphPollutions extends React.Component<IProps, {}> {
     render() {
         
         let lineHeight: number = 100 / 8;
-        console.log(lineHeight)
         return (
             <div>
                 <svg x="0" y="0" width="100%" height="100%">

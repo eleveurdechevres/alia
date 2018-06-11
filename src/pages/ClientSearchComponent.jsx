@@ -15,7 +15,6 @@ export class ClientSearchComponent extends React.Component {
     }
 
 	onChange = (client) => {
-        console.log(client)
 		this.setState({
 			client: client,
         });

@@ -11,9 +11,11 @@ import { IHabitat } from 'src/interfaces/IHabitat';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { IPlan } from 'src/interfaces/IPlan';
+import { IMission } from 'src/interfaces/IMission';
 
 interface IProps {
     habitat: IHabitat;
+    mission: IMission;
 }
 
 @observer export class PlansTable extends React.Component<IProps, {}> {
@@ -76,7 +78,7 @@ interface IProps {
 
   render() {
     const columns = [
-      { Header: 'Id',
+      { Header: 'Plan id',
         accessor: 'id'
       },
       { Header: 'Etage',
@@ -109,7 +111,7 @@ interface IProps {
           className="-striped -highlight"
           getTrProps={this.handleEventsOnPlan}
           SubComponent={ row => {
-            return (<Plan habitat={this.habitat} id={row.original.id} />);
+            return (<Plan habitat={this.habitat} id={row.original.id} mission={this.props.mission}/>);
           }}
         />
         <br />

@@ -4,40 +4,40 @@ import * as React from 'react';
 // Import React Table
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
-import { IClient } from 'src/interfaces/IClient';
 import { IHabitat } from 'src/interfaces/IHabitat';
+import { PlansTable } from '../Plan/PlansTable';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
-import { MissionsTable } from 'src/pages/Mission/MissionsTable';
+import { IMission } from 'src/interfaces/IMission';
 
 interface IProps {
-    client: IClient;
+    habitat: IHabitat;
 }
 
-@observer export class HabitatsTable extends React.Component<IProps, {}> {
+@observer export class MissionsTable extends React.Component<IProps, {}> {
 
-    @observable private client: IClient;
-    @observable private habitats: IHabitat[] = [];
+    @observable private habitat: IHabitat;
+    @observable private missions: IMission[] = [];
 
   // https://react-table.js.org/#/story/readme
   constructor(props: IProps) {
     super(props);
 
-    this.client = props.client;
+    this.habitat = props.habitat;
   }
 
-  getHabitatsForClient = (id: number) => {
+  getMissionsForHabitat = (id: number) => {
     if (!id) {
-      return Promise.resolve({ habitats: [] });
+      return Promise.resolve({ missions: [] });
     }
-    var request = `http://test.ideesalter.com/alia_searchHabitat.php?client_id=${id}`;
+    var request = `http://test.ideesalter.com/alia_searchMission.php?habitat_id=${id}`;
     return fetch(request)
       .then((response) => response.json())
-      .then((habitats) => {this.habitats = habitats});
+      .then((missions) => {this.missions = missions});
   }
 
   componentDidMount() {
-    this.getHabitatsForClient(this.client.id);
+    this.getMissionsForHabitat(this.habitat.id);
   }
 
   // componentWillReceiveProps(nextProps) {
@@ -56,7 +56,7 @@ interface IProps {
   // adresse
   // email
   // telephone
-  handleEventsOnHabitat = (state: any, rowInfo: any, column: any, instance: any) => {
+  handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) => {
     return {
         onClick: (e: any) => {
         //   var currentHabitat = rowInfo.original;
@@ -71,21 +71,18 @@ interface IProps {
 
   render() {
     const columns = [
-      { Header: 'Habitat id',
+      { Header: 'Mission id',
         accessor: 'id'
       },
-      { Header: 'Adresse',
-        accessor: 'adresse'
+      { Header: 'Date début',
+        accessor: 'date_debut'
       },
-      // { Header: "localisation",
-      //   accessor: d =>  ({latitude: d.gps_latitude,
-      //                     longitude: d.gps_longitude,
-      //                     elevation: d.gps_elevation
-      //                   })
-      // },
+      { Header: 'Date fin',
+        accessor: 'date_fin'
+      }
     ];
 
-    if ( this.habitats.length === 0 || (this.habitats.length === 1 && this.habitats[0] === undefined ) ) {
+    if ( this.missions.length === 0 || (this.missions.length === 1 && this.missions[0] === undefined ) ) {
       return (
         <div/>
       );
@@ -94,14 +91,14 @@ interface IProps {
     return (
       <div>
         <ReactTable
-          data={this.habitats.slice()}
-          noDataText="Pas d'habitat pour ce client"
+          data={this.missions.slice()}
+          noDataText="Pas de mission pour cet habitat"
           columns={columns}
-          defaultPageSize={1}
+          defaultPageSize={this.missions.length < 5 ? this.missions.length : 5}
           className="-striped -highlight"
-          getTrProps={this.handleEventsOnHabitat}
+          getTrProps={this.handleEventsOnMission}
           SubComponent={ row => {
-            return (<MissionsTable habitat={row.original} />);
+            return (<PlansTable habitat={this.habitat} mission={row.original}/>);
           }}
         />
         <br />

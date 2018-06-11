@@ -50,7 +50,7 @@ interface IProps {
 
   render() {
     const columns = [
-      { Header: 'Id',
+      { Header: 'client id',
         accessor: 'id'
       },
       { Header: 'Nom',
