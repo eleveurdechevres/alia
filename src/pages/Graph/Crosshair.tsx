@@ -12,7 +12,6 @@ export class Crosshair extends React.Component<IProps, {}> {
     
     constructor(props: IProps) {
         super(props);
-        this.props = props;
     }
 
     shouldComponentUpdate(nextProps: IProps, nextState: {}) {

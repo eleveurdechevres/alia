@@ -50,7 +50,7 @@ const selectStyle: any = style(csstips.content, csstips.width(500));
     render () {
 
         return (
-            <div className={style(csstips.flex)}>
+            <div>
                 <Async 
                     autosize={true}
                     className={selectStyle}

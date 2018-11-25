@@ -5,7 +5,6 @@ import { MeteoBehaviour } from 'src/pages/Graph/Channel/MeteoBehaviour';
 import { SunBehaviourManager } from 'src/managers/SunBehaviourManager';
 import { IHabitat } from 'src/interfaces/IHabitat';
 import { NumericInput } from '@blueprintjs/core'
-import '@blueprintjs/core/lib/css/blueprint.css';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { GraphPollutions } from 'src/pages/Graph/Pollutions/GraphPollutions';

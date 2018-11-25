@@ -16,14 +16,11 @@ interface IProps {
 
 @observer export class HabitatsTable extends React.Component<IProps, {}> {
 
-    @observable private client: IClient;
     @observable private habitats: IHabitat[] = [];
 
   // https://react-table.js.org/#/story/readme
   constructor(props: IProps) {
     super(props);
-
-    this.client = props.client;
   }
 
   getHabitatsForClient = (id: number) => {
@@ -36,8 +33,11 @@ interface IProps {
       .then((habitats) => {this.habitats = habitats});
   }
 
-  componentDidMount() {
-    this.getHabitatsForClient(this.client.id);
+  componentWillReceiveProps(props: IProps) {
+    console.log(props)
+    if (props.client) {
+        this.getHabitatsForClient(props.client.id);
+    }
   }
 
   // componentWillReceiveProps(nextProps) {

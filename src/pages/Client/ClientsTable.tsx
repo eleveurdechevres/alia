@@ -6,7 +6,6 @@ import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import { HabitatsTable } from '../Habitat/HabitatsTable';
 import { IClient } from 'src/interfaces/IClient';
-import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 
 interface IProps {
@@ -15,18 +14,9 @@ interface IProps {
 }
 @observer export class ClientsTable extends React.Component<IProps, {}> {
 
-    @observable client: IClient;
-
   // https://react-table.js.org/#/story/readme
   constructor(props: IProps) {
       super(props);
-      this.client = props.client;
-  }
-
-  componentWillReceiveProps(nextProps: IProps) {
-    if ( nextProps !== this.props ) {
-            this.client = nextProps.client;
-    }
   }
 
   // id
@@ -68,7 +58,7 @@ interface IProps {
     ];
 
     // if ( this.clients.length === 0 || ( this.clients.length === 1 && this.clients[0] === undefined ) ) {
-    if ( this.client === undefined ) {
+    if ( this.props.client === undefined ) {
       return (
         <div/>
       );
@@ -78,7 +68,7 @@ interface IProps {
 
       <div>
         <ReactTable
-          data={[this.client]}
+          data={[this.props.client]}
           columns={columns}
           defaultPageSize={1}
           className="-striped -highlight"

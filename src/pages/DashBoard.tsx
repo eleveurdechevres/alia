@@ -1,13 +1,13 @@
 import * as React from 'react';
-import { ClientSearchComponent } from './ClientSearchComponent';
-import { IClient } from 'src/interfaces/IClient';
-import { ClientSummary } from './ClientSummary';
+// import { ClientSummary } from './ClientSummary';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
-import { ClientsTable } from './Client/ClientsTable';
-import { TestComponent } from 'src/pages/tests/TestComponent';
+// import { ClientsTable } from './Client/ClientsTable';
+// import { TestComponent } from 'src/pages/tests/TestComponent';
 import { style } from 'typestyle/lib';
 import * as csstips from 'csstips'; 
+import { IClient } from 'src/interfaces/IClient';
+import { HabitatsTable } from 'src/pages/Habitat/HabitatsTable';
 // const customStyles = {
 //     overlay : {
 //       position          : 'fixed',
@@ -33,13 +33,16 @@ import * as csstips from 'csstips';
 //     }
 // };
 
-@observer export class DashBoard extends React.Component<{}, {}> {
+interface IProps {
+    currentClient: IClient
+}
 
-    @observable currentClient: IClient = undefined;
+@observer export class DashBoard extends React.Component<IProps, {}> {
+
     // habitats: [];
     @observable modalIsOpen: boolean = false;
 
-    constructor(props: {}) {
+    constructor(props: IProps) {
         super(props);
     }
 
@@ -55,30 +58,28 @@ import * as csstips from 'csstips';
         this.modalIsOpen = false;
     }
     
-    handlerClientSearch = (client: IClient) => {
-        this.currentClient = client;
-    }
-
     handlerClientSelect = (client: IClient) => {
-    //     //this.getHabitatsForClient(client.id);    
+        //     //this.getHabitatsForClient(client.id);    
     }
 
     render() {
+        console.log('titi')
         return (
             <div className={style(csstips.vertical, csstips.flex, csstips.fillParent)}>
-                <div className={style(csstips.flex1)}>
-                    <p>ALIA chart analysis</p>
+                <div className={style(csstips.flex)}>
+                    {/* <p>ALIA chart analysis</p>
                     <ClientSearchComponent handler={this.handlerClientSearch}/>
-                    <br/>
-                    <ClientSummary client={this.currentClient}/>
+                    <br/> */}
+                    {/* <ClientSummary client={this.props.currentClient}/> */}
                 </div>
                 <div className={style(csstips.flex)}>
-                    <ClientsTable client={this.currentClient} handler={this.handlerClientSelect}/>
+                    {/* <ClientsTable client={this.props.currentClient} handler={this.handlerClientSelect}/> */}
+                    <HabitatsTable client={this.props.currentClient} />
                 </div>
                 {/* TESTS */}
-                <div className={style(csstips.width(340), csstips.vertical, csstips.height(300))}>
+                {/* <div className={style(csstips.width(340), csstips.vertical, csstips.height(300))}>
                     <TestComponent />
-                </div>
+                </div> */}
             </div>
         );
     }
