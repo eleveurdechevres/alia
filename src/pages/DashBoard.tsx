@@ -63,7 +63,6 @@ interface IProps {
     }
 
     render() {
-        console.log('titi')
         return (
             <div className={style(csstips.vertical, csstips.flex, csstips.fillParent)}>
                 <div className={style(csstips.flex)}>
@@ -72,7 +71,7 @@ interface IProps {
                     <br/> */}
                     {/* <ClientSummary client={this.props.currentClient}/> */}
                 </div>
-                <div className={style(csstips.flex)}>
+                <div className={style(csstips.flex, csstips.fillParent)}>
                     {/* <ClientsTable client={this.props.currentClient} handler={this.handlerClientSelect}/> */}
                     <HabitatsTable client={this.props.currentClient} />
                 </div>
