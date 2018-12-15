@@ -2,7 +2,6 @@ import * as React from 'react';
 import { style } from 'typestyle/lib';
 import * as csstips from 'csstips';
 import '@blueprintjs/core/lib/css/blueprint.css';
-import * as ReactDOM from 'react-dom';
 
 import { DashBoard } from './pages/DashBoard';
 
@@ -15,6 +14,7 @@ import { IClient } from 'src/interfaces/IClient';
 import './App.css';
 import { NavBarButton } from 'src/NavBarButtons';
 import { DebugPage } from 'src/DebugPage';
+import { Client } from 'src/pages/Client/Client';
 
 interface IProps {
 
@@ -38,6 +38,26 @@ export const enum NavBarTabEnum {
   
     public render() {
 
+        let mainContent = undefined;
+
+        switch ( this.selectedTab ) {
+            case NavBarTabEnum.CLIENT:
+                mainContent = <Client client={this.currentClient}/>;
+                break;
+            case NavBarTabEnum.MISSIONS:
+                mainContent = <DashBoard currentClient={this.currentClient}/>
+                break;
+            case NavBarTabEnum.ANALYSES:
+                mainContent = <div>Analyses</div>;
+                break;
+            case NavBarTabEnum.DEBUG:
+                mainContent = <DebugPage/>;
+                break;
+            default:
+                break;
+        }
+        let mainBoard = <div id="content" className={style(csstips.fillParent, csstips.height('100%'))}>{mainContent}</div>
+    
         return (
             <div className={style(csstips.fillParent)}>
                 <div className={style(csstips.flex)}>
@@ -88,7 +108,7 @@ export const enum NavBarTabEnum {
                     </NavbarGroup>
                 </Navbar>
                 </div>
-                <div id="content" className={style(csstips.fillParent, csstips.height('100%'))}/>
+                {mainBoard}
             </div>
         );
     }
@@ -99,31 +119,18 @@ export const enum NavBarTabEnum {
 
     private handleGotoClient = () => {
         this.selectedTab = NavBarTabEnum.CLIENT;
-        return ReactDOM.render(
-            <div>Client</div>,
-            document.getElementById('content')
-        );
     }
 
     private handleGotoMissions = () => {
         this.selectedTab = NavBarTabEnum.MISSIONS;
         console.log('missions')
-        return ReactDOM.render(
-            <DashBoard currentClient={this.currentClient}/>,
-            document.getElementById('content')
-        );
     }
 
     private handleGotoAnalyses = () => {
         this.selectedTab = NavBarTabEnum.ANALYSES;
-        return ReactDOM.render(
-            <div>Analyses</div>,
-            document.getElementById('content')
-        );
     }
 
-    private handleGotoDebug = () => ReactDOM.render(
-        <DebugPage/>,
-        document.getElementById('content')
-    )
+    private handleGotoDebug = () => {
+        this.selectedTab = NavBarTabEnum.DEBUG;
+    }
 }
