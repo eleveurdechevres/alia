@@ -32,7 +32,7 @@ interface IProps {
             client_id: 1,
             adresse: 'adresse mauves',
             gps_elevation: 17,
-            gps_lattitude: 47.2938326,
+            gps_latitude: 47.2938326,
             gps_longitude: -1.3897073,
         }
         let startDate =  new Date('2017-12-20');

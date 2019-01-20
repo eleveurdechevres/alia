@@ -14,6 +14,7 @@ import { NewElementButton } from 'src/components/NewElementButton';
 
 interface IProps {
     client: IClient;
+    selectClient: (client: IClient) => void;
 //    handler: (client: IClient) => void;
 }
 
@@ -21,11 +22,12 @@ const dialogLineStyle = style(csstips.margin(10), csstips.flex, csstips.horizont
 const dialogFieldNameStyle = style(csstips.width(80), csstips.margin(5, 5));
 const dialogFieldValueStyle = style(csstips.flex);
 
-@observer export class ClientsTable extends React.Component<IProps, {}> {
+@observer export class Clients extends React.Component<IProps, {}> {
 
     @observable private clients: IClient[] = [];
     @observable private clientToDelete: IClient | undefined = undefined;
     @observable private dialogCreateClientOpened: boolean = false;
+    @observable private enableLineSelect: boolean = true;
     private password: string = '';
     private clientToCreate: IClient = {
         id: undefined,
@@ -55,22 +57,17 @@ const dialogFieldValueStyle = style(csstips.flex);
     // adresse
     // email
     // telephone
-    onRowClick = (state: any, rowInfo: any, column: any, instance: any) => {
+    private handleEventsOnClient = (state: any, rowInfo: any, column: any, instance: any) => {
         return {
             onClick: (e: any) => {
-                console.log(rowInfo.original)
-            //   var client = rowInfo.original;
-            // this.props.handler( client );
-            // console.log('A Td Element was clicked!')
-            // console.log('it produced this event:', e)
-            // console.log('It was in this column:', column)
-            // console.log('It was in this row:', rowInfo)
-            // console.log('It was in this table instance:', instance)
+                if ( this.enableLineSelect ) {
+                    this.props.selectClient(rowInfo.original);
+                }
             }
         }
     }
 
-    render() {
+    public render() {
         const columns = [
             {
                 Header: 'client id',
@@ -94,7 +91,7 @@ const dialogFieldValueStyle = style(csstips.flex);
             {
                 Header: 'Téléphone',
                 accessor: 'telephone',
-                width: 200
+                width: 200,
             },
             {
                 width: 40,
@@ -102,7 +99,10 @@ const dialogFieldValueStyle = style(csstips.flex);
                     return (
                         <Icon
                             icon="trash"
-                            onClick={() => { this.clientToDelete = row.original; }}
+                            onClick={() => {
+                                this.enableLineSelect = false;
+                                this.clientToDelete = row.original;
+                            }}
                         />
                     );
                 }
@@ -118,7 +118,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                     columns={columns}
                     defaultPageSize={10}
                     className="-striped -highlight"
-                    getTrProps={this.onRowClick}
+                    getTrProps={this.handleEventsOnClient}
                     showPagination={true}
                     showPageJump={true}
                     sortable={true}
@@ -282,6 +282,7 @@ const dialogFieldValueStyle = style(csstips.flex);
             }
         });
         this.clientToDelete = undefined;
+        this.enableLineSelect = true;
     }
 
     private handleCreateClient = () => {

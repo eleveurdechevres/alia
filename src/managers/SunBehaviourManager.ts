@@ -35,7 +35,7 @@ export class SunBehaviourManager {
         
             if ( !this.mapSunriseSunset.has(date.toString()) ) {
                 // var date: Date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDay());
-                this.loadJsonSunPositionsFromApiSunriseSunset(date0, this.habitat.gps_lattitude, this.habitat.gps_longitude);
+                this.loadJsonSunPositionsFromApiSunriseSunset(date0, this.habitat.gps_latitude, this.habitat.gps_longitude);
             }
         }
     }

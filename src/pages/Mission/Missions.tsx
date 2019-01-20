@@ -14,7 +14,7 @@ interface IProps {
     habitat: IHabitat;
 }
 
-@observer export class MissionsTable extends React.Component<IProps, {}> {
+@observer export class Missions extends React.Component<IProps, {}> {
 
     @observable private habitat: IHabitat;
     @observable private missions: IMission[] = [];
@@ -72,13 +72,16 @@ interface IProps {
   render() {
     const columns = [
       { Header: 'Mission id',
-        accessor: 'id'
-      },
+        accessor: 'id',
+        width: 100
+    },
       { Header: 'Date début',
-        accessor: 'date_debut'
+        accessor: 'date_debut',
+        width: 150
       },
       { Header: 'Date fin',
-        accessor: 'date_fin'
+        accessor: 'date_fin',
+        width: 150
       }
     ];
 
@@ -94,7 +97,7 @@ interface IProps {
           data={this.missions.slice()}
           noDataText="Pas de mission pour cet habitat"
           columns={columns}
-          defaultPageSize={this.missions.length < 5 ? this.missions.length : 5}
+          defaultPageSize={10}
           className="-striped -highlight"
           getTrProps={this.handleEventsOnMission}
           SubComponent={ row => {
