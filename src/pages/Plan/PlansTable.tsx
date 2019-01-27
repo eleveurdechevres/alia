@@ -98,12 +98,11 @@ interface IProps {
         <div/>
       );
     }
-
     return (
       <div>
         <ReactTable
           data={this.plans.slice()}
-          noDataText="Pas de plan pour ce client"
+          noDataText="Pas de plan pour cet habitat"
           columns={columns}
           defaultPageSize={this.plans.length}
           showPagination={false}
@@ -111,7 +110,7 @@ interface IProps {
           className="-striped -highlight"
           getTrProps={this.handleEventsOnPlan}
           SubComponent={ row => {
-            return (<Plan habitat={this.habitat} id={row.original.id} mission={this.props.mission}/>);
+            return (<Plan habitat={this.habitat} planId={row.original.id} mission={this.props.mission}/>);
           }}
         />
         <br />

@@ -37,7 +37,7 @@ const customStyles = {
 
 interface IProps {
     habitat: IHabitat;
-    id: number;
+    planId: number;
     mission: IMission;
 }
 
@@ -46,7 +46,6 @@ interface IProps {
     // Text Alignment : http://apike.ca/prog_svg_text_style.html
     // Display values on mouseover : https://bl.ocks.org/mbostock/3902569
 
-    planId: number;
     missionId: number;
     @observable planImage: string = undefined;
     @observable width: number = undefined;
@@ -64,9 +63,6 @@ interface IProps {
     constructor(props: IProps) {
         super(props);
 
-        this.planId = props.id;
-        this.missionId = props.mission.id;
-
         autorun(() => {
             if ( this.planImage ) {
                 this.forceUpdate();
@@ -74,11 +70,11 @@ interface IProps {
         });
     }
 
-    getPlan = (id: number) => {
+    private getPlan = (id: number) => {
         if (!id) {
             return Promise.resolve({ plans: [] });
         }
-        var request = `http://test.ideesalter.com/alia_afficheImagePlan.php?id=${this.planId}`;
+        var request = `http://test.ideesalter.com/alia_afficheImagePlan.php?id=${this.props.planId}`;
         return fetch(request)
             .then((response) => {
                 return( response.text() );
@@ -103,8 +99,8 @@ interface IProps {
       }
 
     componentDidMount() {
-        this.getPlan(this.planId);
-        this.getCapteursForPlan(this.planId, this.missionId);
+        this.getPlan(this.props.planId);
+        this.getCapteursForPlan(this.props.planId, this.missionId);
     }
 
     getImageSize = (data: string) => {
@@ -229,7 +225,7 @@ interface IProps {
                             y="0"
                             width="100"
                             height="14"
-                            fill="white"
+                            fill="green"
                             stroke="black"
                             strokeWidth="1"
                         />

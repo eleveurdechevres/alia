@@ -13,6 +13,7 @@
     "@types/react-select": "^1.2.6",
     "@types/react-table": "^6.7.9",
     "@types/react-transition-group": "^2.0.7",
+    "axios": "^0.18.0",
     "bootstrap": "^4.0.0",
     "csstips": "^0.2.3",
     "d3": "^4.13.0",

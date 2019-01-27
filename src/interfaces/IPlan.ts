@@ -1,5 +1,7 @@
 export interface IPlan {
     id: number;
-    habitat_id: number;
+    habitatId: number;
     etage: number;
+    description: string;
+    plan: string;
 }

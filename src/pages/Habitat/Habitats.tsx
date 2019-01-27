@@ -10,8 +10,10 @@ import { IClient } from 'src/interfaces/IClient';
 import { IHabitat } from 'src/interfaces/IHabitat';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
-import { Dialog, Button, Intent, InputGroup, Icon } from '@blueprintjs/core';
+import { Dialog, Button, Intent, InputGroup, Icon, FileInput } from '@blueprintjs/core';
 import { NewElementButton } from 'src/components/NewElementButton';
+import { PlansTable } from 'src/pages/Plan/PlansTable';
+import { IPlan } from 'src/interfaces/IPlan';
 
 interface IProps {
     client: IClient;
@@ -27,7 +29,10 @@ const dialogFieldValueStyle = style(csstips.flex);
     @observable private habitats: IHabitat[] = [];
     @observable private habitatToDelete: IHabitat | undefined = undefined;
     @observable private dialogCreateHabitatOpened: boolean = false;
+    @observable private dialogCreatePlanOpened: boolean = false;
     @observable private enableLineSelect: boolean = true;
+    @observable private imageToUpload: string = undefined;
+
     private password: string = '';
     private habitatToCreate: IHabitat = {
         id: undefined,
@@ -37,6 +42,14 @@ const dialogFieldValueStyle = style(csstips.flex);
         gps_longitude: undefined,
         gps_elevation: undefined
     };
+
+    private planToCreate: IPlan = {
+        id: undefined,
+        habitatId: undefined,
+        etage: undefined,
+        description: undefined,
+        plan: undefined
+    }
 
     // https://react-table.js.org/#/story/readme
     constructor(props: IProps) {
@@ -140,10 +153,22 @@ const dialogFieldValueStyle = style(csstips.flex);
                     showPagination={true}
                     showPageJump={true}
                     sortable={true}
-                    // SubComponent={ row => {
-                    //     return (<MissionsTable habitat={row.original} />);
-                    // }}
-                />
+                    SubComponent={ row => {
+                        return (
+                            <div className={style(csstips.gridSpaced(5), csstips.margin(10))}>
+                                <Button
+                                    icon="insert"
+                                    text="Ajouter un plan"
+                                    onClick={() => {
+                                        this.dialogCreatePlanOpened = true;
+                                        this.planToCreate.habitatId = row.original.id;
+                                    }}
+                                />
+                                <PlansTable habitat={row.original} mission={undefined}/>
+                            </div>
+                        );
+                    }}
+                />                />
                 <NewElementButton
                     name="Create new Habitat"
                     onClick={() => { 
@@ -284,6 +309,95 @@ const dialogFieldValueStyle = style(csstips.flex);
                         </div>
                     </div>
                 </Dialog>
+                <Dialog
+                    autoFocus={true}
+                    enforceFocus={true}
+                    usePortal={true}
+                    canOutsideClickClose={true}
+                    canEscapeKeyClose={true}
+                    isOpen={this.dialogCreatePlanOpened}
+                    title="Nouveau plan"
+                    icon="map-create"
+                    onClose={() => { this.dialogCreatePlanOpened = false; }}
+                >
+                    <div className={style(csstips.flex, csstips.vertical)}>
+                        <div className={dialogLineStyle}>
+                            <div className={dialogFieldNameStyle}>
+                                Etage
+                            </div>
+                            <div className={dialogFieldValueStyle}>
+                                <InputGroup
+                                    leftIcon="sort-numerical-desc"
+                                    placeholder="Etage"
+                                    onChange={(event: any) => { this.planToCreate.etage = event.target.value }}
+                                />
+                            </div>
+                        </div>
+                        <div className={dialogLineStyle}>
+                            <div className={dialogFieldNameStyle}>
+                                Description
+                            </div>
+                            <div className={dialogFieldValueStyle}>
+                                <InputGroup
+                                    leftIcon="manually-entered-data"
+                                    placeholder="Description"
+                                    onChange={(event: any) => { this.planToCreate.description = event.target.value }}
+                                />
+                            </div>
+                        </div>
+                        <div className={dialogLineStyle}>
+                            <div className={dialogFieldNameStyle}>
+                                Image
+                            </div>
+                            <div className={dialogFieldValueStyle}>
+                                <FileInput
+                                    className={style(csstips.fillParent)}
+                                    disabled={false}
+                                    text={this.imageToUpload ? this.imageToUpload : 'Choisissez un fichier'}
+                                    onChange={(event: any) => {
+                                        event.preventDefault();
+                                        let file: File = event.target.files[0];
+                                        let fileReader = new FileReader();
+                                        fileReader.onload = () => {
+                                            this.imageToUpload = file.name;
+                                        };
+                                        fileReader.onerror = () => { console.log('Error reading file')};
+                                        fileReader.onloadend = () => { 
+                                            this.planToCreate.plan = fileReader.result;
+                                            console.log(this.planToCreate.plan);
+                                        }
+                                        fileReader.readAsDataURL(file);
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className={dialogLineStyle}>
+                            <div className={dialogFieldNameStyle}/>
+                            <div className={dialogFieldValueStyle}>
+                                <InputGroup
+                                    placeholder="password"
+                                    onChange={(event: any) => { this.password = event.target.value }}
+                                    type="password"
+                                />
+                            </div>
+                        </div>
+                        <div className={style(csstips.horizontal, csstips.flex)}>
+                            <Button
+                                className={style(csstips.margin(10), csstips.flex)}
+                                intent={Intent.NONE}
+                                text="Annuler"
+                                onClick={() => { this.dialogCreatePlanOpened = false; }}
+                            />
+                            <Button
+                                className={style(csstips.margin(10), csstips.flex)}
+                                intent={Intent.PRIMARY}
+                                icon="add"
+                                text="Créer"
+                                onClick={this.handleAddPlanToHabitat}
+                            />
+                        </div>
+                    </div>
+                </Dialog>
             </div>
         );
     }
@@ -316,6 +430,39 @@ const dialogFieldValueStyle = style(csstips.flex);
             `&longitude=` + habitat.gps_longitude + 
             `&elevation=` + habitat.gps_elevation + 
             `&password=` + encodeURIComponent(this.password)
+        ).then((response) => {
+                if (response.status === 200) {
+                    this.getHabitatsForClient(this.props.client.id);
+                } else {
+                    console.log(response);
+                    // TODO : impossible de sauvegarder...
+            }
+        });
+    }
+
+    private handleAddPlanToHabitat = () => {
+        this.handleWritePlan(this.planToCreate);
+        this.dialogCreatePlanOpened = false;
+        this.imageToUpload = undefined;
+    }
+
+    private handleWritePlan = (plan: IPlan) => {
+        fetch(`http://testbase.ideesalter.com/alia_writePlan.php`, {
+                method: 'post',
+                headers: {
+                //     'Access-Control-Allow-Origin:': '*',
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                body: JSON.stringify({
+                    id: plan.id,
+                    habitat_id: plan.habitatId,
+                    etage: plan.etage,
+                    description: plan.description,
+                    plan: plan.plan,
+                    password: this.password
+                })
+            }
         ).then((response) => {
                 if (response.status === 200) {
                     this.getHabitatsForClient(this.props.client.id);

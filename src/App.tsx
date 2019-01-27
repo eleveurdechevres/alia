@@ -65,7 +65,7 @@ export const enum NavBarTabEnum {
                         selectHabitat={
                             (habitat: IHabitat) => {
                                 this.currentHabitat = habitat
-                                this.handleGotoMissions();
+//                                this.handleGotoMissions();
                             }
                         }
                     />
