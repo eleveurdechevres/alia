@@ -663,8 +663,14 @@ interface IDateInterval {
                     <rect x="0" y="20" width="50" height="20" stroke={this.graphType.color} strokeWidth="1" fill="white" />
                     <text ref={(ref) => {this.yValueRef = ref}} x="25" y="30" fill="black" textAnchor="middle" alignmentBaseline="central" />
                 </g>
-                <foreignObject x="60" y="20">
-                    <Icon ref={(ref) => {this.sunIcon = ref}} icon="flash" onClick={this.toggleSunMode} iconSize={Icon.SIZE_LARGE} color={this.sunMode ? Colors.GOLD3 : Colors.GRAY1}/>
+                <foreignObject x="60" y="20" width={Icon.SIZE_LARGE} height={Icon.SIZE_LARGE}>
+                    <Icon
+                        ref={(ref) => {this.sunIcon = ref}}
+                        icon="flash"
+                        onClick={this.toggleSunMode}
+                        iconSize={Icon.SIZE_LARGE}
+                        color={this.sunMode ? Colors.GOLD3 : Colors.GRAY1}
+                    />
                 </foreignObject>
                 {/* Moyennes */}
                 <g>

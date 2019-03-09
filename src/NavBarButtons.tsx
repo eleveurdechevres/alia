@@ -8,6 +8,7 @@ interface INavButtonProps {
     tabEnum: NavBarTabEnum;
     selectedTab: NavBarTabEnum;
     onClick: () => void;
+    disabled: boolean;
 }
 
 @observer export class NavBarButton extends React.Component<INavButtonProps, {}> {
@@ -19,6 +20,7 @@ interface INavButtonProps {
                 minimal={this.props.selectedTab === this.props.tabEnum ? false : true} 
                 intent={this.props.selectedTab === this.props.tabEnum ? Intent.PRIMARY : Intent.NONE}
                 onClick={this.props.onClick}
+                disabled={this.props.disabled}
             >
                 {this.props.tabEnum}
             </Button>

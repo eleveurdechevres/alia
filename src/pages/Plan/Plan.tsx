@@ -46,7 +46,6 @@ interface IProps {
     // Text Alignment : http://apike.ca/prog_svg_text_style.html
     // Display values on mouseover : https://bl.ocks.org/mbostock/3902569
 
-    missionId: number;
     @observable planImage: string = undefined;
     @observable width: number = undefined;
     @observable height: number = undefined;
@@ -100,7 +99,9 @@ interface IProps {
 
     componentDidMount() {
         this.getPlan(this.props.planId);
-        this.getCapteursForPlan(this.props.planId, this.missionId);
+        if (this.props.mission) {
+            this.getCapteursForPlan(this.props.planId, this.props.mission.id);
+        }
     }
 
     getImageSize = (data: string) => {

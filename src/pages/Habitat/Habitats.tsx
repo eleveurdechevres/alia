@@ -52,7 +52,7 @@ const dialogFieldValueStyle = style(csstips.flex);
     }
 
     // https://react-table.js.org/#/story/readme
-    constructor(props: IProps) {
+    public constructor(props: IProps) {
         super(props);
     }
 
@@ -72,9 +72,9 @@ const dialogFieldValueStyle = style(csstips.flex);
         }
     }
 
-    public componentWillReceiveProps(props: IProps) {
-        if (props.client) {
-            this.getHabitatsForClient(props.client.id);
+    public componentWillReceiveProps(nextProps: IProps) {
+        if (nextProps.client !== this.props.client) {
+            this.getHabitatsForClient(this.props.client.id);
         }
     }
 

@@ -3,14 +3,11 @@ import { style } from 'typestyle/lib';
 import * as csstips from 'csstips';
 import '@blueprintjs/core/lib/css/blueprint.css';
 
-import { Alignment, Navbar, NavbarHeading, NavbarDivider, NavbarGroup } from '@blueprintjs/core';
-import { ClientSearchComponent } from 'src/pages/ClientSearchComponent';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { IClient } from 'src/interfaces/IClient';
-
+import { AliaNavBar } from './AliaNavBar'
 import './App.css';
-import { NavBarButton } from 'src/NavBarButtons';
 import { DebugPage } from 'src/DebugPage';
 import { Clients } from 'src/pages/Client/Clients';
 import { Habitats } from 'src/pages/Habitat/Habitats';
@@ -88,58 +85,13 @@ export const enum NavBarTabEnum {
         return (
             <div className={style(csstips.fillParent)}>
                 <div className={style(csstips.flex)}>
-                <Navbar>
-                    <NavbarGroup align={Alignment.LEFT} className={style(csstips.horizontallySpaced(10), csstips.horizontal, csstips.flex)}>
-                        <img src="./favicon.ico" className={style({ width: 32, height: 32 })}/>
-                        <NavbarHeading>ALIA France</NavbarHeading>
-                        <NavbarDivider />
-                        <ClientSearchComponent handler={this.handlerClientSearch}/>
-                    </NavbarGroup>
-                    <NavbarGroup align={Alignment.RIGHT} className={style(csstips.horizontal, csstips.flex)}>
-                        {
-                            this.currentClient ?
-                                <div className={style(csstips.horizontal, csstips.flex)}>
-                                    <NavbarHeading>{this.currentClient.adresse}</NavbarHeading>
-                                    <NavbarDivider />
-                                    <NavbarHeading>{this.currentClient.email}</NavbarHeading>
-                                    <NavbarDivider />
-                                    <NavbarHeading>{this.currentClient.telephone}</NavbarHeading>
-                                    <NavbarDivider />
-                                </div>
-                            : ''
-                        }
-                        <NavBarButton
-                            icon="person"
-                            tabEnum={NavBarTabEnum.CLIENT}
-                            selectedTab={this.selectedTab}
-                            onClick={this.handleGotoClient}
-                        />
-                        <NavBarButton
-                            icon="home"
-                            tabEnum={NavBarTabEnum.HABITATS}
-                            selectedTab={this.selectedTab}
-                            onClick={this.handleGotoHabitats}
-                        />
-                        <NavBarButton
-                            icon="folder-close"
-                            tabEnum={NavBarTabEnum.MISSIONS}
-                            selectedTab={this.selectedTab}
-                            onClick={this.handleGotoMissions}
-                        />
-                        <NavBarButton
-                            icon="timeline-line-chart"
-                            tabEnum={NavBarTabEnum.ANALYSES}
-                            selectedTab={this.selectedTab}
-                            onClick={this.handleGotoAnalyses}
-                        />
-                        <NavBarButton
-                            icon="lightbulb"
-                            tabEnum={NavBarTabEnum.DEBUG}
-                            selectedTab={this.selectedTab}
-                            onClick={this.handleGotoDebug}
-                        />
-                    </NavbarGroup>
-                </Navbar>
+                <AliaNavBar
+                    selectedTab={this.selectedTab}
+                    currentClient={this.currentClient}
+                    currentHabitat={this.currentHabitat}
+                    handlerClientSearch={this.handlerClientSearch}
+                    handleSelectTab={this.handleSelectTab}
+                />
                 </div>
                 {mainBoard}
             </div>
@@ -150,23 +102,11 @@ export const enum NavBarTabEnum {
         this.currentClient = client;
     }
 
-    private handleGotoClient = () => {
-        this.selectedTab = NavBarTabEnum.CLIENT;
-    }
-
     private handleGotoHabitats = () => {
         this.selectedTab = NavBarTabEnum.HABITATS;
     }
 
-    private handleGotoMissions = () => {
-        this.selectedTab = NavBarTabEnum.MISSIONS;
-    }
-
-    private handleGotoAnalyses = () => {
-        this.selectedTab = NavBarTabEnum.ANALYSES;
-    }
-
-    private handleGotoDebug = () => {
-        this.selectedTab = NavBarTabEnum.DEBUG;
+    private handleSelectTab = (selectedTab: NavBarTabEnum) => {
+        this.selectedTab = selectedTab;
     }
 }

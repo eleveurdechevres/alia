@@ -123,6 +123,7 @@ interface ICrosshair {
         this.loadCapteurChannels();
         // this.getDateInterval(this.capteur.id);
         this.getDateIntervalMission(this.capteur.id);
+        this.updateVent();
         // CAPTEUR : {
         //   capteur_reference_id:"AEO_ZW100"
         //   coordonneePlanX:"500"
@@ -131,22 +132,28 @@ interface ICrosshair {
         //   id:"1"
         //   plan_id:"1"
         // }
+
         observe (this.dateInterval, () => {
             
-            let dateBegin = this.dateInterval.startDate.toDate();
-            let dateEnd = this.dateInterval.stopDate.toDate();
-            this.graphDataManager.loadVitesseVentFromAeroc(this.props.habitat.id, dateBegin, dateEnd, (mesures: IMesure[]) => {
-                // console.log(mesures);
-            });
-            this.graphDataManager.loadDirectionVentFromAeroc(this.props.habitat.id, dateBegin, dateEnd, (mesures: IMesure[]) => {
-                // console.log(mesures);
-            });
+            this.updateVent();
         });
         // let graphDataManager: GraphDataManager = new GraphDataManager();
         // let habitatId = 1;
         // let dateBegin: Date = new Date(2017, 12, 20);
         // let dateEnd: Date = new Date(2017, 12, 24);
         
+    }
+
+    private updateVent = () => {
+
+        let dateBegin = this.dateInterval.startDate.toDate();
+        let dateEnd = this.dateInterval.stopDate.toDate();
+        this.graphDataManager.loadVitesseVentFromAeroc(this.props.habitat.id, dateBegin, dateEnd, (mesures: IMesure[]) => {
+            // console.log(mesures);
+        });
+        this.graphDataManager.loadDirectionVentFromAeroc(this.props.habitat.id, dateBegin, dateEnd, (mesures: IMesure[]) => {
+            // console.log(mesures);
+        });
     }
 
     loadCapteurChannels = () => {
