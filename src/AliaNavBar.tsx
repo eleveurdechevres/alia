@@ -64,7 +64,7 @@ interface IProps {
                     tabEnum={NavBarTabEnum.HABITATS}
                     selectedTab={this.props.selectedTab}
                     onClick={this.handleGotoHabitats}
-                    disabled={!this.props.currentClient}
+                    disabled={this.props.selectedTab === NavBarTabEnum.CLIENT}
                 />
                 <NavBarButton
                     icon="folder-close"

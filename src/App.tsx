@@ -98,7 +98,6 @@ export const enum NavBarTabEnum {
         );
     }
     private handlerClientSearch = (client: IClient) => {
-        console.log('handlerClientSearch');
         this.currentClient = client;
     }
 
@@ -108,5 +107,8 @@ export const enum NavBarTabEnum {
 
     private handleSelectTab = (selectedTab: NavBarTabEnum) => {
         this.selectedTab = selectedTab;
+        if (this.selectedTab === NavBarTabEnum.CLIENT) {
+            this.currentHabitat = undefined;
+        }
     }
 }
