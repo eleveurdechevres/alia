@@ -13,6 +13,7 @@ import { Clients } from 'src/pages/Client/Clients';
 import { Habitats } from 'src/pages/Habitat/Habitats';
 import { Missions } from 'src/pages/Mission/Missions';
 import { IHabitat } from 'src/interfaces/IHabitat';
+import { Analyses } from 'src/pages/analyse/Analyses';
 
 interface IProps {
 
@@ -72,7 +73,7 @@ export const enum NavBarTabEnum {
                 mainContent = <Missions habitat={this.currentHabitat}/>
                 break;
             case NavBarTabEnum.ANALYSES:
-                mainContent = <div>Analyses</div>;
+                mainContent = <Analyses client={this.currentClient} habitat={this.currentHabitat}/>;
                 break;
             case NavBarTabEnum.DEBUG:
                 mainContent = <DebugPage/>;
