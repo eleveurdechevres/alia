@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { EnumAlarm } from 'src/pages/Graph/CrossGraph/TemperatureHumidity';
+import { EnumAlarm } from 'src/pages/Graph/CrossGraph/Mollier';
 import { observer } from 'mobx-react';
 
 interface IProps {

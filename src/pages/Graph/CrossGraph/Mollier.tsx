@@ -39,7 +39,7 @@ export enum EnumAlarm {
     qualiteAir = 'Qualité de l\'air'
 }
 
-@observer export class TemperatureHumidity extends React.Component<IProps, {}> {
+@observer export class Mollier extends React.Component<IProps, {}> {
 
     mapValues: Map<Date, {x: number, y: number}> = new Map();
     chartRef: SVGGElement;

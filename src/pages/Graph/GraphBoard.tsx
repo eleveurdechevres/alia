@@ -7,7 +7,6 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { GraphChannel, ICrosshairTime } from './Channel/GraphChannel';
 import * as d3 from 'd3';
 import { Crosshair } from './Crosshair';
-import { TemperatureHumidity } from './CrossGraph/TemperatureHumidity';
 // import { LuminosityTemperature } from './CrossGraph/LuminosityTemperature';
 import { GraphType } from './Channel/GraphType';
 import { ICapteur } from 'src/interfaces/ICapteur';
@@ -23,6 +22,7 @@ import { SunBehaviourManager } from 'src/managers/SunBehaviourManager';
 import { GraphDataManager, IMesure } from 'src/managers/GraphDataManager';
 import { GraphPollutions } from 'src/pages/Graph/Pollutions/GraphPollutions';
 import { IMission } from 'src/interfaces/IMission';
+import { Mollier } from 'src/pages/Graph/CrossGraph/Mollier';
 // import { GraphDataManager, IMesure } from 'src/managers/GraphDataManager';
 
 interface IProps {
@@ -415,7 +415,7 @@ interface ICrosshair {
                 dateFormat="DD/MM/YYYY"
                 placeholderText="Date de fin"
             />
-            <TemperatureHumidity
+            <Mollier
                 chartWidth={340}
                 chartHeight={300}
                 dateInterval={this.dateInterval}

@@ -84,7 +84,7 @@ export const enum NavBarTabEnum {
         let mainBoard = <div id="content" className={style(csstips.fillParent, csstips.height('100%'))}>{mainContent}</div>
     
         return (
-            <div className={style(csstips.fillParent)}>
+            <div className={style(csstips.fillParent, csstips.vertical)}>
                 <div className={style(csstips.flex)}>
                 <AliaNavBar
                     selectedTab={this.selectedTab}
