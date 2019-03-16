@@ -2,7 +2,7 @@ import * as React from 'react';
 import { style } from 'typestyle/lib';
 import * as csstips from 'csstips';
 import '@blueprintjs/core/lib/css/blueprint.css';
-
+import '@blueprintjs/select/lib/css/blueprint-select.css';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { IClient } from 'src/interfaces/IClient';
