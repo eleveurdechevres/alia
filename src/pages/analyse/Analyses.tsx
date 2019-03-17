@@ -7,13 +7,11 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
 import { NewElementButton } from 'src/components/NewElementButton';
-import { IClient } from 'src/interfaces/IClient';
-import { IHabitat } from 'src/interfaces/IHabitat';
 import { AnalysesWizzard } from 'src/pages/analyse/AnalysesWizzard';
+import { GlobalStore } from 'src/stores/GlobalStore';
 
 interface IProps {
-    client: IClient;
-    habitat: IHabitat;
+    globalStore: GlobalStore
 }
 
 @observer export class Analyses extends React.Component<IProps, {}> {
@@ -30,8 +28,7 @@ interface IProps {
             <div>
                 <AnalysesWizzard
                     analysesWizzardShown={this.analysesWizzardShown}
-                    client={this.props.client}
-                    habitat={this.props.habitat}
+                    globalStore={this.props.globalStore}
                     handleCreateAnalyse={() => { console.log('handleCreateAnalyse') }}
                     handleCancel={() => { this.analysesWizzardShown = false }}
                 />

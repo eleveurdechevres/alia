@@ -6,7 +6,6 @@ import * as csstips from 'csstips';
 // Import React Table
 import ReactTable, { RowInfo } from 'react-table';
 import 'react-table/react-table.css';
-import { IClient } from 'src/interfaces/IClient';
 import { IHabitat } from 'src/interfaces/IHabitat';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
@@ -14,10 +13,10 @@ import { Dialog, Button, Intent, InputGroup, Icon, FileInput } from '@blueprintj
 import { NewElementButton } from 'src/components/NewElementButton';
 import { PlansTable } from 'src/pages/Plan/PlansTable';
 import { IPlan } from 'src/interfaces/IPlan';
+import { GlobalStore } from 'src/stores/GlobalStore';
 
 interface IProps {
-    client: IClient;
-    selectHabitat: (habitat: IHabitat) => void;
+    globalStore: GlobalStore;
 }
 
 const dialogLineStyle = style(csstips.margin(10), csstips.flex, csstips.horizontal);
@@ -26,7 +25,6 @@ const dialogFieldValueStyle = style(csstips.flex);
 
 @observer export class Habitats extends React.Component<IProps, {}> {
 
-    @observable private habitats: IHabitat[] = [];
     @observable private habitatToDelete: IHabitat | undefined = undefined;
     @observable private dialogCreateHabitatOpened: boolean = false;
     @observable private dialogCreatePlanOpened: boolean = false;
@@ -56,28 +54,6 @@ const dialogFieldValueStyle = style(csstips.flex);
         super(props);
     }
 
-    private getHabitatsForClient = (id: number) => {
-        if (!id) {
-            return Promise.resolve({ habitats: [] });
-        }
-        var request = `http://test.ideesalter.com/alia_searchHabitat.php?client_id=${id}`;
-        return fetch(request)
-            .then((response) => response.json())
-            .then((habitats) => {this.habitats = habitats});
-    }
-
-    public componentDidMount() {
-        if (this.props.client) {
-            this.getHabitatsForClient(this.props.client.id);
-        }
-    }
-
-    public componentWillReceiveProps(nextProps: IProps) {
-        if (nextProps.client !== this.props.client) {
-            this.getHabitatsForClient(this.props.client.id);
-        }
-    }
-
     // id
     // nom
     // adresse
@@ -87,7 +63,7 @@ const dialogFieldValueStyle = style(csstips.flex);
         return {
             onClick: (e: any) => {
                 if ( this.enableLineSelect ) {
-                    this.props.selectHabitat(rowInfo.original);
+                    this.props.globalStore.habitat = rowInfo.original;
                 }
             }
         }
@@ -144,7 +120,7 @@ const dialogFieldValueStyle = style(csstips.flex);
         return (
             <div>
                 <ReactTable
-                    data={this.habitats.slice()}
+                    data={this.props.globalStore.habitatsForClient.slice()}
                     columns={columns}
                     noDataText="Pas d'habitat pour ce client"
                     defaultPageSize={10}
@@ -364,7 +340,6 @@ const dialogFieldValueStyle = style(csstips.flex);
                                         fileReader.onerror = () => { console.log('Error reading file')};
                                         fileReader.onloadend = () => { 
                                             this.planToCreate.plan = fileReader.result;
-                                            console.log(this.planToCreate.plan);
                                         }
                                         fileReader.readAsDataURL(file);
                                     }}
@@ -403,73 +378,19 @@ const dialogFieldValueStyle = style(csstips.flex);
     }
 
     private handleDeleteHabitat = () => {
-        fetch(`http://testbase.ideesalter.com/alia_deleteHabitat.php?id=` + this.habitatToDelete.id + `&password=` + encodeURIComponent(this.password))
-            .then((response) => {
-                if (response.status === 200) {
-                    this.getHabitatsForClient(this.props.client.id);
-                } else {
-                    console.log(response);
-                    // TODO : impossible de supprimer...
-            }
-        });
+        this.props.globalStore.deleteHabitat(this.habitatToDelete, this.password);
         this.habitatToDelete = undefined;
         this.enableLineSelect = true;
     }
 
     private handleCreateHabitat = () => {
-        this.handleWriteHabitat(this.habitatToCreate);
+        this.props.globalStore.writeHabitat(this.habitatToCreate, this.password);
         this.dialogCreateHabitatOpened = false;
     };
 
-    private handleWriteHabitat = (habitat: IHabitat) => {
-        fetch(`http://testbase.ideesalter.com/alia_writeHabitat.php` +
-            `?id=` + habitat.id +
-            `&client_id=` + this.props.client.id + 
-            `&adresse=` + habitat.adresse + 
-            `&latitude=` + habitat.gps_latitude + 
-            `&longitude=` + habitat.gps_longitude + 
-            `&elevation=` + habitat.gps_elevation + 
-            `&password=` + encodeURIComponent(this.password)
-        ).then((response) => {
-                if (response.status === 200) {
-                    this.getHabitatsForClient(this.props.client.id);
-                } else {
-                    console.log(response);
-                    // TODO : impossible de sauvegarder...
-            }
-        });
-    }
-
     private handleAddPlanToHabitat = () => {
-        this.handleWritePlan(this.planToCreate);
+        this.props.globalStore.writePlan(this.planToCreate, this.password);
         this.dialogCreatePlanOpened = false;
         this.imageToUpload = undefined;
-    }
-
-    private handleWritePlan = (plan: IPlan) => {
-        fetch(`http://testbase.ideesalter.com/alia_writePlan.php`, {
-                method: 'post',
-                headers: {
-                //     'Access-Control-Allow-Origin:': '*',
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json'
-                },
-                body: JSON.stringify({
-                    id: plan.id,
-                    habitat_id: plan.habitatId,
-                    etage: plan.etage,
-                    description: plan.description,
-                    plan: plan.plan,
-                    password: this.password
-                })
-            }
-        ).then((response) => {
-                if (response.status === 200) {
-                    this.getHabitatsForClient(this.props.client.id);
-                } else {
-                    console.log(response);
-                    // TODO : impossible de sauvegarder...
-            }
-        });
     }
 }

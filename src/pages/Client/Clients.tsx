@@ -11,11 +11,10 @@ import { observer } from 'mobx-react';
 import { toJS, observable } from 'mobx';
 import { Icon, Dialog, Button, Intent, InputGroup } from '@blueprintjs/core';
 import { NewElementButton } from 'src/components/NewElementButton';
+import { GlobalStore } from 'src/stores/GlobalStore';
 
 interface IProps {
-    client: IClient;
-    selectClient: (client: IClient) => void;
-//    handler: (client: IClient) => void;
+    globalStore: GlobalStore;
 }
 
 const dialogLineStyle = style(csstips.margin(10), csstips.flex, csstips.horizontal);
@@ -24,7 +23,6 @@ const dialogFieldValueStyle = style(csstips.flex);
 
 @observer export class Clients extends React.Component<IProps, {}> {
 
-    @observable private clients: IClient[] = [];
     @observable private clientToDelete: IClient | undefined = undefined;
     @observable private dialogCreateClientOpened: boolean = false;
     @observable private enableLineSelect: boolean = true;
@@ -42,16 +40,6 @@ const dialogFieldValueStyle = style(csstips.flex);
         super(props);
     }
 
-    private getClients = () => {
-        return fetch(`http://test.ideesalter.com/alia_searchClient.php`)
-        .then((response) => response.json())
-        .then((clients) => { this.clients = clients });
-    }
-
-    public componentDidMount() {
-        this.getClients();
-    }
-
     // id
     // nom
     // adresse
@@ -61,7 +49,7 @@ const dialogFieldValueStyle = style(csstips.flex);
         return {
             onClick: (e: any) => {
                 if ( this.enableLineSelect ) {
-                    this.props.selectClient(rowInfo.original);
+                    this.props.globalStore.client = rowInfo.original;
                 }
             }
         }
@@ -114,7 +102,7 @@ const dialogFieldValueStyle = style(csstips.flex);
 
             <div>
                 <ReactTable
-                    data={toJS(this.clients)}
+                    data={toJS(this.props.globalStore.clients.slice())}
                     columns={columns}
                     defaultPageSize={10}
                     className="-striped -highlight"
@@ -272,39 +260,13 @@ const dialogFieldValueStyle = style(csstips.flex);
     // http://testbase.ideesalter.com/alia_writeClient.php?id=8&nom=mon%20nom12&adresse=69%20rue%20du%20quai2&email=monNom@rueduquai2.fr&telephone=+3369696970
     // http://testbase.ideesalter.com/alia_deleteClient.php?id=8
     private handleDeleteClient = () => {
-        fetch(`http://testbase.ideesalter.com/alia_deleteClient.php?id=` + this.clientToDelete.id + `&password=` + encodeURIComponent(this.password))
-            .then((response) => {
-                if (response.status === 200) {
-                    this.getClients();
-                } else {
-                    console.log(response);
-                    // TODO : impossible de supprimer...
-            }
-        });
+        this.props.globalStore.deleteClient(this.clientToDelete, this.password);
         this.clientToDelete = undefined;
         this.enableLineSelect = true;
     }
 
     private handleCreateClient = () => {
-        this.handleWriteClient(this.clientToCreate);
+        this.props.globalStore.writeClient(this.clientToCreate, this.password);
         this.dialogCreateClientOpened = false;
     };
-
-    private handleWriteClient = (client: IClient) => {
-        fetch(`http://testbase.ideesalter.com/alia_writeClient.php` +
-            `?id=` + client.id +
-            `&nom=` + client.nom + 
-            `&adresse=` + client.adresse + 
-            `&telephone=` + client.telephone + 
-            `&email=` + client.email +
-            `&password=` + encodeURIComponent(this.password)
-        ).then((response) => {
-                if (response.status === 200) {
-                    this.getClients();
-                } else {
-                    console.log(response);
-                    // TODO : impossible de sauvegarder...
-            }
-        });
-    }
 }

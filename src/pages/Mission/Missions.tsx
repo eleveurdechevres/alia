@@ -9,16 +9,16 @@ import 'react-table/react-table.css';
 import * as moment from 'moment';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { IHabitat } from 'src/interfaces/IHabitat';
 import { PlansTable } from '../Plan/PlansTable';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { IMission } from 'src/interfaces/IMission';
 import { NewElementButton } from 'src/components/NewElementButton';
 import { Dialog, Button, Intent, InputGroup, Icon } from '@blueprintjs/core';
+import { GlobalStore } from 'src/stores/GlobalStore';
 
 interface IProps {
-    habitat: IHabitat;
+    globalStore: GlobalStore
 }
 
 const dialogLineStyle = style(csstips.margin(10), csstips.flex, csstips.horizontal);
@@ -27,7 +27,6 @@ const dialogFieldValueStyle = style(csstips.flex);
 
 @observer export class Missions extends React.Component<IProps, {}> {
 
-    @observable private missions: IMission[] = [];
     @observable private missionToDelete: IMission | undefined = undefined;
     @observable private dialogCreateMissionOpened: boolean = false;
     @observable private enableLineSelect: boolean = true;
@@ -42,20 +41,6 @@ const dialogFieldValueStyle = style(csstips.flex);
   // https://react-table.js.org/#/story/readme
   constructor(props: IProps) {
     super(props);
-  }
-
-  getMissionsForHabitat = (id: number) => {
-    if (!id) {
-      return Promise.resolve({ missions: [] });
-    }
-    var request = `http://test.ideesalter.com/alia_searchMission.php?habitat_id=${id}`;
-    return fetch(request)
-      .then((response) => response.json())
-      .then((missions) => {this.missions = missions});
-  }
-
-  componentDidMount() {
-    this.getMissionsForHabitat(this.props.habitat.id);
   }
 
   // componentWillReceiveProps(nextProps) {
@@ -116,16 +101,21 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
             }
         ];
 
-        if ( this.missions.length === 0 || (this.missions.length === 1 && this.missions[0] === undefined ) ) {
-        return (
-            <div/>
-        );
+        if ( this.props.globalStore.missionsForHabitat.length === 0 ||
+            (
+                this.props.globalStore.missionsForHabitat.length === 1 &&
+                this.props.globalStore.missionsForHabitat[0] === undefined
+            )
+        ) {
+            return (
+                <div/>
+            );
         }
 
         return (
             <div>
                 <ReactTable
-                    data={this.missions.slice()}
+                    data={this.props.globalStore.missionsForHabitat.slice()}
                     noDataText="Pas de mission pour cet habitat"
                     columns={columns}
                     defaultPageSize={10}
@@ -141,7 +131,7 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
                                         console.log('TODO : create plan')
                                     }}
                                 />
-                                <PlansTable habitat={this.props.habitat} mission={row.original}/>
+                                <PlansTable habitat={this.props.globalStore.habitat} mission={row.original}/>
                             </div>
                         );
                     }}
@@ -275,38 +265,13 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
     }
 
     private handleDeleteMission = () => {
-        fetch(`http://testbase.ideesalter.com/alia_deleteMission.php?id=` + this.missionToDelete.id + `&password=` + encodeURIComponent(this.password))
-            .then((response) => {
-                if (response.status === 200) {
-                    this.getMissionsForHabitat(this.props.habitat.id);
-                } else {
-                    console.log(response);
-                    // TODO : impossible de supprimer...
-            }
-        });
+        this.props.globalStore.deleteMission(this.missionToDelete, this.password);
         this.missionToDelete = undefined;
         this.enableLineSelect = true;
     }
 
     private handleCreateMission = () => {
-        this.handleWriteMission(this.missionToCreate);
+        this.props.globalStore.writeMission(this.missionToCreate, this.password);
         this.dialogCreateMissionOpened = false;
     };
-
-    private handleWriteMission = (mission: IMission) => {
-        fetch(`http://testbase.ideesalter.com/alia_writeMission.php` +
-            `?id=` + mission.id +
-            `&habitat_id=` + this.props.habitat.id + 
-            `&date_debut=` + encodeURIComponent(mission.date_debut) + 
-            `&date_fin=` + encodeURIComponent(mission.date_fin) + 
-            `&password=` + encodeURIComponent(this.password)
-        ).then((response) => {
-                if (response.status === 200) {
-                    this.getMissionsForHabitat(this.props.habitat.id);
-                } else {
-                    console.log(response);
-                    // TODO : impossible de sauvegarder...
-            }
-        });
-    }  
 }

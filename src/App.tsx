@@ -3,20 +3,18 @@ import { style } from 'typestyle/lib';
 import * as csstips from 'csstips';
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/select/lib/css/blueprint-select.css';
-import { observable } from 'mobx';
 import { observer } from 'mobx-react';
-import { IClient } from 'src/interfaces/IClient';
 import { AliaNavBar } from './AliaNavBar'
 import './App.css';
 import { DebugPage } from 'src/DebugPage';
 import { Clients } from 'src/pages/Client/Clients';
 import { Habitats } from 'src/pages/Habitat/Habitats';
 import { Missions } from 'src/pages/Mission/Missions';
-import { IHabitat } from 'src/interfaces/IHabitat';
 import { Analyses } from 'src/pages/analyse/Analyses';
+import { GlobalStore } from 'src/stores/GlobalStore';
 
 interface IProps {
-
+    globalStore: GlobalStore
 }
 
 export const enum NavBarTabEnum {
@@ -29,11 +27,6 @@ export const enum NavBarTabEnum {
 
 @observer export default class App extends React.Component<IProps> {
 
-    @observable currentClient: IClient = undefined;
-    @observable currentHabitat: IHabitat = undefined;
-    
-    @observable private selectedTab: NavBarTabEnum = NavBarTabEnum.CLIENT;
-
     public constructor(props: IProps) {
         super(props);
     }
@@ -42,38 +35,26 @@ export const enum NavBarTabEnum {
 
         let mainContent = undefined;
 
-        switch ( this.selectedTab ) {
+        switch ( this.props.globalStore.selectedTab ) {
             case NavBarTabEnum.CLIENT:
                 mainContent = (
                     <Clients
-                        client={this.currentClient}
-                        selectClient={
-                            (client: IClient) => {
-                                this.currentClient = client;
-                                this.handleGotoHabitats();
-                            }
-                        }
+                        globalStore={this.props.globalStore}
                     />
                 );
                 break;
             case NavBarTabEnum.HABITATS:
                 mainContent = (
                     <Habitats
-                        client={this.currentClient}
-                        selectHabitat={
-                            (habitat: IHabitat) => {
-                                this.currentHabitat = habitat
-//                                this.handleGotoMissions();
-                            }
-                        }
+                        globalStore={this.props.globalStore}
                     />
                 )
                 break;
             case NavBarTabEnum.MISSIONS:
-                mainContent = <Missions habitat={this.currentHabitat}/>
+                mainContent = <Missions globalStore={this.props.globalStore}/>
                 break;
             case NavBarTabEnum.ANALYSES:
-                mainContent = <Analyses client={this.currentClient} habitat={this.currentHabitat}/>;
+                mainContent = <Analyses globalStore={this.props.globalStore}/>;
                 break;
             case NavBarTabEnum.DEBUG:
                 mainContent = <DebugPage/>;
@@ -86,30 +67,12 @@ export const enum NavBarTabEnum {
         return (
             <div className={style(csstips.fillParent, csstips.vertical)}>
                 <div className={style(csstips.flex)}>
-                <AliaNavBar
-                    selectedTab={this.selectedTab}
-                    currentClient={this.currentClient}
-                    currentHabitat={this.currentHabitat}
-                    handlerClientSearch={this.handlerClientSearch}
-                    handleSelectTab={this.handleSelectTab}
-                />
+                    <AliaNavBar
+                        globalStore={this.props.globalStore}
+                    />
                 </div>
                 {mainBoard}
             </div>
         );
-    }
-    private handlerClientSearch = (client: IClient) => {
-        this.currentClient = client;
-    }
-
-    private handleGotoHabitats = () => {
-        this.selectedTab = NavBarTabEnum.HABITATS;
-    }
-
-    private handleSelectTab = (selectedTab: NavBarTabEnum) => {
-        this.selectedTab = selectedTab;
-        if (this.selectedTab === NavBarTabEnum.CLIENT) {
-            this.currentHabitat = undefined;
-        }
     }
 }

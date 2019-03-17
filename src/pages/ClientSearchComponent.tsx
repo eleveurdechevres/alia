@@ -1,23 +1,21 @@
 import * as React from 'react';
 // import PropTypes from 'prop-types';
 import { Async } from 'react-select';
-import * as fetch from 'isomorphic-fetch';
-import { IClient } from '../interfaces/IClient';
 import { style } from 'typestyle';
 import * as csstips from 'csstips';
 import 'react-select/dist/react-select.css';
-import { observable } from 'mobx';
 import { observer } from 'mobx-react';
+import { GlobalStore } from 'src/stores/GlobalStore';
+import { IClient } from 'src/interfaces/IClient';
 
 interface IProps {
-    handler: (client: IClient) => void;
+    globalStore: GlobalStore
 }
 
-const selectStyle: any = style(csstips.content, csstips.width(500));
+const selectStyle: any = style(csstips.content, csstips.fillParent);
 
 @observer export class ClientSearchComponent extends React.Component<IProps, {}> {
 
-    @observable client: IClient;
     // https://jedwatson.github.io/react-select/
     // https://github.com/JedWatson/react-select/blob/master/examples/src/components/GithubUsers.js
 
@@ -25,41 +23,17 @@ const selectStyle: any = style(csstips.content, csstips.width(500));
         super(props);
     }
 
-    onChange = (client: IClient) => {
-        this.client = client;
-        this.props.handler(client);
-    }
-
-    gotoUser = (element: any) => {
-        // TODO : lien vers le fichier client
-        console.log(element);
-    }
-   
-    getClients (nom: string) {
-        if (!nom) {
-            return Promise.resolve({ options: [] });
-        }
-
-        return fetch(`http://test.ideesalter.com/alia_searchClient.php?nom=${nom}`)
-        .then((response) => response.json())
-        .then((clients) => {
-            return { options: clients };
-        });
-    }
-    
     render () {
-
         return (
             <div>
                 <Async 
                     autosize={true}
                     className={selectStyle}
-                    value={this.client}
-                    onChange={(element: IClient) => this.onChange(element)} 
-                    onValueClick={this.gotoUser} 
-                    valueKey="id" 
-                    labelKey="nom" 
-                    loadOptions={this.getClients}
+                    value={this.props.globalStore.client}
+                    onChange={(client: IClient) => this.props.globalStore.client = client} 
+                    valueKey="id"
+                    labelKey="nom"
+                    loadOptions={this.props.globalStore.searchClients}
                 />
             </div>
         );

@@ -5,19 +5,16 @@ import * as React from 'react';
 import 'react-table/react-table.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import { observer } from 'mobx-react';
-import { IClient } from 'src/interfaces/IClient';
-import { IHabitat } from 'src/interfaces/IHabitat';
 import { Dialog, Button, Intent, Alignment } from '@blueprintjs/core';
 import { style } from 'typestyle/lib';
 import * as csstips from 'csstips';
 // import { Mollier } from 'src/pages/Graph/CrossGraph/Mollier';
 import { RadarChartWizzard } from 'src/pages/analyse/Detail/RadarChartWizzard';
-import { AnalyseType } from 'src/interfaces/IAnalyse';
+import { GlobalStore } from 'src/stores/GlobalStore';
 
 interface IProps {
     analysesWizzardShown: boolean;
-    client: IClient;
-    habitat: IHabitat;
+    globalStore: GlobalStore;
     handleCreateAnalyse: () => void;
     handleCancel: () => void;
 }
@@ -36,7 +33,7 @@ interface IProps {
                     autoFocus={true}
                     enforceFocus={true}
                     usePortal={true}
-                    canOutsideClickClose={true}
+                    canOutsideClickClose={false}
                     canEscapeKeyClose={true}
                     isOpen={this.props.analysesWizzardShown}
                     title="Créer une analyse"
@@ -108,6 +105,11 @@ interface IProps {
                                 disabled={true}
                             />
                         </div>
+                        <div className={style(csstips.margin(10), csstips.horizontal, csstips.flex, csstips.height(200))}>
+                            <RadarChartWizzard
+                                globalStore={this.props.globalStore}
+                            />
+                        </div>
                     </div>
                 </Dialog>
                 {/* <MollierChartWizzard/>
@@ -115,13 +117,6 @@ interface IProps {
                 <CandleChartWizzard/>
                 <RapportWizzard/>
                 <ScatterPlotWizzard/> */}
-                <RadarChartWizzard
-                    analyseType={AnalyseType.RADAR_CHART}
-                    client={undefined}
-                    habitat={undefined}
-                    dateDebut={undefined}
-                    dateFin={undefined}
-                />
             </div>
         );
     }
