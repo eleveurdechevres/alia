@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { momentToSql, dateWithoutSeconds } from '../../../utils/DateUtils';
+import { dateToSql, dateWithoutSeconds } from '../../../utils/DateUtils';
 import * as d3 from 'd3';
 import { get_x_from_η_φ, get_η, get_η_from_ηh_φ, get_η_from_φ_x } from '../../../utils/CalculsThermiques';
 import { IDateInterval } from 'src/pages/Graph/GraphBoard';
@@ -88,8 +88,8 @@ export enum EnumAlarm {
     }
 
     componentWillReceiveProps(props: IProps) {
-        var startDate = momentToSql(props.dateInterval.startDate);
-        var stopDate = momentToSql(props.dateInterval.stopDate);
+        var startDate = dateToSql(props.dateInterval.startDate);
+        var stopDate = dateToSql(props.dateInterval.stopDate);
 
         if ( startDate !== this.startDate || stopDate !== this.stopDate) {
             this.startDate = startDate;

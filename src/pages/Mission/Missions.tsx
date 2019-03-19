@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { style } from 'typestyle/lib';
 import * as csstips from 'csstips';
+import * as DateUtils from '../../utils/DateUtils';
 // import { render } from "react-dom";
 
 // Import React Table
@@ -205,13 +206,13 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
                             </div>
                             <div className={dialogFieldValueStyle}>
                                 <DatePicker
-                                    selected={moment(this.missionToCreate.date_debut)}
-                                    onChange={(date: moment.Moment) => {
-                                        this.missionToCreate.date_debut = date.format('YYYY-MM-DD HH:mm:ss');
+                                    selected={new Date(this.missionToCreate.date_debut)}
+                                    onChange={(date: Date) => {
+                                        this.missionToCreate.date_debut = DateUtils.dateToSql(date); // .format('YYYY-MM-DD HH:mm:ss');
                                     }}
                                     // minDate={this.dateInterval.minDate}
                                     // maxDate={this.dateInterval.maxDate}
-                                    dateFormat="DD/MM/YYYY"
+                                    dateFormat="dd/MM/YYYY"
                                     placeholderText="Date de début"
                                 />
                             </div>
@@ -222,13 +223,13 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
                             </div>
                             <div className={dialogFieldValueStyle}>
                                 <DatePicker
-                                    selected={moment(this.missionToCreate.date_fin)}
-                                    onChange={(date: moment.Moment) => {
-                                        this.missionToCreate.date_fin = date.format('YYYY-MM-DD HH:mm:ss');
+                                    selected={new Date(this.missionToCreate.date_fin)}
+                                    onChange={(date: Date) => {
+                                        this.missionToCreate.date_fin = DateUtils.dateToSql(date); // .format('YYYY-MM-DD HH:mm:ss');
                                     }}
                                     // minDate={this.dateInterval.minDate}
                                     // maxDate={this.dateInterval.maxDate}
-                                    dateFormat="DD/MM/YYYY"
+                                    dateFormat="dd/MM/YYYY"
                                     placeholderText="Date de fin"
                                 />
                             </div>

@@ -339,7 +339,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                                         };
                                         fileReader.onerror = () => { console.log('Error reading file')};
                                         fileReader.onloadend = () => { 
-                                            this.planToCreate.plan = fileReader.result;
+                                            this.planToCreate.plan = fileReader.result as string;
                                         }
                                         fileReader.readAsDataURL(file);
                                     }}

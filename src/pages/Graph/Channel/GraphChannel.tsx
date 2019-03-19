@@ -1,13 +1,13 @@
 import * as React from 'react';
 import * as d3 from 'd3';
 import { GraphType } from './GraphType';
-import { momentToSql, dateTimeString } from '../../../utils/DateUtils';
-import * as Moment from 'moment';
+import { dateTimeString, dateToSql } from '../../../utils/DateUtils';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
 import { IHabitat } from 'src/interfaces/IHabitat';
 import { SunBehaviourManager, ISunriseSunset } from 'src/managers/SunBehaviourManager';
 import { Icon, Colors } from '@blueprintjs/core';
+import { IDateInterval } from '../GraphBoard';
 
 interface IProps {
     originGraphX: number;
@@ -56,13 +56,6 @@ interface IChannelData {
     min_range: number;                  // 0
     precision_step: number;             // 1
     unit: string;                       // "Lux"
-};
-
-interface IDateInterval {
-    startDate: Moment.Moment,
-    stopDate: Moment.Moment,
-    minDate: Moment.Moment,
-    maxDate: Moment.Moment
 };
 
 @observer export class GraphChannel extends React.Component<IProps, {}> {
@@ -563,8 +556,8 @@ interface IDateInterval {
     }
 
     componentWillReceiveProps(props: IProps) {
-        var startDate = momentToSql(props.dateInterval.startDate);
-        var stopDate = momentToSql(props.dateInterval.stopDate);
+        var startDate = dateToSql(props.dateInterval.startDate);
+        var stopDate = dateToSql(props.dateInterval.stopDate);
         if ( startDate !== this.startDate || stopDate !== this.stopDate) {
             this.startDate = startDate;
             this.stopDate = stopDate;

@@ -3,7 +3,7 @@ import * as React from 'react';
 import { Async } from 'react-select';
 import { style } from 'typestyle';
 import * as csstips from 'csstips';
-import 'react-select/dist/react-select.css';
+// import 'react-select/dist/react-select.css';
 import { observer } from 'mobx-react';
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { IClient } from 'src/interfaces/IClient';
