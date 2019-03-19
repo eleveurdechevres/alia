@@ -56,9 +56,9 @@ export enum EnumAlarm {
     A2EnveloppeRef: SVGGElement;
     A3EnveloppeRef: SVGGElement;
     A4EnveloppeRef: SVGGElement;
-    Z1Enveloppe: SVGGElement;
-    Z2Enveloppe: SVGGElement;
-    Z3Acariens: SVGGElement;
+    Z1BacteriesMicrochampignons: SVGGElement;
+    Z2BacteriesMicrochampignons: SVGGElement;
+    Z3SecheresseAcariens: SVGGElement;
     legendsRef: SVGGElement;
     checkBoxes: SVGGElement;
 
@@ -336,8 +336,8 @@ export enum EnumAlarm {
             {η: 15,   x: 0},
             {η: 15,   x: get_x_from_η_φ(15, 40)},
         ];
-        this.drawEnveloppe( this.Z1Enveloppe, dataZ1, Colors.BLUE3, Colors.BLUE5);
-        d3.select(this.Z1Enveloppe).append('text')
+        this.drawEnveloppe( this.Z1BacteriesMicrochampignons, dataZ1, Colors.BLUE3, Colors.BLUE5);
+        d3.select(this.Z1BacteriesMicrochampignons).append('text')
             .attr('x', this.scaleX(29))
             .attr('y', this.scaleY(8))
             .attr('font-size', 10)
@@ -358,8 +358,8 @@ export enum EnumAlarm {
             {η: 15,   x: get_x_from_η_φ(15, 70)},
             {η: 15,   x: get_x_from_η_φ(15, 100)},
         ];
-        this.drawEnveloppe( this.Z2Enveloppe, dataZ2, Colors.ORANGE3, Colors.ORANGE5);
-        d3.select(this.Z2Enveloppe).append('text')
+        this.drawEnveloppe( this.Z2BacteriesMicrochampignons, dataZ2, Colors.ORANGE3, Colors.ORANGE5);
+        d3.select(this.Z2BacteriesMicrochampignons).append('text')
             .attr('x', this.scaleX(12))
             .attr('y', this.scaleY(8))
             .attr('font-size', 10)
@@ -378,8 +378,8 @@ export enum EnumAlarm {
             {η: 23, x: get_x_from_η_φ(23, 70)},
             {η: 23, x: get_x_from_η_φ(23, 100)},
         ];
-        this.drawEnveloppe( this.Z2Enveloppe, dataZ2, Colors.RED3, Colors.RED3);
-        d3.select(this.Z2Enveloppe).append('text')
+        this.drawEnveloppe( this.Z2BacteriesMicrochampignons, dataZ2, Colors.RED3, Colors.RED3);
+        d3.select(this.Z2BacteriesMicrochampignons).append('text')
             .attr('x', this.scaleX(28))
             .attr('y', this.scaleY(18))
             .attr('font-size', 10)
@@ -573,9 +573,9 @@ export enum EnumAlarm {
                             <g ref={(ref) => {this.A0EnveloppeRef = ref}}/>
                         </g>
                         <g ref={(ref) => {this.enveloppesQualiteAirRef = ref}} opacity={this.alarmSelected === EnumAlarm.qualiteAir ? 1 : 0}>
-                            <g ref={(ref) => {this.Z1Enveloppe = ref}}/>
-                            <g ref={(ref) => {this.Z2Enveloppe = ref}}/>
-                            <g ref={(ref) => {this.Z3Acariens = ref}}/>
+                            <g ref={(ref) => {this.Z1BacteriesMicrochampignons = ref}}/>
+                            <g ref={(ref) => {this.Z2BacteriesMicrochampignons = ref}}/>
+                            <g ref={(ref) => {this.Z3SecheresseAcariens = ref}}/>
                         </g>
                         <g ref={(ref) => {this.legendsRef = ref}}/>
                         <g ref={(ref) => {this.checkBoxes = ref}}>
