@@ -80,10 +80,10 @@ export class GlobalStore {
         if (!nom) {
             return Promise.resolve([]);
         }
-
+        
         return fetch(`http://test.ideesalter.com/alia_searchClient.php?nom=${nom}`)
-        .then((response) => response.json())
-        .then((clients) => clients);
+            .then((response) => response.json())
+            .then((clients) => clients);
     }
 
     // retourne les habitats correspondant au client passé en paramètre

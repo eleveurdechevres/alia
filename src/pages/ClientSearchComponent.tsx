@@ -23,7 +23,7 @@ const selectStyle: any = style(csstips.content, csstips.fillParent);
         super(props);
     }
 
-    render () {
+    public render () {
         return (
             <div>
                 <Async 
@@ -33,7 +33,13 @@ const selectStyle: any = style(csstips.content, csstips.fillParent);
                     onChange={(client: IClient) => this.props.globalStore.client = client} 
                     valueKey="id"
                     labelKey="nom"
-                    loadOptions={this.props.globalStore.searchClients}
+                    loadOptions={(chars: string) => {
+                        this.props.globalStore.searchClients(chars).then(
+                            (clients: IClient[]) => {
+                                return { options: clients };
+                            }
+                        )
+                    }}
                 />
             </div>
         );

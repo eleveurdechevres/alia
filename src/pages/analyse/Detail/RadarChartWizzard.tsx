@@ -2,12 +2,15 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import { ClientSearchComponent } from 'src/pages/ClientSearchComponent';
 import { HabitatSearchComponent } from 'src/pages/HabitatSearchComponent';
-import { style } from 'typestyle';
-import * as csstips from 'csstips';
+// import { style } from 'typestyle';
+// import * as csstips from 'csstips';
 import { GlobalStore } from 'src/stores/GlobalStore';
+import { Dialog } from '@blueprintjs/core';
 
 interface IProps {
-    globalStore: GlobalStore
+    globalStore: GlobalStore;
+    isVisible: boolean;
+    handleCancel: () => void;
 }
 
 @observer export class RadarChartWizzard extends React.Component<IProps, {}> {
@@ -16,7 +19,17 @@ interface IProps {
     
     public render() {
         return (
-            <div className={style(csstips.vertical, csstips.fillParent, csstips.content)}>
+            <Dialog
+                autoFocus={true}
+                enforceFocus={true}
+                usePortal={true}
+                canOutsideClickClose={false}
+                canEscapeKeyClose={true}
+                isOpen={this.props.isVisible}
+                title="Radar Chart"
+                icon="layout-auto"
+                onClose={this.props.handleCancel}
+            >
                 <div>
                     <ClientSearchComponent
                         globalStore={this.props.globalStore}
@@ -27,7 +40,7 @@ interface IProps {
                         globalStore={this.props.globalStore}
                     />
                 </div>
-            </div>
+            </Dialog>
         );
     }
 }

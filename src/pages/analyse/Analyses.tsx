@@ -23,13 +23,13 @@ interface IProps {
         super(props);
     }
 
-    render() {
+    public render() {
         return (
             <div>
                 <AnalysesWizzard
                     analysesWizzardShown={this.analysesWizzardShown}
                     globalStore={this.props.globalStore}
-                    handleCreateAnalyse={() => { console.log('handleCreateAnalyse') }}
+                    handleCloseDialog={() => { this.analysesWizzardShown = false; }}
                     handleCancel={() => { this.analysesWizzardShown = false }}
                 />
                 <NewElementButton
