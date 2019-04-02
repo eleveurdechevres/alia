@@ -9,6 +9,8 @@ import { observable } from 'mobx';
 import { NewElementButton } from 'src/components/NewElementButton';
 import { AnalysesWizzard } from 'src/pages/analyse/AnalysesWizzard';
 import { GlobalStore } from 'src/stores/GlobalStore';
+import { ISheet } from 'src/interfaces/ISheet';
+import { SheetComponent } from './SheetComponent';
 
 interface IProps {
     globalStore: GlobalStore
@@ -38,6 +40,16 @@ interface IProps {
                         this.analysesWizzardShown = true;
                     }}
                 />
+                {
+                    this.props.globalStore.sheets.map(
+                        (sheet: ISheet) =>
+                            <SheetComponent
+                                key={'SheetComponent' + sheet.sheetName}
+                                globalStore={this.props.globalStore}
+                                sheet={sheet}
+                            />
+                    )
+                }
             </div>
         );
     }

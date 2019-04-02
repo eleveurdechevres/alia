@@ -124,32 +124,32 @@ interface IProps {
                 <MollierChartWizzard
                     globalStore={this.props.globalStore}
                     isVisible={this.mollierWizzardVisible}
-                    handleCancel={() => this.mollierWizzardVisible = false}
+                    handleClose={() => this.mollierWizzardVisible = false}
                 />
                 <LineChartWizzard
                     globalStore={this.props.globalStore}
                     isVisible={this.timeChartWizzardVisible}
-                    handleCancel={() => this.timeChartWizzardVisible = false}
+                    handleClose={() => this.timeChartWizzardVisible = false}
                 />
                 <CandleChartWizzard
                     globalStore={this.props.globalStore}
                     isVisible={this.candleChartWizzardVisible}
-                    handleCancel={() => this.candleChartWizzardVisible = false}
+                    handleClose={() => this.candleChartWizzardVisible = false}
                 />
                 <RapportWizzard
                     globalStore={this.props.globalStore}
                     isVisible={this.rapportWizzardVisible}
-                    handleCancel={() => this.rapportWizzardVisible = false}
+                    handleClose={() => this.rapportWizzardVisible = false}
                 />
                 <ScatterPlotWizzard
                     globalStore={this.props.globalStore}
                     isVisible={this.scatterPlotWizzardVisible}
-                    handleCancel={() => this.scatterPlotWizzardVisible = false}
+                    handleClose={() => this.scatterPlotWizzardVisible = false}
                 />
                 <RadarChartWizzard
                     globalStore={this.props.globalStore}
                     isVisible={this.radarChartWizzardVisible}
-                    handleCancel={() => this.radarChartWizzardVisible = false}
+                    handleClose={() => this.radarChartWizzardVisible = false}
                 />
             </div>
         );

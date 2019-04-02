@@ -519,9 +519,9 @@ export enum EnumAlarm {
         this.drawZ3Enveloppe();
     }
 
-    shouldComponentUpdate() {
-        return true;
-    }
+    // shouldComponentUpdate() {
+    //     return true;
+    // }
 
     componentDidMount() {
         this.drawReferenceCourbesHumidite();

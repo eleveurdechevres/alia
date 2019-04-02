@@ -1,22 +1,26 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
-import { ClientSearchComponent } from 'src/pages/ClientSearchComponent';
-import { HabitatSearchComponent } from 'src/pages/HabitatSearchComponent';
-// import { style } from 'typestyle';
-// import * as csstips from 'csstips';
+import { observable } from 'mobx';
+// import { ClientSearchComponent } from 'src/pages/ClientSearchComponent';
+// import { HabitatSearchComponent } from 'src/pages/HabitatSearchComponent';
+import { style } from 'typestyle';
+import * as csstips from 'csstips';
 import { GlobalStore } from 'src/stores/GlobalStore';
-import { Dialog } from '@blueprintjs/core';
+import { Dialog, Button } from '@blueprintjs/core';
+// import { IPlan } from 'src/interfaces/IPlan';
+import { MissionSelector } from './MissionSelector';
+import { IMission } from 'src/interfaces/IMission';
 
 interface IProps {
     globalStore: GlobalStore;
     isVisible: boolean;
-    handleCancel: () => void;
+    handleClose: () => void;
 }
 
 @observer export class MollierChartWizzard extends React.Component<IProps, {}> {
 
-    // @observable private habitat: IHabitat = undefined;
-    
+    @observable private mission: IMission = undefined;
+
     public render() {
         return (
             <Dialog
@@ -28,19 +32,55 @@ interface IProps {
                 isOpen={this.props.isVisible}
                 title="Diagramme de Mollier"
                 icon="curved-range-chart"
-                onClose={this.props.handleCancel}
+                onClose={this.props.handleClose}
             >
-                <div>
-                    <ClientSearchComponent
+                <table className={style(csstips.flex, csstips.margin(5))}>
+                    <tbody>
+                        <tr>
+                            <td>Client :</td>
+                            <td>{this.props.globalStore.client.nom}</td>
+                        </tr>
+                        <tr>
+                            <td>Habitat :</td>
+                            <td>{this.props.globalStore.habitat.adresse}</td>
+                        </tr>
+                        <tr>
+                            <td colSpan={2}>
+                                <MissionSelector
+                                    globalStore={this.props.globalStore}
+                                    mission={this.mission}
+                                    handleSelectMission={(mission: IMission) => {this.mission = mission}}
+                                />
+                                <Button
+                                    disabled={this.mission === undefined}
+                                    text="Créer"
+                                    icon="add"
+                                    onClick={() => {
+                                        this.handleCreateSheet();
+                                    }}
+                                />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                    {/* <ClientSearchComponent
                         globalStore={this.props.globalStore}
-                    />
-                </div>
-                <div>
-                    <HabitatSearchComponent
+                    /> */}
+                    {/* <HabitatSearchComponent
                         globalStore={this.props.globalStore}
-                    />
-                </div>
+                    /> */}
+
             </Dialog>
         );
+    }
+
+    private handleCreateSheet = () => {
+        this.props.globalStore.createSheet(
+            this.mission,
+            new Date(this.mission.date_debut),
+            new Date(this.mission.date_fin)
+        );
+        this.props.handleClose();
     }
 }

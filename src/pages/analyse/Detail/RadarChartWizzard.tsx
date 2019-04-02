@@ -10,7 +10,7 @@ import { Dialog } from '@blueprintjs/core';
 interface IProps {
     globalStore: GlobalStore;
     isVisible: boolean;
-    handleCancel: () => void;
+    handleClose: () => void;
 }
 
 @observer export class RadarChartWizzard extends React.Component<IProps, {}> {
@@ -28,7 +28,7 @@ interface IProps {
                 isOpen={this.props.isVisible}
                 title="Radar Chart"
                 icon="layout-auto"
-                onClose={this.props.handleCancel}
+                onClose={this.props.handleClose}
             >
                 <div>
                     <ClientSearchComponent

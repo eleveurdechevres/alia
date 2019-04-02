@@ -114,7 +114,7 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
         }
 
         return (
-            <div>
+            <div className={style(csstips.margin(10), { boxShadow: '1px 1px 10px #888' })}>
                 <ReactTable
                     data={this.props.globalStore.missionsForHabitat.slice()}
                     noDataText="Pas de mission pour cet habitat"

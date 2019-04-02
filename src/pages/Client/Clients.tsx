@@ -100,7 +100,7 @@ const dialogFieldValueStyle = style(csstips.flex);
 
         return (
 
-            <div>
+            <div className={style(csstips.margin(10), { boxShadow: '1px 1px 10px #888' })}>
                 <ReactTable
                     data={toJS(this.props.globalStore.clients.slice())}
                     columns={columns}

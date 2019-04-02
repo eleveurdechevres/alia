@@ -10,7 +10,7 @@ import { Dialog } from '@blueprintjs/core';
 interface IProps {
     globalStore: GlobalStore;
     isVisible: boolean;
-    handleCancel: () => void;
+    handleClose: () => void;
 }
 
 @observer export class LineChartWizzard extends React.Component<IProps, {}> {
@@ -28,7 +28,7 @@ interface IProps {
                 isOpen={this.props.isVisible}
                 title="Time Chart"
                 icon="timeline-line-chart"
-                onClose={this.props.handleCancel}
+                onClose={this.props.handleClose}
             >
                 <div>
                     <ClientSearchComponent

@@ -5,6 +5,8 @@ import { IMission } from 'src/interfaces/IMission';
 import { autorun } from 'mobx';
 import { IPlan } from 'src/interfaces/IPlan';
 import { NavBarTabEnum } from 'src/App';
+import { ISheet } from 'src/interfaces/ISheet';
+import { ISeriesDef } from 'src/interfaces/ISeriesDef';
 
 export class GlobalStore {
 
@@ -16,6 +18,8 @@ export class GlobalStore {
     @observable private _clients: IClient[] = [];
     @observable private _habitatsForClient: IHabitat[] = [];
     @observable private _missionsForHabitat: IMission[] = [];
+
+    @observable sheets: ISheet[] = [];
 
     public constructor() {
         this.reloadClients();
@@ -227,5 +231,30 @@ export class GlobalStore {
 
     public navigateToTab = (selectedTab: NavBarTabEnum) => {
         this.selectedTab = selectedTab;
+    }
+
+    public createSheet = (mission: IMission, dateDebut: Date, dateFin: Date): void => {
+        let sheet: ISheet = {
+            isReadOnly: false,
+            isVisible: true,
+            series: [],
+            sheetDef: {
+                client: this.client,
+                habitat: this.habitat,
+                mission: mission,
+                dateDebut: dateDebut,
+                dateFin: dateFin
+            },
+            sheetName: 'toto'
+        };
+        this.sheets.push(sheet);
+    }
+
+    public removeSeriesFromSheet = (sheet: ISheet, seriesDef: ISeriesDef) => {
+        // TODO
+    }
+
+    public addSeriesToSheet = (sheet: ISheet, seriesDef: ISeriesDef) => {
+        // TODO
     }
 }
