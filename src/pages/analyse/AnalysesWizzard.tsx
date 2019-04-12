@@ -10,13 +10,9 @@ import { Dialog, Button, Intent, Alignment } from '@blueprintjs/core';
 import { style } from 'typestyle/lib';
 import * as csstips from 'csstips';
 // import { Mollier } from 'src/pages/Graph/CrossGraph/Mollier';
-import { RadarChartWizzard } from 'src/pages/analyse/Detail/RadarChartWizzard';
 import { GlobalStore } from 'src/stores/GlobalStore';
-import { MollierChartWizzard } from './Detail/MollierChartWizzard';
-import { LineChartWizzard } from './Detail/LineChartWizzard';
-import { CandleChartWizzard } from './Detail/CandleChartWizzard';
-import { RapportWizzard } from './Detail/RapportWizzard';
-import { ScatterPlotWizzard } from './Detail/ScatterPlotWizzard';
+import { ESheetType, ISheetTypes } from 'src/interfaces/ISheet';
+import { CreateSheetWizzard } from './Detail/CreateSheetWizzard';
 
 interface IProps {
     analysesWizzardShown: boolean;
@@ -28,12 +24,8 @@ interface IProps {
 
 @observer export class AnalysesWizzard extends React.Component<IProps, {}> {
 
-    @observable private mollierWizzardVisible = false;
-    @observable private timeChartWizzardVisible = false;
-    @observable private candleChartWizzardVisible = false;
-    @observable private rapportWizzardVisible = false;
-    @observable private scatterPlotWizzardVisible = false;
-    @observable private radarChartWizzardVisible = false;
+    @observable private createSheetWizzardVisible = false;
+    @observable private currentSheetType: ESheetType = undefined;
 
     // https://react-table.js.org/#/story/readme
     public constructor(props: IProps) {
@@ -59,129 +51,48 @@ interface IProps {
                             Sélectionnez le type d'analyse
                         </div>
                         <div className={style(csstips.margin(10), csstips.horizontal, csstips.flex, csstips.height(200))}>
-                            <Button
-                                className={style(csstips.margin(10), csstips.flex)}
-                                intent={Intent.PRIMARY}
-                                icon="curved-range-chart"
-                                text="Mollier"
-                                large={true}
-                                alignText={Alignment.CENTER}
-                                onClick={this.createMollier}
-                                disabled={false}
-                            />
-                            <Button
-                                className={style(csstips.margin(10), csstips.flex)}
-                                intent={Intent.PRIMARY}
-                                icon="timeline-line-chart"
-                                text="y=f(t)"
-                                large={true}
-                                onClick={this.createTimeChart}
-                                disabled={false}
-                            />
+                            {this.buildButton(ESheetType.MOLLIER_CHART)}
+                            {this.buildButton(ESheetType.TIME_CHART)}
                         </div>
                         <div className={style(csstips.margin(10), csstips.horizontal, csstips.flex, csstips.height(200))}>
-                            <Button
-                                className={style(csstips.margin(10), csstips.flex)}
-                                intent={Intent.PRIMARY}
-                                icon="alignment-horizontal-center"
-                                text="Candles"
-                                large={true}
-                                onClick={this.createCandleChart}
-                                disabled={false}
-                            />
-                            <Button
-                                className={style(csstips.margin(10), csstips.flex)}
-                                intent={Intent.PRIMARY}
-                                icon="manually-entered-data"
-                                text="Rapport"
-                                large={true}
-                                onClick={this.createRapport}
-                                disabled={false}
-                            />
+                            {this.buildButton(ESheetType.CANDLE_CHART)}
+                            {this.buildButton(ESheetType.TEXT_REPORT)}
                         </div>
                         <div className={style(csstips.margin(10), csstips.horizontal, csstips.flex, csstips.height(200))}>
-                            <Button
-                                className={style(csstips.margin(10), csstips.flex)}
-                                intent={Intent.PRIMARY}
-                                icon="scatter-plot"
-                                text="y=f(x)"
-                                large={true}
-                                onClick={this.createScatterPlot}
-                                disabled={false}
-                            />
-                            <Button
-                                className={style(csstips.margin(10), csstips.flex)}
-                                intent={Intent.PRIMARY}
-                                icon="layout-auto"
-                                text="Radar"
-                                large={true}
-                                onClick={this.createRadarChart}
-                                disabled={false}
-                            />
+                            {this.buildButton(ESheetType.SCATTER_PLOT)}
+                            {this.buildButton(ESheetType.RADAR_CHART)}
                         </div>
                     </div>
                 </Dialog>
-                <MollierChartWizzard
+                <CreateSheetWizzard
                     globalStore={this.props.globalStore}
-                    isVisible={this.mollierWizzardVisible}
-                    handleClose={() => this.mollierWizzardVisible = false}
-                />
-                <LineChartWizzard
-                    globalStore={this.props.globalStore}
-                    isVisible={this.timeChartWizzardVisible}
-                    handleClose={() => this.timeChartWizzardVisible = false}
-                />
-                <CandleChartWizzard
-                    globalStore={this.props.globalStore}
-                    isVisible={this.candleChartWizzardVisible}
-                    handleClose={() => this.candleChartWizzardVisible = false}
-                />
-                <RapportWizzard
-                    globalStore={this.props.globalStore}
-                    isVisible={this.rapportWizzardVisible}
-                    handleClose={() => this.rapportWizzardVisible = false}
-                />
-                <ScatterPlotWizzard
-                    globalStore={this.props.globalStore}
-                    isVisible={this.scatterPlotWizzardVisible}
-                    handleClose={() => this.scatterPlotWizzardVisible = false}
-                />
-                <RadarChartWizzard
-                    globalStore={this.props.globalStore}
-                    isVisible={this.radarChartWizzardVisible}
-                    handleClose={() => this.radarChartWizzardVisible = false}
+                    isVisible={this.createSheetWizzardVisible}
+                    sheetType={this.currentSheetType}
+                    handleClose={() => this.createSheetWizzardVisible = false}
                 />
             </div>
         );
     }
     
-    private createMollier = () => {
-        this.mollierWizzardVisible = true;
-        this.props.handleCloseDialog();
+    private buildButton = (sheetType: ESheetType): JSX.Element => {
+        const sheetDescription = ISheetTypes.get(sheetType);
+        return (
+            <Button
+                className={style(csstips.margin(10), csstips.flex)}
+                intent={Intent.PRIMARY}
+                icon={sheetDescription.icon}
+                text={sheetDescription.name}
+                large={true}
+                alignText={Alignment.CENTER}
+                onClick={() => this.createSheet(sheetType)}
+                disabled={sheetDescription.enabled}
+            />
+        );
     }
 
-    private createTimeChart = () => {
-        this.timeChartWizzardVisible = true;
-        this.props.handleCloseDialog();
-    }
-
-    private createCandleChart = () => {
-        this.candleChartWizzardVisible = true;
-        this.props.handleCloseDialog();
-    }
-
-    private createRapport = () => {
-        this.rapportWizzardVisible = true;
-        this.props.handleCloseDialog();
-    }
-
-    private createScatterPlot = () => {
-        this.scatterPlotWizzardVisible = true;
-        this.props.handleCloseDialog();
-    }
-
-    private createRadarChart = () => {
-        this.radarChartWizzardVisible = true;
+    private createSheet = (sheetType: ESheetType) => {
+        this.createSheetWizzardVisible = true;
+        this.currentSheetType = sheetType;
         this.props.handleCloseDialog();
     }
 }

@@ -5,8 +5,10 @@ import { IMission } from 'src/interfaces/IMission';
 import { autorun } from 'mobx';
 import { IPlan } from 'src/interfaces/IPlan';
 import { NavBarTabEnum } from 'src/App';
-import { ISheet } from 'src/interfaces/ISheet';
+import { ISheet, ESheetType } from 'src/interfaces/ISheet';
 import { ISeriesDef } from 'src/interfaces/ISeriesDef';
+import { TMesure } from 'src/interfaces/Types';
+import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMission';
 
 export class GlobalStore {
 
@@ -108,7 +110,16 @@ export class GlobalStore {
           .then((response) => response.json())
           .then((missions) => missions);
     }
-    
+
+    public getAllChannelsOfTypeFromMission = (type: TMesure, missionId: number): Promise<IChannelOfTypeFromMission[]> => {
+        if (!type || !missionId) {
+          return Promise.resolve([]);
+        }
+        return fetch(`http://test.ideesalter.com/alia_searchAllChannelsOfTypeFromMission.php?type=${type}&mission_id=${missionId}`)
+          .then((response) => response.json())
+          .then((results) => results);
+    }
+
     public writeClient = (client: IClient, password: string) => {
         return fetch(`http://testbase.ideesalter.com/alia_writeClient.php` +
             `?id=` + client.id +
@@ -233,8 +244,9 @@ export class GlobalStore {
         this.selectedTab = selectedTab;
     }
 
-    public createSheet = (mission: IMission, dateDebut: Date, dateFin: Date): void => {
+    public createSheet = (sheetType: ESheetType, mission: IMission, dateDebut: Date, dateFin: Date): void => {
         let sheet: ISheet = {
+            sheetType: sheetType,
             isReadOnly: false,
             isVisible: true,
             series: [],
@@ -250,6 +262,9 @@ export class GlobalStore {
         this.sheets.push(sheet);
     }
 
+    public renameSheet = (sheet: ISheet, newName: string) => {
+        // TODO
+    }
     public removeSeriesFromSheet = (sheet: ISheet, seriesDef: ISeriesDef) => {
         // TODO
     }

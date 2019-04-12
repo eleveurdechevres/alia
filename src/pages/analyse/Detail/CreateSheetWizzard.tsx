@@ -10,14 +10,16 @@ import { Dialog, Button } from '@blueprintjs/core';
 // import { IPlan } from 'src/interfaces/IPlan';
 import { MissionSelector } from './MissionSelector';
 import { IMission } from 'src/interfaces/IMission';
+import { ESheetType } from 'src/interfaces/ISheet';
 
 interface IProps {
     globalStore: GlobalStore;
     isVisible: boolean;
+    sheetType: ESheetType;
     handleClose: () => void;
 }
 
-@observer export class MollierChartWizzard extends React.Component<IProps, {}> {
+@observer export class CreateSheetWizzard extends React.Component<IProps, {}> {
 
     @observable private mission: IMission = undefined;
 
@@ -30,7 +32,7 @@ interface IProps {
                 canOutsideClickClose={false}
                 canEscapeKeyClose={true}
                 isOpen={this.props.isVisible}
-                title="Diagramme de Mollier"
+                title="Créer une analyse"
                 icon="curved-range-chart"
                 onClose={this.props.handleClose}
             >
@@ -77,6 +79,7 @@ interface IProps {
 
     private handleCreateSheet = () => {
         this.props.globalStore.createSheet(
+            this.props.sheetType,
             this.mission,
             new Date(this.mission.date_debut),
             new Date(this.mission.date_fin)
