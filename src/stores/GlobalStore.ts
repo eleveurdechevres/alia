@@ -22,6 +22,7 @@ export class GlobalStore {
     @observable private _missionsForHabitat: IMission[] = [];
 
     @observable sheets: ISheet[] = [];
+    @observable private closedSheets: Array<ISheet> = [];
 
     public constructor() {
         this.reloadClients();
@@ -262,8 +263,19 @@ export class GlobalStore {
         this.sheets.push(sheet);
     }
 
+    public deleteSheet = (sheet: ISheet) => {
+        let index = this.sheets.findIndex((s: ISheet) => s === sheet);
+        this.sheets.splice(index, 1);
+    }
+
+    public closeSheet = (sheet: ISheet) => {
+        this.closedSheets.push(sheet);
+        this.deleteSheet(sheet);
+    }
+
     public renameSheet = (sheet: ISheet, newName: string) => {
-        // TODO
+        let index = this.sheets.findIndex((s: ISheet) => s === sheet);
+        this.sheets[index].sheetName = newName;
     }
     public removeSeriesFromSheet = (sheet: ISheet, seriesDef: ISeriesDef) => {
         // TODO

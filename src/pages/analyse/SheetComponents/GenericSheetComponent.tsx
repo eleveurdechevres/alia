@@ -1,17 +1,13 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
+import { observable } from 'mobx';
 import { GlobalStore } from 'src/stores/GlobalStore';
-import { ISheet, ESheetType } from 'src/interfaces/ISheet';
+import { ISheet } from 'src/interfaces/ISheet';
 import { style } from 'typestyle';
 import * as csstips from 'csstips';
 import { IconButton } from 'src/components/IconButton';
-import { Menu, Intent, Popover, Position, IconName, MenuItem } from '@blueprintjs/core';
+import { Intent, Popover, Position, IconName } from '@blueprintjs/core';
 import { EditableRecordName } from 'src/components/EditableRecordName';
-// import { Mollier } from '../Graph/CrossGraph/Mollier';
-// import { IDateInterval } from '../Graph/GraphBoard';
-import { MultiSensorSelector } from '../Detail/MultiSensorSelector';
-import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMission';
-// import { TMesure } from 'src/interfaces/Types';
 
 export interface IGenericSheetComponentProps {
     globalStore: GlobalStore;
@@ -20,8 +16,26 @@ export interface IGenericSheetComponentProps {
 
 @observer export class GenericSheetComponent extends React.Component<IGenericSheetComponentProps, {}> {
 
+    @observable windowWidth: number;
+    @observable windowHeight: number;
+    
     public constructor(props: IGenericSheetComponentProps) {
         super(props);
+        this.windowWidth = window.innerWidth;
+    }
+
+    public componentDidMount() {
+        // Additionally I could have just used an arrow function for the binding `this` to the component...
+        window.addEventListener('resize', this.updateDimensions);
+    }
+
+    public componentWillUnmount() {
+        window.removeEventListener('resize', this.updateDimensions);
+    }
+    
+    private updateDimensions = () => {
+        this.windowWidth = window.innerWidth;
+        this.windowHeight = window.innerHeight;
     }
 
     public render () {
@@ -100,10 +114,10 @@ export interface IGenericSheetComponentProps {
     protected buildSettingsMenu = () => <div/>
 
     private deleteSheet = () => {
-        console.log('TODO : Delete sheet ' + this.props.sheet.sheetName);
+        this.props.globalStore.deleteSheet(this.props.sheet);
     }
     private closeSheet = () => {
-        console.log('TODO : Close sheet ' + this.props.sheet.sheetName);
+        this.props.globalStore.closeSheet(this.props.sheet);
     }
 
 }

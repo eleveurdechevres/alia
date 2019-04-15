@@ -72,7 +72,6 @@ interface ICrosshair {
     }
     @observable currentTemperature: number;
     @observable currentHumidity: number = undefined;
-
     @observable meteoTemperature: number = undefined;
     @observable meteoHumidity: number = undefined;
     @observable meteoDirectionVent: number = undefined;
@@ -414,18 +413,21 @@ interface ICrosshair {
                 dateFormat="dd/MM/YYYY"
                 placeholderText="Date de fin"
             />
-            <Mollier
-                chartWidth={340}
-                chartHeight={300}
-                dateInterval={this.dateInterval}
-                capteurId={this.capteur.id}
-                channelX={this.mapChannels.get(GraphType.TEMPERATURE.svgClass)} 
-                channelY={this.mapChannels.get(GraphType.HUMIDITE.svgClass)} 
-                channelXType={GraphType.TEMPERATURE} 
-                channelYType={GraphType.HUMIDITE}
-                currentHumidity={this.currentHumidity}
-                currentTemperature={this.currentTemperature}
-            />
+            {
+                this.mapChannels.has(GraphType.TEMPERATURE.svgClass) && this.mapChannels.has(GraphType.HUMIDITE.svgClass) ? 
+                    <Mollier
+                        chartWidth={340}
+                        chartHeight={300}
+                        dateInterval={this.dateInterval}
+                        capteurId={this.capteur.id}
+                        channelX={this.mapChannels.get(GraphType.TEMPERATURE.svgClass).id} 
+                        channelY={this.mapChannels.get(GraphType.HUMIDITE.svgClass).id} 
+                        channelXType={GraphType.TEMPERATURE} 
+                        channelYType={GraphType.HUMIDITE}
+                        currentHumidity={this.currentHumidity}
+                        currentTemperature={this.currentTemperature}
+                    /> : ''
+            }
             <div className={style(csstips.width(340), csstips.vertical, csstips.height(300))}>
                 <MeteoBehaviour
                     time={new Date(this.crossHairTime.timeMs)}

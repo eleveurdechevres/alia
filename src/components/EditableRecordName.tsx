@@ -19,20 +19,22 @@ interface IProps<REC_TYPE> {
 
 @observer export class EditableRecordName<RECORD_TYPE> extends React.Component<IProps<RECORD_TYPE>, {}> {
 
-    private refEditableName: React.LegacyRef<EditableText>;
+    private refEditableName: React.LegacyRef<EditableText> = React.createRef();
     @observable private messageErrorName = '';
     @observable private incorrectName = false;
-    @observable private currentName: string;
+    @observable private currentName: string = undefined;
 
     public constructor(props: IProps<RECORD_TYPE>) {
         super(props);
-        this.refEditableName = React.createRef();
+        if (this.currentName === undefined && this.props.getNameFromRecord(this.props.record)) {
+            this.currentName = this.props.getNameFromRecord(this.props.record);
+        } else {
+            this.currentName = 'titi';
+        }
     }
 
     public render() {
-        if (!this.currentName && this.props.getNameFromRecord(this.props.record)) {
-            this.currentName = this.props.getNameFromRecord(this.props.record);
-        }
+        console.log('currentName ' + this.currentName);
 
         return (
             <div className={style(csstips.content, csstips.horizontal, csstips.gridSpaced(10))}>
@@ -67,6 +69,7 @@ interface IProps<REC_TYPE> {
                             }
                         }}
                         onChange={(value: string) => {
+                            console.log(value)
                             this.currentName = value;
                         }}
                         multiline={false}

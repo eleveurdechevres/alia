@@ -9,8 +9,8 @@ import { observable } from 'mobx';
 import { NewElementButton } from 'src/components/NewElementButton';
 import { AnalysesWizzard } from 'src/pages/analyse/AnalysesWizzard';
 import { GlobalStore } from 'src/stores/GlobalStore';
-import { ISheet } from 'src/interfaces/ISheet';
-import { SheetComponent } from './SheetComponent';
+import { ISheet, ESheetType } from 'src/interfaces/ISheet';
+import { MollierSheetComponent } from './SheetComponents/MollierSheetComponent';
 
 interface IProps {
     globalStore: GlobalStore
@@ -42,12 +42,21 @@ interface IProps {
                 />
                 {
                     this.props.globalStore.sheets.map(
-                        (sheet: ISheet) =>
-                            <SheetComponent
-                                key={'SheetComponent' + sheet.sheetName}
-                                globalStore={this.props.globalStore}
-                                sheet={sheet}
-                            />
+                        (sheet: ISheet) => {
+                            switch (sheet.sheetType) {
+                                case ESheetType.MOLLIER_CHART:
+                                    return (
+                                        <MollierSheetComponent
+                                            key={'SheetComponent' + sheet.sheetName}
+                                            globalStore={this.props.globalStore}
+                                            sheet={sheet}
+                                        />
+                                    );
+                                default:
+                                    return <div>{sheet}</div>;
+                            }
+                            return <div key="default"/>;
+                        }
                     )
                 }
             </div>

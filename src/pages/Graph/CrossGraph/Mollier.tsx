@@ -3,7 +3,6 @@ import { dateToSql, dateWithoutSeconds } from '../../../utils/DateUtils';
 import * as d3 from 'd3';
 import { get_x_from_η_φ, get_η, get_η_from_ηh_φ, get_η_from_φ_x } from '../../../utils/CalculsThermiques';
 import { IDateInterval } from 'src/pages/Graph/GraphBoard';
-import { IChannel } from 'src/interfaces/IChannel';
 import { ICrossValue } from 'src/interfaces/ICrossValue';
 import { ScaleLinear } from 'd3';
 import { observer } from 'mobx-react';
@@ -16,8 +15,10 @@ interface IProps {
     chartHeight: number;
     dateInterval: IDateInterval;
     capteurId: number;
-    channelX: IChannel; 
-    channelY: IChannel;
+    channelX: number; 
+    // channelX: IChannel; 
+    channelY: number; 
+    // channelY: IChannel;
     channelXType: GraphType;
     channelYType: GraphType;
     currentHumidity: number;
@@ -85,6 +86,8 @@ export enum EnumAlarm {
         this.scaleY = d3.scaleLinear();
         this.scaleY.domain([25, 0]);
         this.scaleY.range([0, this.props.chartHeight]);
+
+        this.componentWillReceiveProps(this.props);
     }
 
     componentWillReceiveProps(props: IProps) {
@@ -104,7 +107,8 @@ export enum EnumAlarm {
         // }
     }
 
-    loadJsonFromAeroc = (dateBegin: string, dateEnd: string, channel1: IChannel, channel2: IChannel) => {
+    // loadJsonFromAeroc = (dateBegin: string, dateEnd: string, channel1: IChannel, channel2: IChannel) => {
+    loadJsonFromAeroc = (dateBegin: string, dateEnd: string, channel1: number, channel2: number) => {
         // LOAD DATA from AEROC
         if (channel1 !== undefined && channel2 !== undefined) {
             
@@ -113,8 +117,8 @@ export enum EnumAlarm {
                 + 'date_begin=' + dateBegin 
                 + '&date_end=' + dateEnd 
                 + '&capteur_id=' + this.props.capteurId 
-                + '&channel1_id=' + channel1.id 
-                + '&channel2_id=' + channel2.id;
+                + '&channel1_id=' + channel1 
+                + '&channel2_id=' + channel2;
             // console.log(httpReq);
             return fetch(httpReq)
                 .then((response) => response.json())
@@ -537,15 +541,19 @@ export enum EnumAlarm {
         var translateY = this.scaleY(get_x_from_η_φ (this.props.currentTemperature, this.props.currentHumidity));
         var translateCrosshair = 'translate(-10,-10)';
         var displayCrosshair = false;
-
+    
         if (translateX !== NaN && translateY !== NaN) {
             translateCrosshair = 'translate(' + translateX + ',' + translateY + ')';
+            displayCrosshair = true;
+        }
+
+        if (!this.props.currentTemperature || !this.props.currentTemperature) {
             displayCrosshair = false;
         }
         d3.select(this.currentCrosshairRef)
             .transition()
             .attr('transform', translateCrosshair)
-            .attr('opacity', displayCrosshair ? 1 : 'none');
+            .attr('opacity', displayCrosshair ? 1 : 0);
     }
 
     render() {
