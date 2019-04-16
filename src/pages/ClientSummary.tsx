@@ -14,7 +14,6 @@ interface IProps {
     }
 
     render() {
-        console.log('toto')
         if ( this.props.client === undefined )  {
             return (
                 <div/>

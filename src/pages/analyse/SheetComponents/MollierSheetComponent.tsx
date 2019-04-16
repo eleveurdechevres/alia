@@ -2,7 +2,7 @@ import * as React from 'react';
 import { style } from 'typestyle';
 import * as csstips from 'csstips';
 import { Menu, MenuItem } from '@blueprintjs/core';
-import { observable } from 'mobx';
+import { observable, autorun } from 'mobx';
 import { observer } from 'mobx-react';
 // import { Mollier } from '../Graph/CrossGraph/Mollier';
 // import { IDateInterval } from '../Graph/GraphBoard';
@@ -15,11 +15,23 @@ import { GraphType } from '../../Graph/Channel/GraphType';
 
 @observer export class MollierSheetComponent<P extends IGenericSheetComponentProps> extends GenericSheetComponent {
 
-    @observable private humiditySensor: IChannelOfTypeFromMission = undefined;
-    @observable private temperatureSensor: IChannelOfTypeFromMission = undefined;
+    @observable private humiditySensor: IChannelOfTypeFromMission;
+    @observable private temperatureSensor: IChannelOfTypeFromMission;
 
     public constructor(props: P) {
         super(props);
+
+        autorun(() => {
+            if (this.temperatureSensor) {
+                this.humiditySensor = undefined;
+            }
+        })
+
+        autorun(() => {
+            if (this.humiditySensor) {
+                this.forceUpdate();
+            }
+        })
     }
 
     protected buildChart = () => {
@@ -57,18 +69,25 @@ import { GraphType } from '../../Graph/Channel/GraphType';
                     globalStore={this.props.globalStore}
                     type="Température"
                     mission={this.props.sheet.sheetDef.mission}
+                    sensorSelected={this.temperatureSensor}
                     handleSelect={(sensor: IChannelOfTypeFromMission) => {
                         this.temperatureSensor = sensor;
                     }}
+                    filter={() => true}
                 />
-                <MultiSensorSelector
-                    globalStore={this.props.globalStore}
-                    type="Humidité"
-                    mission={this.props.sheet.sheetDef.mission}
-                    handleSelect={(sensor: IChannelOfTypeFromMission) => {
-                        this.humiditySensor = sensor;
-                    }}
-                />
+                {
+                    this.temperatureSensor ?
+                        <MultiSensorSelector
+                            globalStore={this.props.globalStore}
+                            type="Humidité"
+                            mission={this.props.sheet.sheetDef.mission}
+                            sensorSelected={this.humiditySensor}
+                            handleSelect={(sensor: IChannelOfTypeFromMission) => {
+                                this.humiditySensor = sensor;
+                            }}
+                            filter={(sensor: IChannelOfTypeFromMission) => this.temperatureSensor.capteur_id === sensor.capteur_id}
+                        /> : ''
+                }
             </div>
         );
     }

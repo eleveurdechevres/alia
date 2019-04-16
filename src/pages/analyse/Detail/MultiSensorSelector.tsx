@@ -13,13 +13,14 @@ interface IProps {
     type: TMesure;
     mission: IMission;
     globalStore: GlobalStore;
+    sensorSelected: IChannelOfTypeFromMission;
     handleSelect: (sensor: IChannelOfTypeFromMission) => void;
+    filter: (sensor: IChannelOfTypeFromMission) => boolean;
 }
 
 @observer export class MultiSensorSelector extends React.Component<IProps, {}> {
 
     @observable listSensors: IChannelOfTypeFromMission[] = [];
-    @observable private sensorSelected: IChannelOfTypeFromMission = undefined;
 
     public constructor(props: IProps) {
         super(props);
@@ -41,7 +42,7 @@ interface IProps {
                 minimal={true}
                 position={Position.BOTTOM_LEFT}
             >
-                <Button text={this.buildLegend(this.sensorSelected)}/>
+                <Button text={this.buildLegend(this.props.sensorSelected)}/>
             </Popover>
         );
     }
@@ -49,12 +50,11 @@ interface IProps {
     private buildSensorList = () => {
         return (
             <Menu>
-                {this.listSensors.map((sensor: IChannelOfTypeFromMission) =>
+                {this.listSensors.filter(this.props.filter).map((sensor: IChannelOfTypeFromMission) =>
                     <MenuItem
                         key={this.buildKey(sensor)}
                         text={this.buildLegend(sensor)}
                         onClick={() => {
-                            this.sensorSelected = sensor;
                             this.props.handleSelect(sensor);
                         }}
                     />

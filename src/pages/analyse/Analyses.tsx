@@ -1,7 +1,6 @@
 import * as React from 'react';
-// import { render } from "react-dom";
-
-// Import React Table
+import { style } from 'typestyle';
+import * as csstips from 'csstips';
 import 'react-table/react-table.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import { observer } from 'mobx-react';
@@ -59,6 +58,7 @@ interface IProps {
                         }
                     )
                 }
+                <div className={style(csstips.height(120))}/>
             </div>
         );
     }
