@@ -33,6 +33,7 @@ interface Iηx {
 interface Ixy {
     x: number;
     y: number;
+    date: Date;
 }
 
 export enum EnumAlarm {
@@ -91,8 +92,8 @@ export enum EnumAlarm {
     }
 
     componentWillReceiveProps(props: IProps) {
-        var startDate = dateToSql(props.dateInterval.startDate);
-        var stopDate = dateToSql(props.dateInterval.stopDate);
+        var startDate = dateToSql(props.dateInterval.missionStartDate);
+        var stopDate = dateToSql(props.dateInterval.missionStopDate);
 
         if ( startDate !== this.startDate || stopDate !== this.stopDate) {
             this.startDate = startDate;
@@ -102,9 +103,13 @@ export enum EnumAlarm {
         if ( props.channelX !== this.props.channelX || props.channelY !== this.props.channelY ) {
             this.loadJsonFromAeroc(startDate, stopDate, props.channelX, props.channelY);
         }
-        // if( props.currentHumidity !== this.props.currentHumidity || props.currentTemperature !== this.props.currentTemperature ) {
 
-        // }
+        if ( props.dateInterval.minDate !== this.props.dateInterval.minDate ||
+            props.dateInterval.maxDate !== this.props.dateInterval.maxDate
+        ) {
+            d3.select(this.chartRef).selectAll('.classDots')
+                .attr('opacity', (d: Ixy) => this.isDateBetweenInterval(d.date, props.dateInterval.minDate, props.dateInterval.maxDate) ? 1 : 0);
+        }
     }
 
     // loadJsonFromAeroc = (dateBegin: string, dateEnd: string, channel1: IChannel, channel2: IChannel) => {
@@ -127,7 +132,7 @@ export enum EnumAlarm {
                     data.forEach((line: ICrossValue) => {
                         var date = dateWithoutSeconds(line.date);
                         this.mapValues.set(date, {x: line.channel1, y: line.channel2});
-                        this.datum.push( {x: line.channel1, y: line.channel2} )
+                        this.datum.push( {x: line.channel1, y: line.channel2, date: date} )
                     })
             
                     // var maxChannel1 = d3.max(this.datum, (d)=>{return d.x})
@@ -476,10 +481,11 @@ export enum EnumAlarm {
         }
     }
 
-    drawGraph = () => {
+    private drawGraph = () => {
         d3.select(this.chartRef).selectAll('dots')
             .data(this.datum)
             .enter().append('circle')
+                .attr('class', 'classDots')
                 .attr('cx', (d) => this.scaleX(d.x))
                 .attr('cy', (d) => this.scaleY(get_x_from_η_φ (d.x, d.y)))
                 .attr('r', 1)
@@ -487,6 +493,10 @@ export enum EnumAlarm {
                 .attr('stroke', this.functionColor)
                 .attr('stroke-width', 1);
     };
+
+    private isDateBetweenInterval = (date: Date, dateMin: Date, dateMax: Date) => {
+        return (date >= dateMin) && (date <= dateMax);
+    }
 
     drawXAxis = () => {
         d3.select(this.xAxisRef)
@@ -537,23 +547,26 @@ export enum EnumAlarm {
 
     componentDidUpdate() {
 
-        var translateX = this.scaleX(this.props.currentTemperature);
-        var translateY = this.scaleY(get_x_from_η_φ (this.props.currentTemperature, this.props.currentHumidity));
-        var translateCrosshair = 'translate(-10,-10)';
-        var displayCrosshair = false;
+        if (!this.props.currentTemperature || !this.props.currentTemperature) {
+            d3.select(this.currentCrosshairRef)
+                .attr('opacity', 0);
+        } else {
+            var translateX = this.scaleX(this.props.currentTemperature);
+            var translateY = this.scaleY(get_x_from_η_φ (this.props.currentTemperature, this.props.currentHumidity));
+            var translateCrosshair = 'translate(-10,-10)';
+            var displayCrosshair = false;
+        
+            if (translateX !== NaN && translateY !== NaN) {
+                translateCrosshair = 'translate(' + translateX + ',' + translateY + ')';
+                displayCrosshair = true;
+            }
     
-        if (translateX !== NaN && translateY !== NaN) {
-            translateCrosshair = 'translate(' + translateX + ',' + translateY + ')';
-            displayCrosshair = true;
+            d3.select(this.currentCrosshairRef)
+                .transition()
+                .attr('transform', translateCrosshair)
+                .attr('opacity', displayCrosshair ? 1 : 0);
         }
 
-        if (!this.props.currentTemperature || !this.props.currentTemperature) {
-            displayCrosshair = false;
-        }
-        d3.select(this.currentCrosshairRef)
-            .transition()
-            .attr('transform', translateCrosshair)
-            .attr('opacity', displayCrosshair ? 1 : 0);
     }
 
     render() {

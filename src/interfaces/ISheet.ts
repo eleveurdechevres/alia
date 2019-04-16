@@ -82,6 +82,6 @@ export interface ISheetDef {
     client: IClient;
     habitat: IHabitat;
     mission: IMission;
-    dateDebut: Date;
-    dateFin: Date;
+    dateDebutMission: Date;
+    dateFinMission: Date;
 }

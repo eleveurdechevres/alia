@@ -72,7 +72,7 @@ interface IProps {
                         tabEnum={NavBarTabEnum.ANALYSES}
                         selectedTab={this.props.globalStore.selectedTab}
                         onClick={this.handleGotoAnalyses}
-                        disabled={false}
+                        disabled={!this.props.globalStore.habitat}
                     />
                     <NavBarButton
                         icon="lightbulb"

@@ -255,8 +255,8 @@ export class GlobalStore {
                 client: this.client,
                 habitat: this.habitat,
                 mission: mission,
-                dateDebut: dateDebut,
-                dateFin: dateFin
+                dateDebutMission: dateDebut,
+                dateFinMission: dateFin
             },
             sheetName: this.createNewName('New sheet', this.sheets.map((s: ISheet) => s.sheetName))
         };

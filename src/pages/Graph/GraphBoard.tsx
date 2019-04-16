@@ -31,8 +31,8 @@ interface IProps {
 }
 
 export interface IDateInterval {
-    startDate: Date;
-    stopDate: Date;
+    missionStartDate: Date;
+    missionStopDate: Date;
     minDate: Date;
     maxDate: Date;
 }
@@ -52,8 +52,8 @@ interface ICrosshair {
     @observable mapChannels: Map<string, IChannel> = new Map<string, IChannel>();
     @observable channels: IChannel[] = [];
     @observable dateInterval: IDateInterval = {
-        startDate: new Date(),
-        stopDate: new Date(),
+        missionStartDate: new Date(),
+        missionStopDate: new Date(),
         minDate: new Date(),
         maxDate: new Date()
     }
@@ -144,8 +144,8 @@ interface ICrosshair {
 
     private updateVent = () => {
 
-        let dateBegin = this.dateInterval.startDate;
-        let dateEnd = this.dateInterval.stopDate;
+        let dateBegin = this.dateInterval.missionStartDate;
+        let dateEnd = this.dateInterval.missionStopDate;
         this.graphDataManager.loadVitesseVentFromAeroc(this.props.habitat.id, dateBegin, dateEnd, (mesures: IMesure[]) => {
             // console.log(mesures);
         });
@@ -177,15 +177,15 @@ interface ICrosshair {
                 var minDate = new Date(data.minDate);
                 var maxDate = new Date(data.maxDate);
 
-                this.dateInterval.startDate = minDate;
-                this.dateInterval.stopDate = maxDate;
+                this.dateInterval.missionStartDate = minDate;
+                this.dateInterval.missionStopDate = maxDate;
                 this.dateInterval.minDate = minDate;
                 this.dateInterval.maxDate = maxDate;
                 
-                this.sunBehaviourManager = new SunBehaviourManager(this.props.habitat, this.dateInterval.startDate, this.dateInterval.stopDate)
+                this.sunBehaviourManager = new SunBehaviourManager(this.props.habitat, this.dateInterval.missionStartDate, this.dateInterval.missionStopDate)
 
                 // Update time scale
-                var domain = [this.dateInterval.startDate, this.dateInterval.stopDate];
+                var domain = [this.dateInterval.missionStartDate, this.dateInterval.missionStopDate];
                 var chartWidth = 1270;
                 var range = [0, chartWidth];
                 this.contextTimeScale = d3.scaleTime().domain(domain).range(range);
@@ -202,15 +202,15 @@ interface ICrosshair {
         if (!capteurId) {
             return Promise.resolve({ dateInterval: {startDate: undefined, stopDate: undefined} });
         }
-        this.dateInterval.startDate = new Date(this.props.mission.date_debut);
-        this.dateInterval.stopDate = new Date(this.props.mission.date_fin);
+        this.dateInterval.missionStartDate = new Date(this.props.mission.date_debut);
+        this.dateInterval.missionStopDate = new Date(this.props.mission.date_fin);
         this.dateInterval.minDate = new Date(this.props.mission.date_debut);
         this.dateInterval.maxDate = new Date(this.props.mission.date_fin);
         
-        this.sunBehaviourManager = new SunBehaviourManager(this.props.habitat, this.dateInterval.startDate, this.dateInterval.stopDate)
+        this.sunBehaviourManager = new SunBehaviourManager(this.props.habitat, this.dateInterval.missionStartDate, this.dateInterval.missionStopDate)
 
         // Update time scale
-        var domain = [this.dateInterval.startDate, this.dateInterval.stopDate];
+        var domain = [this.dateInterval.missionStartDate, this.dateInterval.missionStopDate];
         var chartWidth = 1270;
         var range = [0, chartWidth];
         this.contextTimeScale = d3.scaleTime().domain(domain).range(range);
@@ -219,15 +219,15 @@ interface ICrosshair {
 
         // Redraw Globlal Axis
         this.drawDateAxis();
-        return Promise.resolve({ dateInterval: {startDate: this.dateInterval.startDate, stopDate: this.dateInterval.stopDate} });
+        return Promise.resolve({ dateInterval: {startDate: this.dateInterval.missionStartDate, stopDate: this.dateInterval.missionStopDate} });
     }
 
     handleChangeStartDate = (date: Date) => {
-        this.dateInterval.startDate = date;
+        this.dateInterval.missionStartDate = date;
     }
   
     handleChangeStopDate = (date: Date) => {
-        this.dateInterval.stopDate = date;
+        this.dateInterval.missionStopDate = date;
     }
 
     componentDidMount() {
@@ -398,7 +398,7 @@ interface ICrosshair {
         </div>
         <div className={style(csstips.flex, csstips.vertical)}>
             <DatePicker
-                selected={this.dateInterval.startDate}
+                selected={this.dateInterval.missionStartDate}
                 onChange={this.handleChangeStartDate}
                 minDate={this.dateInterval.minDate}
                 maxDate={this.dateInterval.maxDate}
@@ -406,7 +406,7 @@ interface ICrosshair {
                 placeholderText="Date de début"
             />
             <DatePicker
-                selected={this.dateInterval.stopDate}
+                selected={this.dateInterval.missionStopDate}
                 onChange={this.handleChangeStopDate}
                 minDate={this.dateInterval.minDate}
                 maxDate={this.dateInterval.maxDate}

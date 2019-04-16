@@ -556,8 +556,8 @@ interface IChannelData {
     }
 
     componentWillReceiveProps(props: IProps) {
-        var startDate = dateToSql(props.dateInterval.startDate);
-        var stopDate = dateToSql(props.dateInterval.stopDate);
+        var startDate = dateToSql(props.dateInterval.missionStartDate);
+        var stopDate = dateToSql(props.dateInterval.missionStopDate);
         if ( startDate !== this.startDate || stopDate !== this.stopDate) {
             this.startDate = startDate;
             this.stopDate = stopDate;

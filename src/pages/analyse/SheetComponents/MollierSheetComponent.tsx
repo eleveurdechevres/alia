@@ -12,14 +12,21 @@ import { GenericSheetComponent, IGenericSheetComponentProps } from './GenericShe
 import { IDateInterval } from 'src/pages/Graph/GraphBoard';
 import { Mollier } from 'src/pages/Graph/CrossGraph/Mollier';
 import { GraphType } from '../../Graph/Channel/GraphType';
+import { TimeContextBar } from '../Detail/TimeContextBar';
 
 @observer export class MollierSheetComponent<P extends IGenericSheetComponentProps> extends GenericSheetComponent {
 
     @observable private humiditySensor: IChannelOfTypeFromMission;
     @observable private temperatureSensor: IChannelOfTypeFromMission;
 
+    @observable private minDate: Date;
+    @observable private maxDate: Date;
+
     public constructor(props: P) {
         super(props);
+
+        this.minDate =  this.props.sheet.sheetDef.dateDebutMission;
+        this.maxDate =  this.props.sheet.sheetDef.dateFinMission;
 
         autorun(() => {
             if (this.temperatureSensor) {
@@ -36,28 +43,43 @@ import { GraphType } from '../../Graph/Channel/GraphType';
 
     protected buildChart = () => {
         let dateInterval: IDateInterval = {
-            minDate: this.props.sheet.sheetDef.dateDebut,
-            startDate: this.props.sheet.sheetDef.dateDebut,
-            maxDate: this.props.sheet.sheetDef.dateFin,
-            stopDate: this.props.sheet.sheetDef.dateFin
+            missionStartDate: this.props.sheet.sheetDef.dateDebutMission,
+            missionStopDate: this.props.sheet.sheetDef.dateFinMission,
+            minDate: this.minDate,
+            maxDate: this.maxDate
         }
+
         return (
             <div>
-                {
-                    this.temperatureSensor && this.humiditySensor ?
-                        <Mollier
-                            chartWidth={this.windowWidth - 100}
-                            chartHeight={800}
-                            dateInterval={dateInterval}
-                            capteurId={this.temperatureSensor.capteur_id}
-                            channelX={this.temperatureSensor.channel_id} 
-                            channelY={this.humiditySensor.channel_id} 
-                            channelXType={GraphType.TEMPERATURE} 
-                            channelYType={GraphType.HUMIDITE}
-                            currentHumidity={undefined}
-                            currentTemperature={undefined}
-                        /> : ''
+                <div>
+                    {
+                        this.temperatureSensor && this.humiditySensor ?
+                            <Mollier
+                                chartWidth={this.windowWidth - 60}
+                                chartHeight={800}
+                                dateInterval={dateInterval}
+                                capteurId={this.temperatureSensor.capteur_id}
+                                channelX={this.temperatureSensor.channel_id} 
+                                channelY={this.humiditySensor.channel_id} 
+                                channelXType={GraphType.TEMPERATURE} 
+                                channelYType={GraphType.HUMIDITE}
+                                currentHumidity={undefined}
+                                currentTemperature={undefined}
+                            /> : ''
                     }
+                </div>
+                <div>
+                    <TimeContextBar
+                        width={this.windowWidth - 60}
+                        height={50}
+                        minDate={this.minDate}
+                        maxDate={this.maxDate}
+                        handleChangeTimeInterval={(date1: Date, date2: Date) => {
+                            this.minDate = date1;
+                            this.maxDate = date2;
+                        }}
+                    />
+                </div>
             </div>
         );
     }
