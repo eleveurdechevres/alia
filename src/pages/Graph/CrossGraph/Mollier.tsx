@@ -570,7 +570,7 @@ export enum EnumAlarm {
                         <g ref={(ref) => {this.yAxisRef = ref}} transform={'translate(' + this.props.chartWidth + ', 0)'}/>
                         <g
                             ref={(ref) => {this.currentCrosshairRef = ref}}
-                            transform="tranlate(-10, -10)"
+                            transform="translate(-10, -10)"
                             opacity="0"
                         >
                             <circle cx="0" cy="0" r="5" stroke="white" fill="steelblue"/>

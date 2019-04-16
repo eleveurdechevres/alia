@@ -6,7 +6,7 @@ import { ISheet } from 'src/interfaces/ISheet';
 import { style } from 'typestyle';
 import * as csstips from 'csstips';
 import { IconButton } from 'src/components/IconButton';
-import { Intent, Popover, Position, IconName } from '@blueprintjs/core';
+import { Intent, Popover, Position } from '@blueprintjs/core';
 import { EditableRecordName } from 'src/components/EditableRecordName';
 
 export interface IGenericSheetComponentProps {
@@ -40,28 +40,23 @@ export interface IGenericSheetComponentProps {
 
     public render () {
         
-        let props = {
-            className: style(csstips.content),
-            fontSize: 18,
-            icon: 'add' as IconName,
-            iconLegend: 'icon legend',
-            placeholder: 'Enter sheet name',
-            record: this.props.sheet,
-            recordList: this.props.globalStore.sheets,
-            getNameFromRecord: (rec: ISheet) => rec.sheetName,
-            renameRecord: (rec: ISheet, newName: string) => { this.props.globalStore.renameSheet(this.props.sheet, newName) }
-        };
-        let _EditableRecordName: EditableRecordName<ISheet> = new EditableRecordName(props);
-
         return (
             <div
                 className={style(csstips.margin(10), csstips.padding(10), { boxShadow: '1px 1px 10px #888' })}
             >
                 <div className={style(csstips.fillParent, csstips.horizontal, csstips.center, csstips.padding(10), csstips.horizontallySpaced(30))}>
                     <div className={style(csstips.width(300))}>
-                        {
-                            _EditableRecordName.render()
-                        }
+                        <EditableRecordName
+                            className={style(csstips.content)}
+                            fontSize={18}
+                            icon="add"
+                            iconLegend="icon legend"
+                            placeholder="Enter sheet name"
+                            record={this.props.sheet}
+                            recordList={this.props.globalStore.sheets}
+                            getNameFromRecord={(rec: ISheet) => rec.sheetName}
+                            renameRecord={(rec: ISheet, newName: string) => { this.props.globalStore.renameSheet(this.props.sheet, newName) }}
+                        />
                     </div>
                     <div className={style(csstips.flex)}>
                         {this.buildConfigBar()}

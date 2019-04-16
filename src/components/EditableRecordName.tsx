@@ -26,11 +26,7 @@ interface IProps<REC_TYPE> {
 
     public constructor(props: IProps<RECORD_TYPE>) {
         super(props);
-        if (this.currentName === undefined && this.props.getNameFromRecord(this.props.record)) {
-            this.currentName = this.props.getNameFromRecord(this.props.record);
-        } else {
-            this.currentName = 'titi';
-        }
+        this.currentName = this.props.getNameFromRecord(this.props.record);
     }
 
     public render() {
