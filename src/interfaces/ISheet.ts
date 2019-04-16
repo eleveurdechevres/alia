@@ -23,7 +23,7 @@ export enum ESheetType {
     RADAR_CHART
 }
 
-interface ISheetTypeProperties {
+export interface ISheetTypeProperties {
     name: string,
     icon: IconName,
     enabled?: boolean
@@ -73,6 +73,10 @@ export const ISheetTypes: Map<ESheetType, ISheetTypeProperties> = new Map([
         } as ISheetTypeProperties
     ]
 ]);
+
+export function getSheetTypeProperties(sheetType: ESheetType): ISheetTypeProperties {
+    return ISheetTypes.get(sheetType);
+}
 
 export interface ISheetDef {
     client: IClient;

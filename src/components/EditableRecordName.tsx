@@ -30,8 +30,6 @@ interface IProps<REC_TYPE> {
     }
 
     public render() {
-        console.log('currentName ' + this.currentName);
-
         return (
             <div className={style(csstips.content, csstips.horizontal, csstips.gridSpaced(10))}>
                 <Icon

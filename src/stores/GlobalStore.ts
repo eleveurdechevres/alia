@@ -258,7 +258,7 @@ export class GlobalStore {
                 dateDebut: dateDebut,
                 dateFin: dateFin
             },
-            sheetName: 'toto'
+            sheetName: this.createNewName('New sheet', this.sheets.map((s: ISheet) => s.sheetName))
         };
         this.sheets.push(sheet);
     }
@@ -283,5 +283,30 @@ export class GlobalStore {
 
     public addSeriesToSheet = (sheet: ISheet, seriesDef: ISeriesDef) => {
         // TODO
+    }
+
+    private createNewName = (currentName: string, allNames: string[]): string => {
+
+        let racine = currentName;
+        let index = 1;
+        // If name is like "ccccccc (d)"
+        let match = currentName.match(/^(.*) \((\d+)\)$/);
+        if ( match ) {
+            racine = match[1];
+            index = parseInt(match[2], 10);
+            index++;
+            let newName = racine + ' (' + index + ')';
+            if ( allNames.find((name: string) => name === newName )) {
+                return this.createNewName(newName, allNames);
+            }
+            return newName;
+        }
+        else {
+            let newName = racine + ' (' + index + ')';
+            if ( allNames.find((name: string) => name === newName )) {
+                return this.createNewName(newName, allNames);
+            }
+            return newName;
+        }
     }
 }

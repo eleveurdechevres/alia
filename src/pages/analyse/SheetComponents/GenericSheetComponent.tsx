@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
 import { GlobalStore } from 'src/stores/GlobalStore';
-import { ISheet } from 'src/interfaces/ISheet';
+import { ISheet, getSheetTypeProperties, ISheetTypeProperties } from 'src/interfaces/ISheet';
 import { style } from 'typestyle';
 import * as csstips from 'csstips';
 import { IconButton } from 'src/components/IconButton';
@@ -18,10 +18,12 @@ export interface IGenericSheetComponentProps {
 
     @observable windowWidth: number;
     @observable windowHeight: number;
-    
+    private sheetTypeProperties: ISheetTypeProperties;
+
     public constructor(props: IGenericSheetComponentProps) {
         super(props);
         this.windowWidth = window.innerWidth;
+        this.sheetTypeProperties = getSheetTypeProperties(props.sheet.sheetType);
     }
 
     public componentDidMount() {
@@ -49,7 +51,7 @@ export interface IGenericSheetComponentProps {
                         <EditableRecordName
                             className={style(csstips.content)}
                             fontSize={18}
-                            icon="add"
+                            icon={this.sheetTypeProperties.icon}
                             iconLegend="icon legend"
                             placeholder="Enter sheet name"
                             record={this.props.sheet}
