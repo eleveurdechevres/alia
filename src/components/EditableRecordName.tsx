@@ -65,7 +65,6 @@ interface IProps<REC_TYPE> {
                             }
                         }}
                         onChange={(value: string) => {
-                            console.log(value)
                             this.currentName = value;
                         }}
                         multiline={false}
