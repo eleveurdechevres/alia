@@ -10,7 +10,7 @@ import { IMission } from 'src/interfaces/IMission';
 import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMission';
 
 interface IProps {
-    type: TMesure;
+    type?: TMesure;
     mission: IMission;
     globalStore: GlobalStore;
     sensorSelected: IChannelOfTypeFromMission;
@@ -25,12 +25,20 @@ interface IProps {
     public constructor(props: IProps) {
         super(props);
 
-        this.props.globalStore.getAllChannelsOfTypeFromMission(this.props.type, this.props.mission.id).then(
-            (listSensors: IChannelOfTypeFromMission[]) => {
-                this.listSensors = listSensors;
-            }
-        )
-        
+        if (this.props.type) {
+            this.props.globalStore.getAllChannelsOfTypeFromMission(this.props.type, this.props.mission.id).then(
+                (listSensors: IChannelOfTypeFromMission[]) => {
+                    this.listSensors = listSensors;
+                }
+            )
+        }
+        else {
+            this.props.globalStore.getAllChannelsFromMission(this.props.mission.id).then(
+                (listSensors: IChannelOfTypeFromMission[]) => {
+                    this.listSensors = listSensors;
+                }
+            )
+        }
     }
 
     public render() {

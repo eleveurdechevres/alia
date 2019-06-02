@@ -6,7 +6,7 @@ import { observable } from 'mobx';
 import * as React from 'react';
 import { style } from 'typestyle';
 import { GlobalStore } from 'src/stores/GlobalStore';
-import { ISeriesDef } from 'src/interfaces/ISeriesDef';
+import { ISerieDef } from 'src/interfaces/ISeriesDef';
 import { ISheet } from 'src/interfaces/ISheet';
 
 interface IProps {
@@ -14,11 +14,11 @@ interface IProps {
     sheet: ISheet;
 }
 
-const SENSOR_DATA_MULTI_SELECT = MultiSelect.ofType<ISeriesDef>();
+const SENSOR_DATA_MULTI_SELECT = MultiSelect.ofType<ISerieDef>();
 
 @observer export class SensorDataSelector extends React.Component<IProps, {}> {
 
-    @observable selectedSeriesDefs: ISeriesDef[] = [];
+    @observable selectedSeriesDefs: ISerieDef[] = [];
 
     private tagInputProps = {
         onRemove: (value: string, index: number) => { this.props.globalStore.removeSeriesFromSheet(this.props.sheet, this.props.sheet.series[index]); },
@@ -37,7 +37,7 @@ const SENSOR_DATA_MULTI_SELECT = MultiSelect.ofType<ISeriesDef>();
                 className={style(csstips.fillParent, csstips.flex, csstips.border('1px solid red'))}
                 itemPredicate={this.filterLine}
                 itemRenderer={this.lineItemRenderer}
-                tagRenderer={(seriesDef: ISeriesDef) => 'Etage ' + seriesDef.plan.etage + ', ' + seriesDef.capteur.capteur_reference_id + '[id' + seriesDef.capteur.id + ']'}
+                tagRenderer={(seriesDef: ISerieDef) => 'Etage ' + seriesDef.plan.etage + ', ' + seriesDef.capteur.capteur_reference_id + '[id' + seriesDef.capteur.id + ']'}
                 tagInputProps={this.tagInputProps}
                 items={this.props.sheet.series}
                 selectedItems={this.selectedSeriesDefs}
@@ -64,11 +64,11 @@ const SENSOR_DATA_MULTI_SELECT = MultiSelect.ofType<ISeriesDef>();
         );
     }
 
-    private isLineSelected = (seriesDef: ISeriesDef): boolean => {
+    private isLineSelected = (seriesDef: ISerieDef): boolean => {
         return this.selectedSeriesDefs.includes(seriesDef);
     }
 
-    private selectLine = (seriesDef: ISeriesDef): void => {
+    private selectLine = (seriesDef: ISerieDef): void => {
         // if exists, remove line
         if (this.isLineSelected(seriesDef)) {
             this.props.globalStore.removeSeriesFromSheet(this.props.sheet, seriesDef);
@@ -77,11 +77,11 @@ const SENSOR_DATA_MULTI_SELECT = MultiSelect.ofType<ISeriesDef>();
         }
     }
 
-    private filterLine: ItemPredicate<ISeriesDef> = (query, seriesDef) => {
+    private filterLine: ItemPredicate<ISerieDef> = (query, seriesDef) => {
         return true;
     };
  
-    private lineItemRenderer: ItemRenderer<ISeriesDef> = (seriesDef: ISeriesDef, itemProps: IItemRendererProps): JSX.Element | null => {
+    private lineItemRenderer: ItemRenderer<ISerieDef> = (seriesDef: ISerieDef, itemProps: IItemRendererProps): JSX.Element | null => {
         let modifiers: IItemModifiers = itemProps.modifiers;
         let handleClick: React.MouseEventHandler<HTMLElement> = itemProps.handleClick;
         let query: string = itemProps.query;
@@ -102,7 +102,7 @@ const SENSOR_DATA_MULTI_SELECT = MultiSelect.ofType<ISeriesDef>();
         );
     };
 
-    computeSeriesDefName = (seriesDef: ISeriesDef): string => {
+    computeSeriesDefName = (seriesDef: ISerieDef): string => {
         return  (
             seriesDef.plan.description + '(' + seriesDef.plan.etage + ')' +
             seriesDef.capteur.capteur_reference_id + '(' + seriesDef.capteur.id + ')' +
@@ -110,7 +110,7 @@ const SENSOR_DATA_MULTI_SELECT = MultiSelect.ofType<ISeriesDef>();
         );
     }
 
-    private noResultRenderer: ItemRenderer<ISeriesDef> = (): JSX.Element => {
+    private noResultRenderer: ItemRenderer<ISerieDef> = (): JSX.Element => {
         return (
             <MenuItem disabled={true} text="Aucun résultat trouvé"/>
         );

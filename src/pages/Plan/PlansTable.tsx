@@ -12,8 +12,10 @@ import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { IPlan } from 'src/interfaces/IPlan';
 import { IMission } from 'src/interfaces/IMission';
+import { GlobalStore } from 'src/stores/GlobalStore';
 
 interface IProps {
+    globalStore: GlobalStore;
     habitat: IHabitat;
     mission: IMission;
 }
@@ -110,7 +112,14 @@ interface IProps {
           className="-striped -highlight"
           getTrProps={this.handleEventsOnPlan}
           SubComponent={ row => {
-            return (<Plan habitat={this.habitat} planId={row.original.id} mission={this.props.mission}/>);
+            return (
+                <Plan
+                    globalStore={this.props.globalStore}
+                    habitat={this.habitat}
+                    planId={row.original.id}
+                    mission={this.props.mission}
+                />
+            );
           }}
         />
         <br />

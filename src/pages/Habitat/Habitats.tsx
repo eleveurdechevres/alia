@@ -46,7 +46,9 @@ const dialogFieldValueStyle = style(csstips.flex);
         habitatId: undefined,
         etage: undefined,
         description: undefined,
-        plan: undefined
+        plan: undefined,
+        dateCreation: undefined,
+        dateModification: undefined
     }
 
     // https://react-table.js.org/#/story/readme
@@ -140,7 +142,11 @@ const dialogFieldValueStyle = style(csstips.flex);
                                         this.planToCreate.habitatId = row.original.id;
                                     }}
                                 />
-                                <PlansTable habitat={row.original} mission={undefined}/>
+                                <PlansTable
+                                    globalStore={this.props.globalStore}
+                                    habitat={row.original}
+                                    mission={undefined}
+                                />
                             </div>
                         );
                     }}

@@ -16,14 +16,21 @@ export interface IGenericSheetComponentProps {
 
 @observer export class GenericSheetComponent extends React.Component<IGenericSheetComponentProps, {}> {
 
-    @observable windowWidth: number;
-    @observable windowHeight: number;
+    @observable protected windowWidth: number;
+    @observable protected windowHeight: number;
+
+    @observable protected minDate: Date;
+    @observable protected maxDate: Date;
+
     private sheetTypeProperties: ISheetTypeProperties;
 
     public constructor(props: IGenericSheetComponentProps) {
         super(props);
         this.windowWidth = window.innerWidth;
         this.sheetTypeProperties = getSheetTypeProperties(props.sheet.sheetType);
+
+        this.minDate =  this.props.sheet.sheetDef.dateDebutMission;
+        this.maxDate =  this.props.sheet.sheetDef.dateFinMission;
     }
 
     public componentDidMount() {

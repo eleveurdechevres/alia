@@ -1,15 +1,18 @@
 import * as React from 'react';
 import * as d3 from 'd3';
 import { GraphType } from './GraphType';
-import { dateTimeString, dateToSql } from '../../../utils/DateUtils';
+import { dateTimeString } from '../../../utils/DateUtils';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
 import { IHabitat } from 'src/interfaces/IHabitat';
 import { SunBehaviourManager, ISunriseSunset } from 'src/managers/SunBehaviourManager';
 import { Icon, Colors } from '@blueprintjs/core';
 import { IDateInterval } from '../GraphBoard';
+import { GlobalStore } from 'src/stores/GlobalStore';
+import { IMesure } from 'src/managers/GraphDataManager';
 
 interface IProps {
+    globalStore: GlobalStore;
     originGraphX: number;
     originGraphY: number;
     chartWidth: number;
@@ -60,55 +63,52 @@ interface IChannelData {
 
 @observer export class GraphChannel extends React.Component<IProps, {}> {
 
-    @observable graphType: any = undefined;
+    @observable private graphType: any = undefined;
+    @observable private startDate: Date;
+    @observable private stopDate: Date;
 
-    gChartRef: SVGGElement | null;
-    chartRef: SVGGElement | null;
-    chartContextRef: SVGGElement | null;
-    overlayChartRef: SVGGElement  | null;
+private gChartRef: SVGGElement | null;
+    private chartRef: SVGGElement | null;
+    private overlayChartRef: SVGGElement  | null;
 
-    yValueDisplayedRef: SVGGElement | null;
-    yValueRef: SVGGElement | null;
+    private yValueDisplayedRef: SVGGElement | null;
+    private yValueRef: SVGGElement | null;
 
-    moyenneDiurneRef: SVGTSpanElement | null;
-    moyenneNocturneRef: SVGTSpanElement | null;
+    private moyenneDiurneRef: SVGTSpanElement | null;
+    private moyenneNocturneRef: SVGTSpanElement | null;
 
-    gHorizontalCrosshairRef: SVGGElement | null;
-    horizontalCrosshairValueRef: SVGGElement | null;
+    private gHorizontalCrosshairRef: SVGGElement | null;
+    private horizontalCrosshairValueRef: SVGGElement | null;
 
-    gVerticalCrosshairRef: SVGGElement | null;
-    gDateRef: SVGGElement | null;
-    dateRef: SVGGElement | null;
+    private gVerticalCrosshairRef: SVGGElement | null;
+    private dateRef: SVGGElement | null;
 
-    axisBottomRef: SVGGElement | null;
+    private axisBottomRef: SVGGElement | null;
 
-    refGVerticalBrushDetail: SVGGElement | null;
-    refGHorizontalBrushDetail : SVGGElement;
+    private refGVerticalBrushDetail: SVGGElement | null;
+    private refGHorizontalBrushDetail : SVGGElement;
     
-    sunIcon: Icon;
-    sunMode: boolean = false;
+    private sunIcon: Icon;
+    private sunMode: boolean = false;
 
-    xyBrush: d3.BrushBehavior<{}>;
-    verticalBrushDetail: d3.BrushBehavior<{}>;
-    horizontalBrushDetail: d3.BrushBehavior<{}>;
+    private xyBrush: d3.BrushBehavior<{}>;
+    private verticalBrushDetail: d3.BrushBehavior<{}>;
+    private horizontalBrushDetail: d3.BrushBehavior<{}>;
 
-    @observable startDate: string;
-    @observable stopDate: string;
+    private originGraphX: number;
+    private originGraphY: number;
+    private chartWidth: number;
+    private chartHeight: number;
 
-    originGraphX: number;
-    originGraphY: number;
-    chartWidth: number;
-    chartHeight: number;
-
-    mapValues = new Map<number, number>();
-    mapMeteo = new Map<number, number>();
+    private mapValues = new Map<number, number>();
+    private mapMeteo = new Map<number, number>();
     
-    valuesKeys: number[];
-    meteokeys: number[];
+    private valuesKeys: number[];
+    private meteokeys: number[];
 
-    timeScale: any;
+    private timeScale: any;
 
-    lineFunction: d3.Line<{ date: Date; valeur: number; }>;
+    private lineFunction: d3.Line<{ date: Date; valeur: number; }>;
 
     // <GraphChannel
     //     capteurId
@@ -133,7 +133,7 @@ interface IChannelData {
     // precision_step:"1"
     // unit:"Lux"
 
-    constructor(props: IProps) {
+    public constructor(props: IProps) {
         super(props);
         this.graphType = GraphType.getGraphTypeFromMeasuretype(this.props.channelData.measure_type)
 
@@ -163,17 +163,9 @@ interface IChannelData {
     
     }
 
-    loadJsonDataFromAeroc = (capteurId: number, channelId: number, dateBegin: string, dateEnd: string) => {
-        // LOAD DATA from AEROC
-        // date_begin=2017/12/09 20:13:04&date_end=2018/01/24 21:19:06
-        // console.log('http://test.ideesalter.com/alia_readMesure.php?capteur_id=' + capteurId 
-        // + '&channel_id=' + channelId + '&date_begin=' + dateBegin + '&date_end=' + dateEnd)
-        // return fetch('http://test.ideesalter.com/alia_readMesure.php?capteur_id=' + capteurId
-        // + '&channel_id=' + channelId + '&date_begin=2017/12/09 20:13:04&date_end=2017/12/11 21:19:06')
-        var request = 'http://test.ideesalter.com/alia_readMesure.php?capteur_id=' + capteurId
-            + '&channel_id=' + channelId + '&date_begin=' + dateBegin + '&date_end=' + dateEnd;
-        return fetch(request)
-            .then((response) => response.json())
+    private loadJsonDataFromAeroc = (capteurId: number, channelId: number, dateBegin: Date, dateEnd: Date) => {
+        console.log('loadJsonDataFromAeroc')
+        this.props.globalStore.getMesures(capteurId, channelId, dateBegin, dateEnd)
             .then((data) => {
 
                 this.mapValues.clear();
@@ -181,8 +173,8 @@ interface IChannelData {
                 var nbJour: number = 0;
                 var totalJour: number = 0;
                 var totalNuit: number = 0;
-                data.forEach((line: {date: string, valeur: number}) => {
-                    var date = new Date(line.date);
+                data.forEach((line: IMesure) => {
+                    let date: Date = line.date;
                     date.setSeconds(0);
                     date.setMilliseconds(0);
                     date.setUTCMilliseconds(0);
@@ -218,16 +210,14 @@ interface IChannelData {
             });
     }
 
-    loadJsonMeteoFromAeroc = (habitatId: number, channelId: number, dateBegin: string, dateEnd: string) => {
-        var request = 'http://test.ideesalter.com/alia_readMeteo.php?habitat_id=' + habitatId
-            + '&channel_id=' + channelId + '&date_begin=' + dateBegin + '&date_end=' + dateEnd;
-        return fetch(request)
-            .then((response) => response.json())
-            .then((data) => {
+    loadJsonMeteoFromAeroc = (habitatId: number, channelId: number, dateBegin: Date, dateEnd: Date) => {
+
+        this.props.globalStore.getMeteo(habitatId, channelId, dateBegin, dateEnd)
+            .then((data: IMesure[]) => {
 
                 this.mapMeteo.clear();
-                data.forEach((line: {date: string, valeur: number}) => {
-                    var date = new Date(line.date);
+                data.forEach((line: IMesure) => {
+                    let date: Date = line.date;
                     date.setSeconds(0);
                     date.setMilliseconds(0);
                     date.setUTCMilliseconds(0);
@@ -556,19 +546,18 @@ interface IChannelData {
     }
 
     componentWillReceiveProps(props: IProps) {
-        var startDate = dateToSql(props.dateInterval.missionStartDate);
-        var stopDate = dateToSql(props.dateInterval.missionStopDate);
-        if ( startDate !== this.startDate || stopDate !== this.stopDate) {
-            this.startDate = startDate;
-            this.stopDate = stopDate;
+
+        if ( props.dateInterval.missionStartDate !== this.startDate || props.dateInterval.missionStopDate !== this.stopDate) {
+            this.startDate = props.dateInterval.missionStartDate;
+            this.stopDate = props.dateInterval.missionStopDate;
             // this.loadJsonFromAeroc(props.capteurId, props.channelData.id, '2017/12/20 00:00:00', '2017/12/21 01:00:00');
             // this.loadJsonFromAeroc(props.capteurId, props.channelData.id, '2017/12/09 00:00:00', '2017/12/09 23:59:00');
             // this.loadJsonFromAeroc(props.capteurId, props.channelData.id, '2017/12/10 00:00:00', '2017/12/10 23:59:00');
             // this.loadJsonFromAeroc(props.capteurId, props.channelData.id, '2017/12/11 00:00:00', '2017/12/11 23:59:00');
             // this.loadJsonFromAeroc(props.capteurId, props.channelData.id, '2017/12/12 00:00:00', '2017/12/12 23:59:00');
             // this.loadJsonFromAeroc(props.capteurId, props.channelData.id, '2017/12/13 00:00:00', '2017/12/13 23:59:00');
-            this.loadJsonDataFromAeroc(props.capteurId, props.channelData.id, startDate, stopDate);
-            this.loadJsonMeteoFromAeroc(props.habitat.id, props.channelData.id, startDate, stopDate);
+            this.loadJsonDataFromAeroc(props.capteurId, props.channelData.id, this.startDate, this.stopDate);
+            this.loadJsonMeteoFromAeroc(props.habitat.id, props.channelData.id, this.startDate, this.stopDate);
         }
 
         this.displayVerticalCrosshair(props.displayCrossHairTime, props.crosshairTime.dataTimeMs, props.crosshairTime.timeMs);
@@ -702,7 +691,7 @@ interface IChannelData {
                         strokeWidth="1"
                         shapeRendering="crispEdges"
                     />
-                    <g ref={(ref) => {this.gDateRef = ref}}>
+                    <g>
                         <rect rx="2" ry="2" x="-60" y={this.chartHeight} width="120" height="18" stroke="RebeccaPurple" strokeWidth="1" fill="RebeccaPurple" opacity={0.7}/>
                         <text ref={(ref) => {this.dateRef = ref}} fontSize="12" x="0" y={this.chartHeight + 10} fill="white" textAnchor="middle" alignmentBaseline="middle" />
                     </g>

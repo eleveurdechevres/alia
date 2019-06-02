@@ -132,7 +132,11 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
                                         console.log('TODO : create plan')
                                     }}
                                 />
-                                <PlansTable habitat={this.props.globalStore.habitat} mission={row.original}/>
+                                <PlansTable
+                                    globalStore={this.props.globalStore}
+                                    habitat={this.props.globalStore.habitat}
+                                    mission={row.original}
+                                />
                             </div>
                         );
                     }}

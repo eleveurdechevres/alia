@@ -10,6 +10,7 @@ import { AnalysesWizzard } from 'src/pages/analyse/AnalysesWizzard';
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { ISheet, ESheetType } from 'src/interfaces/ISheet';
 import { MollierSheetComponent } from './SheetComponents/MollierSheetComponent';
+import { LineChartSheetComponent } from './SheetComponents/LineChartSheetComponent';
 
 interface IProps {
     globalStore: GlobalStore
@@ -46,6 +47,14 @@ interface IProps {
                                 case ESheetType.MOLLIER_CHART:
                                     return (
                                         <MollierSheetComponent
+                                            key={'SheetComponent' + sheet.sheetName}
+                                            globalStore={this.props.globalStore}
+                                            sheet={sheet}
+                                        />
+                                    );
+                                case ESheetType.TIME_CHART:
+                                    return (
+                                        <LineChartSheetComponent
                                             key={'SheetComponent' + sheet.sheetName}
                                             globalStore={this.props.globalStore}
                                             sheet={sheet}

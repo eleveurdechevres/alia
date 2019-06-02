@@ -22,9 +22,11 @@ import { GraphDataManager, IMesure } from 'src/managers/GraphDataManager';
 import { GraphPollutions } from 'src/pages/Graph/Pollutions/GraphPollutions';
 import { IMission } from 'src/interfaces/IMission';
 import { Mollier } from 'src/pages/Graph/CrossGraph/Mollier';
+import { GlobalStore } from 'src/stores/GlobalStore';
 // import { GraphDataManager, IMesure } from 'src/managers/GraphDataManager';
 
 interface IProps {
+    globalStore: GlobalStore;
     habitat: IHabitat;
     capteur: ICapteur;
     mission: IMission;
@@ -363,6 +365,7 @@ interface ICrosshair {
                         
                         <g key={data.id} transform={'translate(0,' + originy + ')'}>
                             <GraphChannel
+                                globalStore={this.props.globalStore}
                                 originGraphX={this.originGraphX} 
                                 originGraphY={this.originGraphY} 
                                 chartWidth={this.chartWidth} 

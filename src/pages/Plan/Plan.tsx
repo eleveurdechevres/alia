@@ -9,6 +9,7 @@ import { observer } from 'mobx-react';
 import { ICapteur } from 'src/interfaces/ICapteur';
 import { IHabitat } from 'src/interfaces/IHabitat';
 import { IMission } from 'src/interfaces/IMission';
+import { GlobalStore } from 'src/stores/GlobalStore';
 
 const customStyles = {
     overlay : {
@@ -36,6 +37,7 @@ const customStyles = {
 };
 
 interface IProps {
+    globalStore: GlobalStore;
     habitat: IHabitat;
     planId: number;
     mission: IMission;
@@ -214,7 +216,12 @@ interface IProps {
                     contentLabel="Example Modal"
                     style={customStyles}
                 >
-                    <GraphBoard habitat={this.props.habitat} capteur={this.capteurDisplayed} mission={this.props.mission} />
+                    <GraphBoard
+                        globalStore={this.props.globalStore}
+                        habitat={this.props.habitat}
+                        capteur={this.capteurDisplayed}
+                        mission={this.props.mission}
+                    />
                     {/* {this.graphContent} */}
                 </ReactModal >
                 <svg ref={(ref) => {this.svgRef = ref}} width={this.width} height={this.height}>

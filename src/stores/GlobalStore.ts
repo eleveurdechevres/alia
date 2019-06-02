@@ -6,9 +6,15 @@ import { autorun } from 'mobx';
 import { IPlan } from 'src/interfaces/IPlan';
 import { NavBarTabEnum } from 'src/App';
 import { ISheet, ESheetType } from 'src/interfaces/ISheet';
-import { ISeriesDef } from 'src/interfaces/ISeriesDef';
+import { ISerieDef } from 'src/interfaces/ISeriesDef';
 import { TMesure } from 'src/interfaces/Types';
 import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMission';
+import { IChannelFromMission } from 'src/interfaces/IChannelFromMission';
+import { IMesure } from 'src/managers/GraphDataManager';
+import { dateToSql } from 'src/utils/DateUtils';
+import { ICapteur } from 'src/interfaces/ICapteur';
+import { IChannel } from 'src/interfaces/IChannel';
+import { ITypeMesure } from 'src/interfaces/ITypeMesure';
 
 export class GlobalStore {
 
@@ -119,6 +125,76 @@ export class GlobalStore {
         return fetch(`http://test.ideesalter.com/alia_searchAllChannelsOfTypeFromMission.php?type=${type}&mission_id=${missionId}`)
           .then((response) => response.json())
           .then((results) => results);
+    }
+
+    public getAllChannelsFromMission = (missionId: number): Promise<IChannelFromMission[]> => {
+        if (!missionId) {
+          return Promise.resolve([]);
+        }
+        return fetch(`http://test.ideesalter.com/alia_searchAllChannelsFromMission.php?mission_id=${missionId}`)
+          .then((response) => response.json())
+          .then((results) => results);
+    }
+    
+    public getCapteur(capteurId: number, missionId: number): Promise<ICapteur> {
+        return fetch(`http://test.ideesalter.com/alia_getCapteur.php?capteur_id=${capteurId}&mission_id=${missionId}`)
+            .then((response) => response.json())
+            .then((results) => results);
+    }
+
+    public getChannel(channelId: number, capteurReferenceId: string): Promise<IChannel> {
+        return fetch(`http://test.ideesalter.com/alia_getChannel.php?channel_id=${channelId}&capteur_reference_id=${capteurReferenceId}`)
+            .then((response) => response.json())
+            .then((results) => results);
+    }
+
+    public getMesureType(measureTypeId: number): Promise<ITypeMesure> {
+        return fetch(`http://test.ideesalter.com/alia_getTypeMesure.php?id=${measureTypeId}`)
+            .then((response) => response.json())
+            .then((results) => results);
+    }
+
+    public getPlan(planId: number): Promise<IPlan> {
+        return fetch(`http://test.ideesalter.com/alia_getPlan.php?id=${planId}`)
+            .then((response) => response.json())
+            .then((results) => results);
+    }
+
+    public getMesures = (capteurId: number, channelId: number, dateBegin: Date, dateEnd: Date): Promise<IMesure[]> => {
+        console.log('getMesures')
+        // LOAD DATA from AEROC
+        // date_begin=2017/12/09 20:13:04&date_end=2018/01/24 21:19:06
+        // console.log('http://test.ideesalter.com/alia_readMesure.php?capteur_id=' + capteurId 
+        // + '&channel_id=' + channelId + '&date_begin=' + dateBegin + '&date_end=' + dateEnd)
+        // return fetch('http://test.ideesalter.com/alia_readMesure.php?capteur_id=' + capteurId
+        // + '&channel_id=' + channelId + '&date_begin=2017/12/09 20:13:04&date_end=2017/12/11 21:19:06')
+        var request = 'http://test.ideesalter.com/alia_readMesure.php?capteur_id=' + capteurId
+            + '&channel_id=' + channelId + '&date_begin=' + dateToSql(dateBegin) + '&date_end=' + dateToSql(dateEnd);
+        return fetch(request)
+            .then((response) => response.json())
+            .then((results: {date: string, valeur: number}[]) => {
+                let resultsTyped: IMesure[] = results.map(
+                    (r: {date: string, valeur: number}) => {
+                        return {date: new Date(r.date), valeur: r.valeur};
+                    }
+                )
+                return resultsTyped;
+            });
+    }
+
+    public getMeteo = (habitatId: number, channelId: number, dateBegin: Date, dateEnd: Date): Promise<IMesure[]> => {
+        var request = 'http://test.ideesalter.com/alia_readMeteo.php?habitat_id=' + habitatId
+            + '&channel_id=' + channelId + '&date_begin=' + dateToSql(dateBegin) + '&date_end=' + dateToSql(dateEnd);
+        return fetch(request)
+            .then((response) => response.json())
+            .then((results: {date: string, valeur: number}[]) => {
+                let resultsTyped: IMesure[] = results.map(
+                    (r: {date: string, valeur: number}) => {
+                        return {date: new Date(r.date), valeur: r.valeur};
+                    }
+                )
+                return resultsTyped;
+            });
     }
 
     public writeClient = (client: IClient, password: string) => {
@@ -277,11 +353,11 @@ export class GlobalStore {
         let index = this.sheets.findIndex((s: ISheet) => s === sheet);
         this.sheets[index].sheetName = newName;
     }
-    public removeSeriesFromSheet = (sheet: ISheet, seriesDef: ISeriesDef) => {
+    public removeSeriesFromSheet = (sheet: ISheet, seriesDef: ISerieDef) => {
         // TODO
     }
 
-    public addSeriesToSheet = (sheet: ISheet, seriesDef: ISeriesDef) => {
+    public addSeriesToSheet = (sheet: ISheet, seriesDef: ISerieDef) => {
         // TODO
     }
 

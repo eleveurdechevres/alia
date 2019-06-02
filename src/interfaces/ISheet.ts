@@ -1,4 +1,4 @@
-import { ISeriesDef } from './ISeriesDef';
+import { ISerieDef } from './ISeriesDef';
 import { IClient } from './IClient';
 import { IHabitat } from './IHabitat';
 import { IMission } from './IMission';
@@ -9,7 +9,7 @@ export interface ISheet {
     sheetType: ESheetType;
     isVisible: boolean;
     sheetDef: ISheetDef;
-    series: ISeriesDef[];
+    series: ISerieDef[];
     // data: IGroupDataExt[];
     isReadOnly: boolean;
 }

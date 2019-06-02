@@ -19,14 +19,8 @@ import { TimeContextBar } from '../Detail/TimeContextBar';
     @observable private humiditySensor: IChannelOfTypeFromMission;
     @observable private temperatureSensor: IChannelOfTypeFromMission;
 
-    @observable private minDate: Date;
-    @observable private maxDate: Date;
-
     public constructor(props: P) {
         super(props);
-
-        this.minDate =  this.props.sheet.sheetDef.dateDebutMission;
-        this.maxDate =  this.props.sheet.sheetDef.dateFinMission;
 
         autorun(() => {
             if (this.temperatureSensor) {
