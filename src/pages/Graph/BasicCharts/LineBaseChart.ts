@@ -4,6 +4,7 @@ import { BaseChart, ILegendItem, IMargin, svgBorderWidth } from './BaseChart';
 import { ISerieData } from 'src/interfaces/ISerieData';
 import { ScaleOrdinal } from 'd3';
 import { ISheet } from 'src/interfaces/ISheet';
+import { toJS } from 'mobx';
 
 const yAxisWidth = 50;
 const xAxisHeight = 20;
@@ -24,6 +25,9 @@ export interface IDisplayedPath {
 // This class is used both on server and client side
 export class LineBaseChart extends BaseChart {
 
+    // data
+    seriesData: ISerieData[] = [];
+
     // Params
     private marginChart: IMargin;
 
@@ -33,22 +37,20 @@ export class LineBaseChart extends BaseChart {
     private legendItemHeight: number = this.legendRectSize + this.legendSpacing;
     private legendLeftMargin = 10;
 
-    private chartWidth: number;
-    private chartHeight: number;
-    private legendNbItemPerCol: number;
-    private legendNbColumn: number;
-    public legendWidth: number;
-    private legendColumnWidth: number;
-
-    private yMin: number;
-    private yMax: number;
+    private chartWidth = 0;
+    private chartHeight = 0;
+    private legendNbItemPerCol = 0;
+    private legendNbColumn = 0;
+    public legendWidth = 0;
+    private legendColumnWidth = 0;
 
     public timeScaleChartDomainDefault: [Date, Date];
     public yChartDomainDefault: [number, number];
 
     public timeScaleChart: d3.ScaleTime<number, number> = d3.scaleTime();
     public yChart: d3.ScaleLinear<number, number> = d3.scaleLinear();
-
+    private yMin: number;
+    private yMax: number;
     private timeAxisChart: d3.Axis<number | Date | { valueOf(): number; }>;
     private shotAxisChart: d3.Axis<number | Date | { valueOf(): number; }>;
     private yAxisChart: d3.Axis<number | { valueOf(): number; }>;
@@ -74,9 +76,53 @@ export class LineBaseChart extends BaseChart {
 
     public crossHairTimeFormat: string;
 
+    private updatetimeDomain() {
+        const time_start = this.seriesData.reduce((start, serieData) => serieData.timeStart.getDate() < start ? serieData.timeStart : start, Number.POSITIVE_INFINITY);
+        const time_end = this.seriesData.reduce((end, serieData) => serieData.timeEnd.getDate() > end ? serieData.timeEnd : end, Number.NEGATIVE_INFINITY);
+
+        this.timeScaleChartDomainDefault = [new Date(time_start), new Date(time_end)];
+        this.timeScaleChart.domain(this.timeScaleChartDomainDefault).range([0, this.chartWidth]);
+
+        this.timeAxisChart = d3.axisTop(this.timeScaleChart);
+        this.shotAxisChart = d3.axisBottom(this.timeScaleChart);
+    }
+
+    private updateYDomain() {
+        this.yMin = this.seriesData.reduce(
+            (ymin, sd) => sd.yMin < ymin ? sd.yMin : ymin, Number.POSITIVE_INFINITY
+        ) as number;
+        this.yMax = this.seriesData.reduce(
+            (ymax, sd) => sd.yMax > ymax ? sd.yMax : ymax, Number.NEGATIVE_INFINITY
+        ) as number;
+        this.yChartDomainDefault = [this.yMax, this.yMin];
+        this.yChart.domain(this.yChartDomainDefault).range([0, this.chartHeight]);
+
+        this.yAxisChart = d3.axisLeft(this.yChart).tickSizeInner(6).tickSizeOuter(0);
+        this.yGridChart = d3.axisLeft(this.yChart).tickSizeInner(-this.chartWidth).tickSizeOuter(0);
+    }
+
+    public updateSeries(newSeriesData: ISerieData[]) {
+        let seriesToAdd = newSeriesData.filter(((newSerieData: ISerieData) => !this.seriesData.includes(newSerieData)))
+        let seriesToDelete = this.seriesData.filter(((value: ISerieData) => !newSeriesData.includes(value)))
+
+        this.legendNbColumn = Math.ceil(newSeriesData.length / this.legendNbItemPerCol);
+
+        this.seriesData = [...newSeriesData];
+
+        this.updatetimeDomain();
+        this.updateYDomain();
+
+        this.removeSeries(seriesToDelete);
+        this.addSeries(seriesToAdd);
+
+
+        // draw Axis
+        this.updateXAxis();
+        this.updateYAxis();
+    }
+
     constructor(
         protected sheet: ISheet,
-        protected seriesData: ISerieData[],
         width: number,
         height: number,
         margin: IMargin = defautMarginChart
@@ -89,30 +135,10 @@ export class LineBaseChart extends BaseChart {
         this.marginChart = margin;
         this.chartHeight = this.totalHeight - this.marginChart.top - this.marginChart.bottom;
         this.legendNbItemPerCol = Math.floor(this.chartHeight / this.legendItemHeight);
-        const nbSeries = this.seriesData.length;
-        this.legendNbColumn = Math.ceil(nbSeries / this.legendNbItemPerCol);
         this.legendColumnWidth = 180;
+        
         this.legendWidth = this.legendNbColumn * this.legendColumnWidth + this.legendLeftMargin;
         this.chartWidth = this.totalWidth - this.marginChart.left - this.marginChart.right - this.legendLeftMargin - this.legendWidth;
-
-        const time_start = this.seriesData.reduce((start, serieData) => serieData.timeStart.getDate() < start ? serieData.timeStart : start, Number.POSITIVE_INFINITY);
-        const time_end = this.seriesData.reduce((end, serieData) => serieData.timeEnd.getDate() > end ? serieData.timeEnd : end, Number.NEGATIVE_INFINITY);
-        this.timeScaleChartDomainDefault = [new Date(time_start), new Date(time_end)];
-        this.timeScaleChart.domain(this.timeScaleChartDomainDefault).range([0, this.chartWidth]);
-        this.yMin = this.seriesData.reduce(
-            (ymin, sd) => sd.yMin < ymin ? sd.yMin : ymin, Number.POSITIVE_INFINITY
-        ) as number;
-        this.yMax = this.seriesData.reduce(
-            (ymax, sd) => sd.yMax > ymax ? sd.yMax : ymax, Number.NEGATIVE_INFINITY
-        ) as number;
-        this.yChartDomainDefault = [this.yMax, this.yMin];
-        this.yChart.domain(this.yChartDomainDefault).range([0, this.chartHeight]);
-
-        this.timeAxisChart = d3.axisTop(this.timeScaleChart);
-        this.shotAxisChart = d3.axisBottom(this.timeScaleChart);
-
-        this.yAxisChart = d3.axisLeft(this.yChart).tickSizeInner(6).tickSizeOuter(0);
-        this.yGridChart = d3.axisLeft(this.yChart).tickSizeInner(-this.chartWidth).tickSizeOuter(0);
 
         this.zColors = d3.scaleOrdinal(d3.schemeCategory10);
     }
@@ -126,7 +152,7 @@ export class LineBaseChart extends BaseChart {
     }
 
     public updateChart = () => {
-        this.updateLegendTexts();
+        // this.updateLegendTexts();
         this.updateXAxis();
         this.updateYAxis();
     }
@@ -154,6 +180,88 @@ export class LineBaseChart extends BaseChart {
         this.gAxisGridY.call(this.customGrid, this.yGridChart);
     }
 
+    private createLegendText(serieData: ISerieData): string {
+        console.log('legendText')
+        let legendText = serieData.serieDef.capteur.capteur_reference_id +
+        '[' + serieData.serieDef.capteur.id + ']' +
+        '_plan[' + serieData.serieDef.plan.id + ']' +
+        '(' + serieData.serieDef.typeMesure.type + ')';
+        console.log(toJS(serieData));
+        console.log(serieData.serieDef)
+        console.log(serieData.serieDef.capteur)
+        console.log(serieData.serieDef.capteur.id)
+        console.log(legendText)
+        return legendText;
+
+    }
+
+    private removeSeries(series: ISerieData[]) {
+        series.forEach( (serieData) => {
+            let legendText: string = this.createLegendText(serieData);
+            d3.select('.' + legendText).remove();
+        });
+    }
+
+    private addSeries(series: ISerieData[]) {
+        // console.log('+drawSeries+')
+        series.forEach( (serieData) => {
+            // const legendItem = this.legendItemsBySeriesDefs[seriesDefIndex].find( v => serieData.serie_name === v.serieName );
+            // if (!legendItem) {
+            //     console.log('legendItem not found for serie ' + serieData.serie_name);
+            //     return;
+            // }
+            // console.log(serieData)
+            let legendText: string = this.createLegendText(serieData);
+            let strokeColor = this.zColors(legendText);
+            // let path = 
+            this.gChart.append('path')
+                .datum(serieData.points)
+                .attr('class', legendText)
+                .attr('fill', 'none')
+                .attr('stroke', strokeColor)
+                .attr('stroke-linejoin', 'round')
+                .attr('stroke-linecap', 'round')
+                .attr('stroke-width', 1.1)
+                .attr('clip-path', 'url(#clip)')
+                .attr('cursor', 'crosshair')
+                .attr('shape-rendering', 'geometricPrecision')
+                .attr('d', this.createLineChart(serieData))
+                .style('opacity', 1);
+            // this.displayedPathes.push({ serieData: legendItem, serieData: serieData, path: path });
+        });
+    }
+
+    // private drawLegends() {
+    //     // draw legends
+    //     this.legends = this.gChart.selectAll('.legend')
+    //         .data(this.flatLegendItems)
+    //         .enter()
+    //         .append('g')
+    //         .attr('class', 'legend')
+    //         .attr('transform', (d: any, i: number) => {
+    //             let column = ~~(i / this.legendNbItemPerCol);
+    //             let rankInCol = i % this.legendNbItemPerCol;
+    //             let voffset = column * this.legendColumnWidth;
+    //             let horz = this.chartWidth + this.legendLeftMargin + voffset;
+    //             let vert = rankInCol * this.legendItemHeight;
+    //             return `translate(${horz}, ${vert})`;
+    //         })
+    //         .style('cursor', 'pointer');
+
+    //     this.legendCheckBoxes = this.legends.append('rect')
+    //         .attr('width', this.legendRectSize)
+    //         .attr('height', this.legendRectSize)
+    //         .attr('fill', this.legendCheckBoxFill)
+    //         .attr('stroke', this.zColors);
+
+    //     this.legendTexts = this.legends.append('text')
+    //         .attr('x', this.legendRectSize + this.legendSpacing)
+    //         .attr('y', this.legendRectSize - this.legendSpacing)
+    //         .attr('font-size', 10)
+    //         .attr('fill', 'black')
+    //         .text((d: ILegendItem) => d.serieName);
+    // }
+
     public createChart = (svgRef: Element) => {
         this.svgElementBase = d3.select(svgRef);
         this.svgElementBase.selectAll('*').remove();
@@ -174,81 +282,18 @@ export class LineBaseChart extends BaseChart {
         this.gAxisChartY = this.gChart.append('g').attr('transform', 'translate(0,0)');
 
         this.gAxisGridY = this.gChart.append('g').attr('transform', 'translate(0,0)');
-
-        // this.initLegendItems();
-        // this.zColors.domain(toto);
-
-        this.seriesData.forEach( (serieData) => {
-                // const legendItem = this.legendItemsBySeriesDefs[seriesDefIndex].find( v => serieData.serie_name === v.serieName );
-                // if (!legendItem) {
-                //     console.log('legendItem not found for serie ' + serieData.serie_name);
-                //     return;
-                // }
-                let legendText: string = serieData.serieDef.capteur.capteur_reference_id +
-                    '[' + serieData.serieDef.capteur.id + ']' +
-                    '_plan[' + serieData.serieDef.plan.id + ']' +
-                    '(' + serieData.serieDef.typeMesure.type + ')';
-                let strokeColor = this.zColors(legendText);
-                // let path = 
-                this.gChart.append('path').datum(serieData.points)
-                    .attr('class', 'curve')
-                    .attr('fill', 'none')
-                    .attr('stroke', strokeColor)
-                    .attr('stroke-linejoin', 'round')
-                    .attr('stroke-linecap', 'round')
-                    .attr('stroke-width', 1.1)
-                    .attr('clip-path', 'url(#clip)')
-                    .attr('cursor', 'crosshair')
-                    .attr('shape-rendering', 'geometricPrecision')
-                    .attr('d', this.createLineChart(serieData))
-                    .style('opacity', 1);
-                // this.displayedPathes.push({ legendItem: legendItem, serieData: serieData, path: path });
-        });
-
-        // draw legends
-        this.legends = this.gChart.selectAll('.legend')
-            .data(this.flatLegendItems)
-            .enter()
-            .append('g')
-            .attr('class', 'legend')
-            .attr('transform', (d: any, i: number) => {
-                let column = ~~(i / this.legendNbItemPerCol);
-                let rankInCol = i % this.legendNbItemPerCol;
-                let voffset = column * this.legendColumnWidth;
-                let horz = this.chartWidth + this.legendLeftMargin + voffset;
-                let vert = rankInCol * this.legendItemHeight;
-                return `translate(${horz}, ${vert})`;
-            })
-            .style('cursor', 'pointer');
-
-        this.legendCheckBoxes = this.legends.append('rect')
-            .attr('width', this.legendRectSize)
-            .attr('height', this.legendRectSize)
-            .attr('fill', this.legendCheckBoxFill)
-            .attr('stroke', this.zColors);
-
-        this.legendTexts = this.legends.append('text')
-            .attr('x', this.legendRectSize + this.legendSpacing)
-            .attr('y', this.legendRectSize - this.legendSpacing)
-            .attr('font-size', 10)
-            .attr('fill', 'black')
-            .text((d: ILegendItem) => d.serieName);
-
-        // draw Axis
-        this.updateXAxis();
-        this.updateYAxis();
     }
 
-    public buildLegend = (serieName: string, value?: number): string => {
-        return serieName + ( value ? ' : ' + value : '');
-    }
+    // public buildLegend = (serieName: string, value?: number): string => {
+    //     return serieName + ( value ? ' : ' + value : '');
+    // }
 
-    public legendCheckBoxFill = (legendItem: ILegendItem) => {
-        if ( legendItem.isShown ) {
-            return this.zColors(legendItem.serieName);
-        }
-        return 'none';
-    }
+    // public legendCheckBoxFill = (legendItem: ILegendItem) => {
+    //     if ( legendItem.isShown ) {
+    //         return this.zColors(legendItem.serieName);
+    //     }
+    //     return 'none';
+    // }
 
     private createLineChart(serie: ISerieData) {
         return d3.line<number>()
@@ -258,9 +303,9 @@ export class LineBaseChart extends BaseChart {
             .y((d, i, a) => this.yChart(serie.points[i].valeur));
     }
 
-    private updateLegendTexts = () => {
-        this.legendTexts.attr('fill', 'green');
-    }
+    // private updateLegendTexts = () => {
+    //     this.legendTexts.attr('fill', 'green');
+    // }
 
     private drawLabelDayAboveTimeAxis = () => {
 

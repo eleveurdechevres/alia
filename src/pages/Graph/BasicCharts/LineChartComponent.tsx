@@ -1,17 +1,20 @@
+// import { style } from 'typestyle/lib';
+// import * as csstips from 'csstips';
 import { ContextMenu } from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
 import * as d3 from 'd3';
 import { Area, Axis, BrushBehavior, ScaleLinear, ScaleTime } from 'd3';
+// import { toJS } from 'mobx';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import * as React from 'react';
-// import { style } from 'typestyle';
 import { GenericChartComponent, IMargin } from './GenericChartComponent';
 import { ISerieData } from 'src/interfaces/ISerieData';
-import { LineBaseChart, IDisplayedPath } from './LineBaseChart';
+import { LineBaseChart } from './LineBaseChart';
 import { ISheet } from 'src/interfaces/ISheet';
-import { LineCrosshair, ILineChartCrosshairState } from './LineCrosshair';
-import { ILegendItem } from './BaseChart';
+import { ILineChartCrosshairState } from './LineCrosshair';
+import { LineCrosshair } from './LineCrosshair';
+// import { ILegendItem } from './BaseChart';
 import { IDateInterval } from '../GraphBoard';
 
 interface IProps {
@@ -180,6 +183,7 @@ const zoomTransition = defaultTransition;
         //     this.updateHorizontalMarkers();
         // });
 
+
         this.marginChart = {
             top: GenericChartComponent.svgBorderWidth + xAxisHeight,
             bottom: GenericChartComponent.svgBorderWidth + horizontalContextHeight + 2 * xAxisHeight,
@@ -187,42 +191,81 @@ const zoomTransition = defaultTransition;
             right: GenericChartComponent.svgBorderWidth
         };
 
+        this.baseChart = new LineBaseChart(
+            this.props.sheet,
+            this.props.chartWidth,
+            this.props.chartHeight
+        );
+
+        this.totalWidth = this.props.chartWidth;
+        this.totalHeight = this.props.chartHeight;
+        this.chartHeight = this.totalHeight - this.marginChart.top - this.marginChart.bottom;
+        this.chartWidth = this.totalWidth - this.marginChart.left - this.marginChart.right - legendLeftMargin - this.baseChart.legendWidth;
+
+        this.marginVerticalContext = {
+            top: this.marginChart.top,
+            bottom: this.marginChart.bottom,
+            left: GenericChartComponent.svgBorderWidth,
+            right: this.totalWidth - verticalContextWidth - GenericChartComponent.svgBorderWidth
+        };
+        this.marginHorizontalContext = {
+            top: this.marginChart.top + this.chartHeight + xAxisHeight,
+            bottom: GenericChartComponent.svgBorderWidth,
+            left: this.marginChart.left,
+            right: this.marginChart.right
+        };
+
         // protected sheet: ISheet,
         // protected seriesData: ISerieData[],
         // width: number,
         // height: number,
         // margin: IMargin = defautMarginChart
-
-        this.baseChart = new LineBaseChart(
-            this.props.sheet,
-            this.props.series,
-            this.props.chartWidth,
-            this.props.chartHeight
-        );
     }
 
     public componentWillMount() {
-        this.updateChartComponent(this.saveXDomain, this.saveYDomain);
+        if (true) {
+            this.updateChartComponent(this.saveXDomain, this.saveYDomain);
+        }
     }
 
     public componentDidMount() {
-        this.drawChart(true);
-        this.updateComponents();
+        if (true) {
+            this.drawChart(true);
+            this.updateComponents();
+        }
     }
 
-    public componentWillUpdate() {
-        // this.saveXDomain = this.baseChart.timeScaleChart.domain();
-        // this.saveYDomain = this.baseChart.yChart.domain();
-        // this.updateChartComponent(this.saveXDomain, this.saveYDomain);
+    public componentWillReceiveProps(props: IProps) {
+        // console.log('componentWillReceiveProps')
+        // console.log(toJS(props))
+        // let yMin = d3.min(props.series, (serie) => serie.yMin)
+        // let yMax = d3.max(props.series, (serie) => serie.yMax)
+
+        // this.updateChartComponent(
+        //     [props.sheet.sheetDef.dateDebutMission, props.sheet.sheetDef.dateFinMission],
+        //     [yMin, yMax]
+        // );
+        this.baseChart.updateSeries(this.props.series);
+        // this.drawChart(false);
+    }
+
+    public shouldComponentUpdate(props: IProps) {
+        return false;
     }
 
     public componentDidUpdate() {
-        this.drawChart(false);
         // this.baseChart.updateChart(this.props.lookAndFeelStore.getMode());
         // this.updateComponents();
     }
 
     public render() {
+        // if (true) {
+        //     return (
+        //         <div className={style(csstips.flex, csstips.border('1px solid red'))}>
+        //             toto
+        //         </div>
+        //     );
+        // }
         return (
             <svg width={this.totalWidth} height={this.totalHeight} id="svgChart">
                 <defs>
@@ -231,10 +274,6 @@ const zoomTransition = defaultTransition;
                     </clipPath>
                 </defs>
                 <g transform={'translate(' + this.marginChart.left + ',' + this.marginChart.top + ')'}>
-
-                    {/* <g className='verticalMarkers' ref={ (ref) => { if (ref) { this.refGVerticalMarkers = ref; } }} clipPath='url(#clip)'/>
-                    <g className='horizontalMarkers' ref={ (ref) => { if (ref) { this.refGHorizontalMarkers = ref; } }} clipPath='url(#clip)'/>
-                    <g className='anomalyMarkers' ref={(ref) => { if (ref) { this.refGAnomalyMarkers = ref; } }} clipPath='url(#clip)'/> */}
 
                     <g
                         className="horizontalContextDetail"
@@ -269,7 +308,6 @@ const zoomTransition = defaultTransition;
                     transform={'translate(' + this.marginHorizontalContext.left + ',' + this.marginHorizontalContext.top + ')'}
                 >
                     <g ref={(ref) => { if (ref) { this.refGHorizontalContextPathes = ref; } }}/>
-                    {/* <g className='verticalMarkers' ref={ (ref) => { if (ref) { this.refGHorizontalContextMarkers = ref; } }}/> */}
                     <g ref={(ref) => { if (ref) { this.refGHorizontalBrush = ref; } }}/>
                     <g
                         ref={(ref) => { if (ref) { this.refGHorizontalContextAxisX = ref; } }}
@@ -280,8 +318,6 @@ const zoomTransition = defaultTransition;
                     className="verticalContext"
                     transform={'translate(' + this.marginVerticalContext.left + ',' + this.marginVerticalContext.top + ')'}
                 >
-                    {/* <g className='horizontalMarkers' ref={ (ref) => { if (ref) { this.refGVerticalContextMarkers = ref; } }}/>
-                    <g className='horizontalAnomalyMarkers' ref={ (ref) => { if (ref) { this.refGVerticalContextAnomalyMarkers = ref; } }}/> */}
                     <g ref={(ref) => {if (ref) { this.refGVerticalBrush = ref; } }}/>
                     <g
                         ref={(ref) => {if (ref) { this.refGVerticalContextAxisY = ref; } }}
@@ -362,26 +398,7 @@ const zoomTransition = defaultTransition;
         if ( domainY ) {
             this.baseChart.yChart.domain(domainY);
         }
-
-        this.totalWidth = this.props.chartWidth;
-        this.totalHeight = this.props.chartHeight;
-        this.chartHeight = this.totalHeight - this.marginChart.top - this.marginChart.bottom;
-
-        this.chartWidth = this.totalWidth - this.marginChart.left - this.marginChart.right - legendLeftMargin - this.baseChart.legendWidth;
-
-        this.marginVerticalContext = {
-            top: this.marginChart.top,
-            bottom: this.marginChart.bottom,
-            left: GenericChartComponent.svgBorderWidth,
-            right: this.totalWidth - verticalContextWidth - GenericChartComponent.svgBorderWidth
-        };
-        this.marginHorizontalContext = {
-            top: this.marginChart.top + this.chartHeight + xAxisHeight,
-            bottom: GenericChartComponent.svgBorderWidth,
-            left: this.marginChart.left,
-            right: this.marginChart.right
-        };
-
+        console.log('updateChartComponent [' + domainTime + ', ' + domainY + ']')
         const yMin = this.props.series.reduce(
             (ymin, serie) => serie.yMin < ymin ? serie.yMin : ymin, Number.POSITIVE_INFINITY
         ) as number;
@@ -528,7 +545,7 @@ const zoomTransition = defaultTransition;
                     clearTimeout(this.crossHairTimer);
                     // Mask values near legends
                     this.mapCrosshairValues.clear();
-                    this.updateTextLegends();
+                    // this.updateTextLegends();
                 }
                 // this.crossHairTimer = setTimeout(
                 //     () => {
@@ -555,18 +572,18 @@ const zoomTransition = defaultTransition;
                 this.crosshairState.xDisplayed = false;
                 this.mapCrosshairValues.clear();
                 clearTimeout(this.crossHairTimer);
-                this.updateTextLegends();
+                // this.updateTextLegends();
                 break;
         }
     }
 
-    private updateTextLegends = (): void => {
+    // private updateTextLegends = (): void => {
 
-        this.baseChart.legendTexts.text( (d: ILegendItem) => {
-            let value = this.mapCrosshairValues.get(d.toString());
-            return this.baseChart.buildLegend(d.toString(), value);
-        });
-    }
+    //     this.baseChart.legendTexts.text( (d: ILegendItem) => {
+    //         let value = this.mapCrosshairValues.get(d.toString());
+    //         return this.baseChart.buildLegend(d.toString(), value);
+    //     });
+    // }
 
     private displayCrosshairY = (): void => {
         switch ( d3.event.type ) {
@@ -713,7 +730,6 @@ const zoomTransition = defaultTransition;
         if ( this.refGChart ) {
             this.baseChart.createChart(this.refGChart);
         }
-
         // Courbes résumé de contexte
         d3.select(this.refGHorizontalContextPathes).selectAll('.contextArea').remove();
         this.props.series.forEach( serie => {
@@ -754,11 +770,11 @@ const zoomTransition = defaultTransition;
             .on('mouseout', this.displayCrosshairY);
 
         // Mouse events on legend checkboxes
-        this.baseChart.legends
-            .attr('pointer-events', 'visible')
-            .on('mouseover', this.legendMouseHandle)
-            .on('mouseout', this.legendMouseHandle)
-            .on('click', this.legendMouseHandle);
+        // this.baseChart.legends
+        //     .attr('pointer-events', 'visible')
+        //     .on('mouseover', this.legendMouseHandle)
+        //     .on('mouseout', this.legendMouseHandle)
+        //     .on('click', this.legendMouseHandle);
 
         // this.baseChart.legendTexts
         //     .attr('pointer-events', 'visible')
@@ -766,17 +782,17 @@ const zoomTransition = defaultTransition;
         //     .on('mouseout', this.legendMouseHandle)
         //     .on('click', this.legendMouseHandle);
 
-        this.baseChart.displayedPathes.forEach((displayedPath: IDisplayedPath) => {
+        // this.baseChart.displayedPathes.forEach((displayedPath: IDisplayedPath) => {
             
-            // TODO : CREATE SERIE NAME let serieName = displayedPath.serieData.serie_name;
-            displayedPath.path.attr('pointer-events', 'stroke')
-                .on('mouseover', (d: any, i: any, g: any) => { this.pathMouseOver(d, i, g, displayedPath); })
-                .on('mousemove', (d: any, i: any, g: any) => { this.pathMouseOver(d, i, g, displayedPath); })
-                .on('mouseout', (d: any, i: any, g: any) => { this.pathMouseOver(d, i, g, displayedPath); })
-                .on('mousedown', () => { this.dispatchEventToGeneralBrush('mousedown'); })
-                .on('click', () => { this.dispatchEventToGeneralBrush('click'); })
-                .on('dblclick', () => { this.dispatchEventToGeneralBrush('dblclick'); });
-        });
+        //     // TODO : CREATE SERIE NAME let serieName = displayedPath.serieData.serie_name;
+        //     displayedPath.path.attr('pointer-events', 'stroke')
+        //         .on('mouseover', (d: any, i: any, g: any) => { this.pathMouseOver(d, i, g, displayedPath); })
+        //         .on('mousemove', (d: any, i: any, g: any) => { this.pathMouseOver(d, i, g, displayedPath); })
+        //         .on('mouseout', (d: any, i: any, g: any) => { this.pathMouseOver(d, i, g, displayedPath); })
+        //         .on('mousedown', () => { this.dispatchEventToGeneralBrush('mousedown'); })
+        //         .on('click', () => { this.dispatchEventToGeneralBrush('click'); })
+        //         .on('dblclick', () => { this.dispatchEventToGeneralBrush('dblclick'); });
+        // });
 
         if ( callBrushes ) {
 
@@ -785,116 +801,90 @@ const zoomTransition = defaultTransition;
 
             d3.select(this.refGHorizontalBrush)
                 .call(this.horizontalBrush)
-                .call(this.horizontalBrush.move, this.baseChart.timeScaleChart.range());
+                // .call(this.horizontalBrush.move, this.baseChart.timeScaleChart.range());
 
             d3.select(this.refGHorizontalBrushDetail)
                 .call(this.horizontalBrushDetail);
 
             d3.select(this.refGVerticalBrush)
                 .call(this.verticalBrush)
-                .call(this.verticalBrush.move, this.baseChart.yChart.range());
+                // .call(this.verticalBrush.move, this.baseChart.yChart.range());
 
             d3.select(this.refGVerticalBrushDetail)
                 .call(this.verticalBrushDetail);
         }
-
-        // Help
-        // var helpTansformDefault = 'scale('+helpButtonDefaultScale+')';
-
-        // d3.select(this.refHelpButton)
-        //     .attr('pointer-events', 'bounding-box')
-        //     .style('cursor', 'help')
-        //     .attr('transform', helpTansformDefault)
-        //     .on('mouseover', function() {
-        //         var bbox = this.getBBox();
-        //         d3.select(this)
-        //             .transition()
-        //             .ease(d3.easeElastic)
-        //             .duration(500)
-        //             .attr('transform',
-        //                 'scale('+mouseoverRescale*helpButtonDefaultScale+') ' +
-        //                 'translate('+ (bbox.x-bbox.width*(mouseoverRescale-1))/2+','+(bbox.y-bbox.height*(mouseoverRescale-1))/2+')')
-        //     })
-        //     .on('mouseout', function() {
-        //         d3.select(this)
-        //             .transition()
-        //             .ease(d3.easeElastic)
-        //             .duration(500)
-        //             .attr('transform', helpTansformDefault)
-        //     })
-        //     .on('click', () => {this.showTooltip()})
     }
 
-    private dispatchEventToGeneralBrush = (event: string): void => {
-        // voir cette adresse pour pouvoir cliquer sur les path pour lancer le brush
-        // https://bl.ocks.org/mthh/99dc420cd7e276ecafe4ef4bf12c6927
-        const brushOverlayElement: Element = d3.select('#generalBrush > .overlay').node() as Element;
-        const brushSelectionElement: Element = d3.select('#generalBrush > .selection').node() as Element;
+    // private dispatchEventToGeneralBrush = (event: string): void => {
+    //     // voir cette adresse pour pouvoir cliquer sur les path pour lancer le brush
+    //     // https://bl.ocks.org/mthh/99dc420cd7e276ecafe4ef4bf12c6927
+    //     const brushOverlayElement: Element = d3.select('#generalBrush > .overlay').node() as Element;
+    //     const brushSelectionElement: Element = d3.select('#generalBrush > .selection').node() as Element;
 
-        if ( brushSelectionElement ) {
-            const newClickEvent = new MouseEvent(event, {
-                clientX: d3.event.clientX,
-                clientY: d3.event.clientY,
-                bubbles: true,
-                cancelable: true,
-                view: window
-            });
-            if ( brushOverlayElement ) {
-                brushOverlayElement.dispatchEvent(newClickEvent);
-            }
-        }
-    }
+    //     if ( brushSelectionElement ) {
+    //         const newClickEvent = new MouseEvent(event, {
+    //             clientX: d3.event.clientX,
+    //             clientY: d3.event.clientY,
+    //             bubbles: true,
+    //             cancelable: true,
+    //             view: window
+    //         });
+    //         if ( brushOverlayElement ) {
+    //             brushOverlayElement.dispatchEvent(newClickEvent);
+    //         }
+    //     }
+    // }
 
-    private legendMouseHandle = (legendItem: ILegendItem): void => {
-        switch ( d3.event.type ) {
-            case 'mouseover':
-                this.baseChart.displayedPathes
-                    .filter( displayedPath => displayedPath.legendItem === legendItem )
-                    .map( displayedPath => displayedPath.path.attr('stroke-width', 2) );
-                break;
-            case 'mouseout':
-                this.baseChart.displayedPathes
-                    .filter( displayedPath => displayedPath.legendItem === legendItem )
-                    .map( displayedPath => displayedPath.path.attr('stroke-width', 1.2) );
-                break;
-            case 'click':
-                legendItem.isShown = !legendItem.isShown;
-                this.baseChart.legendCheckBoxes.attr('fill', this.baseChart.legendCheckBoxFill);
-                this.baseChart.displayedPathes
-                    .filter( displayedPath => displayedPath.legendItem === legendItem )
-                    .map( displayedPath => displayedPath.path.style('opacity', legendItem.isShown ? 1 : 0) );
-                break;
-            default:
-                break;
-        }
-    }
+    // private legendMouseHandle = (legendItem: ILegendItem): void => {
+    //     switch ( d3.event.type ) {
+    //         case 'mouseover':
+    //             this.baseChart.displayedPathes
+    //                 .filter( displayedPath => displayedPath.legendItem === legendItem )
+    //                 .map( displayedPath => displayedPath.path.attr('stroke-width', 2) );
+    //             break;
+    //         case 'mouseout':
+    //             this.baseChart.displayedPathes
+    //                 .filter( displayedPath => displayedPath.legendItem === legendItem )
+    //                 .map( displayedPath => displayedPath.path.attr('stroke-width', 1.2) );
+    //             break;
+    //         case 'click':
+    //             legendItem.isShown = !legendItem.isShown;
+    //             // this.baseChart.legendCheckBoxes.attr('fill', this.baseChart.legendCheckBoxFill);
+    //             this.baseChart.displayedPathes
+    //                 .filter( displayedPath => displayedPath.legendItem === legendItem )
+    //                 .map( displayedPath => displayedPath.path.style('opacity', legendItem.isShown ? 1 : 0) );
+    //             break;
+    //         default:
+    //             break;
+    //     }
+    // }
 
-    private pathMouseOver = (data: any, index: any, group: any, displayedPath: IDisplayedPath): void => {
-        let path: any = d3.select(d3.event.srcElement);
+    // private pathMouseOver = (data: any, index: any, group: any, displayedPath: IDisplayedPath): void => {
+    //     let path: any = d3.select(d3.event.srcElement);
         
-        switch ( d3.event.type ) {
-            case 'mouseover':
-            case 'mousemove':
-                path.attr('stroke-width', 2);
-                this.legendStrokeHighlight(displayedPath);
-                this.crosshairState.textDisplayed = 'serie name TODO'; // TODO : CREATE SERIE NAME displayedPath.serieData.serie_name;
-                this.displayCrosshair();
-                break;
-            case 'mouseout':
-                path.attr('stroke-width', 1.2);
-                this.legendStrokeHighlight();
-                this.crosshairState.textDisplayed = null;
-                this.displayCrosshair();
-                break;
-            default:
-                break;
-        }
-    }
+    //     switch ( d3.event.type ) {
+    //         case 'mouseover':
+    //         case 'mousemove':
+    //             path.attr('stroke-width', 2);
+    //             this.legendStrokeHighlight(displayedPath);
+    //             this.crosshairState.textDisplayed = 'serie name TODO'; // TODO : CREATE SERIE NAME displayedPath.serieData.serie_name;
+    //             this.displayCrosshair();
+    //             break;
+    //         case 'mouseout':
+    //             path.attr('stroke-width', 1.2);
+    //             this.legendStrokeHighlight();
+    //             this.crosshairState.textDisplayed = null;
+    //             this.displayCrosshair();
+    //             break;
+    //         default:
+    //             break;
+    //     }
+    // }
 
-    private legendStrokeHighlight = (displayedPath?: IDisplayedPath): void => {
-        this.baseChart.legendCheckBoxes.attr('stroke-width', (d: ILegendItem, i: number) => {return displayedPath && displayedPath.legendItem === d ? '2' : '1'; });
-        this.baseChart.legendTexts.attr('font-weight', (d: ILegendItem, i: number) => {return displayedPath && displayedPath.legendItem === d ? 'bold' : 'normal'; });
-    }
+    // private legendStrokeHighlight = (displayedPath?: IDisplayedPath): void => {
+    //     this.baseChart.legendCheckBoxes.attr('stroke-width', (d: ILegendItem, i: number) => {return displayedPath && displayedPath.legendItem === d ? '2' : '1'; });
+    //     this.baseChart.legendTexts.attr('font-weight', (d: ILegendItem, i: number) => {return displayedPath && displayedPath.legendItem === d ? 'bold' : 'normal'; });
+    // }
 
     private updateXContextAxis = (): void => {
         d3.select(this.refGHorizontalContextAxisX).call(this.baseChart.customAxis, this.xAxisContext);

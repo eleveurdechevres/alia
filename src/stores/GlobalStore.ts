@@ -161,7 +161,6 @@ export class GlobalStore {
     }
 
     public getMesures = (capteurId: number, channelId: number, dateBegin: Date, dateEnd: Date): Promise<IMesure[]> => {
-        console.log('getMesures')
         // LOAD DATA from AEROC
         // date_begin=2017/12/09 20:13:04&date_end=2018/01/24 21:19:06
         // console.log('http://test.ideesalter.com/alia_readMesure.php?capteur_id=' + capteurId 
