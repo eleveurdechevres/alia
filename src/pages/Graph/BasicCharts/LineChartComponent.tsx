@@ -191,15 +191,17 @@ const zoomTransition = defaultTransition;
             right: GenericChartComponent.svgBorderWidth
         };
 
+        this.totalHeight = this.props.chartHeight;
+        this.totalWidth = this.props.chartWidth;
+        this.chartHeight = this.totalHeight - this.marginChart.bottom - this.marginChart.top;
+
         this.baseChart = new LineBaseChart(
             this.props.sheet,
-            this.props.chartWidth,
-            this.props.chartHeight
+            this.totalWidth,
+            this.totalHeight,
+            this.marginChart
         );
 
-        this.totalWidth = this.props.chartWidth;
-        this.totalHeight = this.props.chartHeight;
-        this.chartHeight = this.totalHeight - this.marginChart.top - this.marginChart.bottom;
         this.chartWidth = this.totalWidth - this.marginChart.left - this.marginChart.right - legendLeftMargin - this.baseChart.legendWidth;
 
         this.marginVerticalContext = {
@@ -398,7 +400,6 @@ const zoomTransition = defaultTransition;
         if ( domainY ) {
             this.baseChart.yChart.domain(domainY);
         }
-        console.log('updateChartComponent [' + domainTime + ', ' + domainY + ']')
         const yMin = this.props.series.reduce(
             (ymin, serie) => serie.yMin < ymin ? serie.yMin : ymin, Number.POSITIVE_INFINITY
         ) as number;
@@ -726,7 +727,6 @@ const zoomTransition = defaultTransition;
     // }
 
     private drawChart = (callBrushes: boolean): void => {
-        console.log('drawChart');
         if ( this.refGChart ) {
             this.baseChart.createChart(this.refGChart);
         }

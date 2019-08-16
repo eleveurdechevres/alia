@@ -48,7 +48,7 @@ import { IPlan } from 'src/interfaces/IPlan';
                     <LineChartComponent
                         sheet={this.props.sheet}
                         chartWidth={this.windowWidth - 60}
-                        chartHeight={800}
+                        chartHeight={500}
                         dateInterval={dateInterval}
                         series={this.selectedSeries}
                     />
@@ -135,6 +135,7 @@ import { IPlan } from 'src/interfaces/IPlan';
         }
         let serieDataToRemove = this.mapSelectedChannelSelectedSerie.get(channelForMission);
 
+        // Supprimer les courbes (selectedSeries)
         let indexSerieData = this.selectedSeries.findIndex(
             (serieData: ISerieData) => serieData === serieDataToRemove
         );

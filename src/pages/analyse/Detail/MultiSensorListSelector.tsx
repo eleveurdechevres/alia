@@ -1,4 +1,4 @@
-import { Intent, ITagProps, MenuItem } from '@blueprintjs/core';
+import { ITagProps, MenuItem, Intent } from '@blueprintjs/core';
 import { MultiSelect, ItemPredicate, ItemRenderer, IItemRendererProps, IItemModifiers } from '@blueprintjs/select';
 import * as csstips from 'csstips';
 import { observable } from 'mobx';
@@ -34,7 +34,10 @@ const SENSOR_MULTI_SELECT = MultiSelect.ofType<IChannelFromMission>();
     }
 
     private tagInputProps = {
-        onRemove: (value: string, index: number) => { this.props.handleRemoveChannel(this.props.selectedChannelList[index]) },
+        onRemove: (value: string, index: number) => {
+            this.props.handleRemoveChannel(this.props.selectedChannelList[index])
+            this.forceUpdate();
+        },
         tagProps: (value: string, index: number): ITagProps => {
             return {
                 intent: Intent.SUCCESS,
@@ -105,6 +108,7 @@ const SENSOR_MULTI_SELECT = MultiSelect.ofType<IChannelFromMission>();
     
         return (
             <MenuItem
+                icon={this.props.selectedChannelList.includes(channel) ? 'tick' : 'blank'}
                 active={modifiers.active}
                 disabled={modifiers.disabled}
                 label={label}

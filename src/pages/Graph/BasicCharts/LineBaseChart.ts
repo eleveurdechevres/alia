@@ -4,7 +4,7 @@ import { BaseChart, ILegendItem, IMargin, svgBorderWidth } from './BaseChart';
 import { ISerieData } from 'src/interfaces/ISerieData';
 import { ScaleOrdinal } from 'd3';
 import { ISheet } from 'src/interfaces/ISheet';
-import { toJS } from 'mobx';
+// import { toJS } from 'mobx';
 
 const yAxisWidth = 50;
 const xAxisHeight = 20;
@@ -71,7 +71,8 @@ export class LineBaseChart extends BaseChart {
     private gAxisGridY: any;
 
     // Utils
-    public displayedPathes: Array<IDisplayedPath>;
+    // public displayedPathes: Array<IDisplayedPath>;
+    public displayedPathes: Map<string, ISerieData>;
     public shotsMap = new Map<Date, number>();
 
     public crossHairTimeFormat: string;
@@ -128,7 +129,7 @@ export class LineBaseChart extends BaseChart {
         margin: IMargin = defautMarginChart
     ) {
         super(sheet, width, height);
-        this.displayedPathes = new Array();
+        this.displayedPathes = new Map();
 
         this.totalWidth = width;
         this.totalHeight = height;
@@ -158,9 +159,13 @@ export class LineBaseChart extends BaseChart {
     }
 
     public updatePathes = () => {
-        this.displayedPathes.forEach((data: IDisplayedPath) => {
-            data.path.attr('d', this.createLineChart(data.serieData));
+        // this.displayedPathes.forEach((data: IDisplayedPath) => {
+        //     data.path.transition().attr('d', this.createLineChart(data.serieData));
+        // });
+        this.displayedPathes.forEach((serieData: ISerieData, legendText: string) => {
+            d3.select('.' + legendText).transition().attr('d', this.createLineChart(serieData));
         });
+        
     }
 
     public updateXAxis = () => {
@@ -171,26 +176,20 @@ export class LineBaseChart extends BaseChart {
 
         this.crossHairTimeFormat = this.getCrosshairTimeFormat(this.timeScaleChart);
 
-        this.gAxisChartTime.call(this.customAxis, this.timeAxisChart);
-        this.gAxisChartX.call(this.customAxis, this.shotAxisChart);
+        this.gAxisChartTime.transition().call(this.customAxis, this.timeAxisChart);
+        this.gAxisChartX.transition().call(this.customAxis, this.shotAxisChart);
     }
 
     public updateYAxis = () => {
-        this.gAxisChartY.call(this.customAxis, this.yAxisChart);
-        this.gAxisGridY.call(this.customGrid, this.yGridChart);
+        this.gAxisChartY.transition().call(this.customAxis, this.yAxisChart);
+        this.gAxisGridY.transition().call(this.customGrid, this.yGridChart);
     }
 
     private createLegendText(serieData: ISerieData): string {
-        console.log('legendText')
         let legendText = serieData.serieDef.capteur.capteur_reference_id +
-        '[' + serieData.serieDef.capteur.id + ']' +
-        '_plan[' + serieData.serieDef.plan.id + ']' +
-        '(' + serieData.serieDef.typeMesure.type + ')';
-        console.log(toJS(serieData));
-        console.log(serieData.serieDef)
-        console.log(serieData.serieDef.capteur)
-        console.log(serieData.serieDef.capteur.id)
-        console.log(legendText)
+        '_' + serieData.serieDef.capteur.id +
+        '_plan' + serieData.serieDef.plan.id + 
+        '_' + serieData.serieDef.typeMesure.type;
         return legendText;
 
     }
@@ -198,12 +197,29 @@ export class LineBaseChart extends BaseChart {
     private removeSeries(series: ISerieData[]) {
         series.forEach( (serieData) => {
             let legendText: string = this.createLegendText(serieData);
+            this.displayedPathes.delete(legendText);
+            // TODO : le remove ne supprime pas la bonne courbe !!!!
+            // TODO : le remove ne supprime pas la bonne courbe !!!!
+            // TODO : le remove ne supprime pas la bonne courbe !!!!
+            // TODO : le remove ne supprime pas la bonne courbe !!!!
+            // TODO : le remove ne supprime pas la bonne courbe !!!!
+            // TODO : le remove ne supprime pas la bonne courbe !!!!
+            // TODO : le remove ne supprime pas la bonne courbe !!!!
+            // TODO : le remove ne supprime pas la bonne courbe !!!!
+            // TODO : le remove ne supprime pas la bonne courbe !!!!
+            // TODO : le remove ne supprime pas la bonne courbe !!!!
+            // TODO : le remove ne supprime pas la bonne courbe !!!!
+            // TODO : le remove ne supprime pas la bonne courbe !!!!
+            // TODO : le remove ne supprime pas la bonne courbe !!!!
+            // TODO : le remove ne supprime pas la bonne courbe !!!!
+            // TODO : le remove ne supprime pas la bonne courbe !!!!
+            // TODO : le remove ne supprime pas la bonne courbe !!!!
+            // TODO : le remove ne supprime pas la bonne courbe !!!!
             d3.select('.' + legendText).remove();
         });
     }
 
     private addSeries(series: ISerieData[]) {
-        // console.log('+drawSeries+')
         series.forEach( (serieData) => {
             // const legendItem = this.legendItemsBySeriesDefs[seriesDefIndex].find( v => serieData.serie_name === v.serieName );
             // if (!legendItem) {
@@ -225,8 +241,11 @@ export class LineBaseChart extends BaseChart {
                 .attr('clip-path', 'url(#clip)')
                 .attr('cursor', 'crosshair')
                 .attr('shape-rendering', 'geometricPrecision')
+                .attr('d', this.createEmptyLineChart(serieData))
+                .transition()
                 .attr('d', this.createLineChart(serieData))
                 .style('opacity', 1);
+            this.displayedPathes.set(legendText, serieData);
             // this.displayedPathes.push({ serieData: legendItem, serieData: serieData, path: path });
         });
     }
@@ -301,6 +320,14 @@ export class LineBaseChart extends BaseChart {
             // .x((d, i, a) => this.xChart(this.xData.shots[i]))
             .x((d, i, a) => this.timeScaleChart(serie.points[i].date))
             .y((d, i, a) => this.yChart(serie.points[i].valeur));
+    }
+
+    private createEmptyLineChart(serie: ISerieData) {
+        return d3.line<number>()
+            .defined((d) => { return d !== null; })
+            // .x((d, i, a) => this.xChart(this.xData.shots[i]))
+            .x((d, i, a) => this.timeScaleChart(serie.points[i].date))
+            .y((d, i, a) => this.yChart(0));
     }
 
     // private updateLegendTexts = () => {
