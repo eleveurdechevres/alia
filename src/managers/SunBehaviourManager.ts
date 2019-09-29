@@ -21,6 +21,9 @@ export class SunBehaviourManager {
     private habitat: IHabitat;
 
     constructor(habitat: IHabitat, startDate: Date, stopDate: Date) {
+        console.log(habitat)
+        console.log(startDate)
+        console.log(stopDate)
         this.habitat = habitat;
         this.updateSunPositions(startDate, stopDate);
     }

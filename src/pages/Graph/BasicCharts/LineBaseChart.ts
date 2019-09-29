@@ -80,12 +80,15 @@ export class LineBaseChart extends BaseChart {
     private updatetimeDomain() {
         const time_start = this.seriesData.reduce((start, serieData) => serieData.timeStart.getDate() < start ? serieData.timeStart : start, Number.POSITIVE_INFINITY);
         const time_end = this.seriesData.reduce((end, serieData) => serieData.timeEnd.getDate() > end ? serieData.timeEnd : end, Number.NEGATIVE_INFINITY);
-
-        this.timeScaleChartDomainDefault = [new Date(time_start), new Date(time_end)];
-        this.timeScaleChart.domain(this.timeScaleChartDomainDefault).range([0, this.chartWidth]);
-
-        this.timeAxisChart = d3.axisTop(this.timeScaleChart);
-        this.shotAxisChart = d3.axisBottom(this.timeScaleChart);
+        // console.log('updatetimeDomain time_start' + time_start)
+        // console.log('updatetimeDomain time_end' + time_start)
+        if (time_start !== Infinity && time_end !== Infinity) {
+            this.timeScaleChartDomainDefault = [new Date(time_start), new Date(time_end)];
+            this.timeScaleChart.domain(this.timeScaleChartDomainDefault).range([0, this.chartWidth]);
+    
+            this.timeAxisChart = d3.axisTop(this.timeScaleChart);
+            this.shotAxisChart = d3.axisBottom(this.timeScaleChart);
+        }
     }
 
     private updateYDomain() {
@@ -104,9 +107,10 @@ export class LineBaseChart extends BaseChart {
 
     public updateSeries(newSeriesData: ISerieData[]) {
         let seriesToAdd = newSeriesData.filter(((newSerieData: ISerieData) => !this.seriesData.includes(newSerieData)))
-        let seriesToDelete = this.seriesData.filter(((value: ISerieData) => !newSeriesData.includes(value)))
-
         this.legendNbColumn = Math.ceil(newSeriesData.length / this.legendNbItemPerCol);
+
+        let seriesToDelete = this.seriesData.filter(((value: ISerieData) => !newSeriesData.includes(value)));
+
 
         this.seriesData = [...newSeriesData];
 
@@ -116,10 +120,10 @@ export class LineBaseChart extends BaseChart {
         this.removeSeries(seriesToDelete);
         this.addSeries(seriesToAdd);
 
-
         // draw Axis
         this.updateXAxis();
         this.updateYAxis();
+        this.updatePathes();
     }
 
     constructor(
@@ -198,23 +202,6 @@ export class LineBaseChart extends BaseChart {
         series.forEach( (serieData) => {
             let legendText: string = this.createLegendText(serieData);
             this.displayedPathes.delete(legendText);
-            // TODO : le remove ne supprime pas la bonne courbe !!!!
-            // TODO : le remove ne supprime pas la bonne courbe !!!!
-            // TODO : le remove ne supprime pas la bonne courbe !!!!
-            // TODO : le remove ne supprime pas la bonne courbe !!!!
-            // TODO : le remove ne supprime pas la bonne courbe !!!!
-            // TODO : le remove ne supprime pas la bonne courbe !!!!
-            // TODO : le remove ne supprime pas la bonne courbe !!!!
-            // TODO : le remove ne supprime pas la bonne courbe !!!!
-            // TODO : le remove ne supprime pas la bonne courbe !!!!
-            // TODO : le remove ne supprime pas la bonne courbe !!!!
-            // TODO : le remove ne supprime pas la bonne courbe !!!!
-            // TODO : le remove ne supprime pas la bonne courbe !!!!
-            // TODO : le remove ne supprime pas la bonne courbe !!!!
-            // TODO : le remove ne supprime pas la bonne courbe !!!!
-            // TODO : le remove ne supprime pas la bonne courbe !!!!
-            // TODO : le remove ne supprime pas la bonne courbe !!!!
-            // TODO : le remove ne supprime pas la bonne courbe !!!!
             d3.select('.' + legendText).remove();
         });
     }

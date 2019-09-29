@@ -122,6 +122,8 @@ interface ICrosshair {
         this.capteur = this.props.capteur;
         this.loadCapteurChannels();
         // this.getDateInterval(this.capteur.id);
+        console.log('getDateIntervalMission ')
+        console.log('this.capteur.id ' + this.capteur.id)
         this.getDateIntervalMission(this.capteur.id);
         this.updateVent();
         // CAPTEUR : {

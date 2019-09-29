@@ -150,8 +150,8 @@ const zoomTransition = defaultTransition;
     // Utils
     private mapCrosshairValues: Map<string, number> = new Map();
 
-    private saveXDomain: Date[];
-    private saveYDomain: number[];
+    private saveXDomain: [Date, Date];
+    private saveYDomain: [number, number];
 
     private crossHairTimer: NodeJS.Timer;
     @observable private crosshairState: ILineChartCrosshairState = {
@@ -248,8 +248,13 @@ const zoomTransition = defaultTransition;
         //     [yMin, yMax]
         // );
         this.baseChart.updateSeries(this.props.series);
+        this.saveXDomain = this.baseChart.timeScaleChartDomainDefault;
+        this.saveYDomain = this.baseChart.yChartDomainDefault
+        this.updateChartComponent(this.saveXDomain, this.saveYDomain);
+        this.updateComponents();
         // this.drawChart(false);
     }
+
 
     public shouldComponentUpdate(props: IProps) {
         return false;

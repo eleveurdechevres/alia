@@ -129,7 +129,8 @@ import { IPlan } from 'src/interfaces/IPlan';
                 channel.channel_id === channelForMission.channel_id &&
                 channel.mission_id === channelForMission.mission_id &&
                 channel.plan_id === channelForMission.plan_id
-            );
+        );
+
         if (indexChannelForMission !== undefined) {
             this.selectedChannelList.splice(indexChannelForMission, 1);
         }
@@ -137,9 +138,11 @@ import { IPlan } from 'src/interfaces/IPlan';
 
         // Supprimer les courbes (selectedSeries)
         let indexSerieData = this.selectedSeries.findIndex(
-            (serieData: ISerieData) => serieData === serieDataToRemove
+            (serieData: ISerieData) => 
+                serieData.serieDef.capteur.id === serieDataToRemove.serieDef.capteur.id &&
+                serieData.serieDef.channel.id === serieDataToRemove.serieDef.channel.id
         );
-        if (indexSerieData !== undefined) {
+        if (indexSerieData !== undefined && indexSerieData >= 0) {
             this.selectedSeries.splice(indexSerieData, 1);
         }
         this.forceUpdate();
