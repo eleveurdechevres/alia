@@ -6,4 +6,7 @@ export interface IChannelFromMission {
     channel_id: number;
     measure_id: number;
     measure_type: String;
+    min_range: number;
+    max_range: number;
+    precision_step: number;
 }

@@ -316,6 +316,17 @@ export class GlobalStore {
         });
     }
 
+    public getCountMesuresForChannelMission = (missionId: number, capteurId: number, channelId: number): Promise<number> => {
+        if (!channelId || !missionId) {
+            return Promise.resolve(0);
+          }
+          return fetch(`http://test.ideesalter.com/alia_getCountMesuresForChannelMission.php?mission_id=${missionId}&capteur_id=${capteurId}&channel_id=${channelId}`)
+            .then((response) => response.json())
+            .then((results) => {
+                return results[0]['count(*)'];
+            });
+      }
+
     public navigateToTab = (selectedTab: NavBarTabEnum) => {
         this.selectedTab = selectedTab;
     }
