@@ -3,7 +3,7 @@ import { GlobalStore } from 'src/stores/GlobalStore';
 import { IMission } from 'src/interfaces/IMission';
 import { observer } from 'mobx-react';
 import { Suggest, ItemRenderer, IItemRendererProps, IItemModifiers, ItemPredicate } from '@blueprintjs/select';
-import { MenuItem } from '@blueprintjs/core';
+import { MenuItem, Button, Classes, Intent } from '@blueprintjs/core';
 // import { style } from 'typestyle';
 // import * as csstips from 'csstips';
 
@@ -40,17 +40,15 @@ const MISSION_SELECT = Suggest.ofType<IMission>();
                 inputProps={{
                     size: 100,
                     leftIcon: 'clipboard',
-                    rightIcon: 'caret-down',
-                    placeholder: 'Mission'
-                    // ,
-                    // rightElement:
-                    //     <Button
-                    //         icon="caret-down"
-                    //         className={Classes.BUTTON}
-                    //         minimal={true} 
-                    //         intent={Intent.NONE}
-                    //         disabled={true}
-                    //     />
+                    placeholder: 'Mission',
+                    rightElement:
+                        <Button
+                            icon="caret-down"
+                            className={Classes.BUTTON}
+                            minimal={true} 
+                            intent={Intent.NONE}
+                            disabled={true}
+                        />
                 }}
             />
         );

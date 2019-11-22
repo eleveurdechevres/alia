@@ -97,7 +97,7 @@ import { IPlan } from 'src/interfaces/IPlan';
                 promisePlan,
                 promiseMesures
             ]).then(([capteur, channel, typeMesure, plan, mesures]: [ICapteur, IChannel, ITypeMesure, IPlan, IMesure[]]) => {
-                serieDef.capteur = capteur[0];    
+                serieDef.capteur = capteur;    
                 serieDef.channel = channel[0];
                 serieDef.typeMesure = typeMesure[0];
                 serieDef.plan = plan[0];
