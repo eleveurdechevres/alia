@@ -5,8 +5,9 @@ export interface IChannelFromMission {
     capteur_reference_id: string;
     channel_id: number;
     measure_id: number;
-    measure_type: String;
+    measure_type: string;
     min_range: number;
     max_range: number;
     precision_step: number;
+    unit: string;
 }

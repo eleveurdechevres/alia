@@ -2,9 +2,8 @@ import * as React from 'react';
 import { style } from 'typestyle';
 import * as csstips from 'csstips';
 import { Menu, MenuItem } from '@blueprintjs/core';
-import { autorun } from 'mobx';
+import { observable, observe } from 'mobx';
 import { observer } from 'mobx-react';
-import { observable } from 'mobx';
 import { GenericSheetComponent, IGenericSheetComponentProps } from './GenericSheetComponent';
 import { IDateInterval } from 'src/pages/Graph/GraphBoard';
 // import { MultiSensorListSelector } from '../Detail/MultiSensorListSelector';
@@ -17,28 +16,40 @@ import { ICapteur } from 'src/interfaces/ICapteur';
 // import { IChannel } from 'src/interfaces/IChannel';
 // import { ITypeMesure } from 'src/interfaces/ITypeMesure';
 // import { IPlan } from 'src/interfaces/IPlan';
+// import { Map, Marker, Popup, TileLayer } from 'react-leaflet'
 
+// const position = [51.505, -0.09]
+
+interface IChannelDescription extends IChannelFromMission {
+    count: number
+}
 interface ICapteurDescription {
     capteur: ICapteur,
-    channels: IChannelFromMission[]
+    channels: IChannelDescription[]
 }
 
 @observer export class TextReportSheetComponent<P extends IGenericSheetComponentProps> extends GenericSheetComponent {
 
     @observable private channelList: IChannelFromMission[] = [];
-    @observable private channelStats: Map<IChannelFromMission, number> = new Map();
-    @observable private capteurDescriptionList: Map<number, ICapteurDescription> = new Map();
+    @observable private capteurIdList: Set<number> = new Set();
+    // @observable private channelStats: Map<IChannelFromMission, number> = new Map();
+    @observable private capteurDescriptionList: ICapteurDescription[] = [];
+    // private capteurDescriptionMap: Map<number, ICapteurDescription> = new Map();
     // private mapSelectedChannelSelectedSerie: Map<IChannelFromMission, ISerieData> = new Map();
     
     public constructor(props: P) {
         super(props);
 
         this.loadData();
-        autorun(() => {
-            // if (this.temperatureSensor) {
-            //     this.humiditySensor = undefined;
-            // }
-        })
+        observe(this.capteurDescriptionList, () => {
+            this.forceUpdate()
+        });
+        // autorun(() => {
+        //     console.log(this.capteurDescriptionList.length)
+        //     // if (this.temperatureSensor) {
+        //     //     this.humiditySensor = undefined;
+        //     // }
+        // })
     }
 
     protected buildChart = () => {
@@ -48,7 +59,6 @@ interface ICapteurDescription {
             minDate: this.minDate,
             maxDate: this.maxDate
         }
-        console.log(dateInterval)
         return (
             <div>
                 <h1>Résumé</h1>
@@ -66,21 +76,20 @@ interface ICapteurDescription {
                     <li>latitude : {this.props.sheet.sheetDef.habitat.gps_latitude}</li>
                     <li>elevation : {this.props.sheet.sheetDef.habitat.gps_elevation}</li>
                 </ul>
+                {/* <Map center={position} zoom={13}>
+                    <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution="&copy; <a href=&quot;http://osm.org/copyright&quot;>OpenStreetMap</a> contributors"
+                    />
+                    <Marker position={position}>
+                    <Popup>A pretty CSS3 popup.<br />Easily customizable.</Popup>
+                    </Marker>
+                </Map> */}
                 <h2>Mission</h2>
                 <ul>
-                    {
-                        this.buildCapteursDescription()
-                        // this.channelList.map((channel: IChannelFromMission, index: number) => {
-                        //     console.log(index)
-                        //     return (
-                        //         <li key={index}>
-                        //             {
-                        //                 channel.capteur_reference_id + '[' + channel.capteur_id + '] (' + channel.measure_type + ') : ' + this.getNbEnregistrements(channel) 
-                        //             }
-                        //         </li>
-                        //     );
-                        // })
-                    }
+                    <li>Début : {dateInterval.missionStartDate.toLocaleDateString()}</li>
+                    <li>Fin : {dateInterval.missionStopDate.toLocaleDateString()}</li>
+                    <li>Capteurs : {this.buildCapteurList()}</li>
                 </ul>
                 <h1>Statistiques</h1>
                 <h1>Données</h1>
@@ -88,19 +97,78 @@ interface ICapteurDescription {
         );
     }
     
-    private buildCapteursDescription() {
-        // this.capteurDescriptionList.forEach((value: IChannelFromMission[], key: number) => {
-
-        // })
-        return ''
+    private buildCapteurList(): JSX.Element {
+        console.log(JSON.stringify(this.capteurDescriptionList))
+        let jsxCapteurList: JSX.Element[] = [];
+        console.log('buildCapteurList ' + this.capteurDescriptionList.length)
+        this.capteurDescriptionList.forEach((capteurDescription: ICapteurDescription, index: number) => {
+            jsxCapteurList.push(
+                <li key={index}>
+                    {capteurDescription.capteur.capteur_reference_id}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th colSpan={1}/>
+                                <th colSpan={3}>Range</th>
+                            </tr>
+                            <tr>
+                                <th colSpan={1}>Channel</th>
+                                <th colSpan={1}>Min</th>
+                                <th colSpan={1}>Max</th>
+                                <th colSpan={1}>Step</th>
+                                <th colSpan={1}>Mesures</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {this.buildChannelList(capteurDescription.channels)}                            
+                        </tbody>
+                    </table>
+                    
+                    
+                </li>
+            );
+        });
+        return (
+            <ul>{jsxCapteurList}</ul>
+        );
     }
+
+    private buildChannelList(channels: IChannelDescription[]): JSX.Element[] {
+        let jsxChannelList: JSX.Element[] = [];
+        console.log('buildChannelList ' + channels.length)
+        channels.forEach((channel: IChannelDescription, index: number) => {
+            let minRange: string;
+            let maxRange: string;
+            let stepRange: string;
+            if (channel.unit !== 'boolean') {
+                minRange = channel.min_range.toString() + ' ' + channel.unit;
+                maxRange = channel.max_range.toString() + ' ' + channel.unit;
+                stepRange = channel.precision_step.toString() + ' ' + channel.unit;
+            } else {
+                minRange = 'False';
+                maxRange = 'True';
+                stepRange = '-';
+            }
+            jsxChannelList.push(
+                <tr key={index}>
+                    <td>{channel.measure_type}</td>
+                    <td>{minRange}</td>
+                    <td>{maxRange}</td>
+                    <td>{stepRange}</td>
+                    <td>{channel.count}</td>
+                </tr>
+            );
+        });
+        return jsxChannelList;
+    }
+
     // private getNbEnregistrements(channel: IChannelFromMission) {
     //     let nbEnregistrements = this.channelStats.get(channel);
     //     return nbEnregistrements !== undefined ? nbEnregistrements + ' enregistrements' : '-'
     // }
     // @observable private selectedSeries: ISerieData[] = [];
 
-    private loadData() {
+    private async loadData() {
 
         // let serieData: ISerieData = {
         //     points: undefined,
@@ -128,29 +196,43 @@ interface ICapteurDescription {
         //     this.props.sheet.sheetDef.dateFinMission
         // );
 
-        promiseChannelsForMission.then((channelsForMission: IChannelFromMission[]) => {
+        await promiseChannelsForMission.then((channelsForMission: IChannelFromMission[]) => {
             this.channelList = channelsForMission;
             this.channelList.forEach((channel: IChannelFromMission) => {
-                this.props.globalStore.getCountMesuresForChannelMission(this.props.sheet.sheetDef.mission.id, channel.capteur_id, channel.channel_id).then(
-                    (count: number) => {
-                        this.channelStats.set(channel, count);
-                    }
-                )
-                if (!this.capteurDescriptionList.has(channel.capteur_id)) {
-                    let capteur: ICapteur;
-                    this.props.globalStore.getCapteur(channel.capteur_id, this.props.sheet.sheetDef.mission.id).then((val: ICapteur) => {
-                        capteur = val;
+                this.capteurIdList.add(channel.capteur_id);
+            });
+        })
+
+        this.capteurIdList.forEach(async (capteurId: number) => {
+            let capteurChannels: IChannelFromMission[] = this.channelList.filter((channel: IChannelFromMission) => channel.capteur_id === capteurId)
+            let promiseCapteur: Promise<ICapteur> = this.props.globalStore.getCapteur(capteurId, this.props.sheet.sheetDef.mission.id);
+            await promiseCapteur.then((capteur: ICapteur) => {
+
+                let promisesCount: Promise<number>[] = [];
+                capteurChannels.forEach((channel: IChannelFromMission) => {
+                    promisesCount.push(this.props.globalStore.getCountMesuresForChannelMission(this.props.sheet.sheetDef.mission.id, channel.capteur_id, channel.channel_id));
+                });
+                Promise.all(promisesCount).then((counts: number[]) => {
+                    let capteurChannelsWithCount: IChannelDescription[] = [];
+                    capteurChannels.forEach((channel: IChannelFromMission, index: number) => {
+                        let channelDescription: IChannelDescription = {
+                            count: counts[index],
+                            ...channel
+                        }
+                        capteurChannelsWithCount.push(channelDescription);
                     });
                     let capteurDescription: ICapteurDescription = {
                         capteur: capteur,
-                        channels: []
-                    }
-                    this.capteurDescriptionList.set(channel.capteur_id, capteurDescription);
-                }
-                this.capteurDescriptionList.get(channel.capteur_id).channels.push(channel);
+                        channels: capteurChannelsWithCount
+                    };
+                    this.capteurDescriptionList.push(capteurDescription);
+                });
+                // this.capteurDescriptionList = [...this.capteurDescriptionList, capteurDescription];
             });
-            console.log(JSON.stringify(this.capteurDescriptionList))
-        })
+            // let promiseChannelMesuresCount = this.props.globalStore.getCountMesuresForChannelMission(this.props.sheet.sheetDef.mission.id, channel.capteur_id, channel.channel_id);
+        });
+        // console.log(JSON.stringify(this.capteurDescriptionList))
+
         // Promise.all( [
         //         promiseCapteur,
         //         promiseChannel,

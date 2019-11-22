@@ -139,7 +139,7 @@ export class GlobalStore {
     public getCapteur(capteurId: number, missionId: number): Promise<ICapteur> {
         return fetch(`http://test.ideesalter.com/alia_getCapteur.php?capteur_id=${capteurId}&mission_id=${missionId}`)
             .then((response) => response.json())
-            .then((results) => results);
+            .then((results) => results[0]);
     }
 
     public getChannel(channelId: number, capteurReferenceId: string): Promise<IChannel> {
@@ -195,6 +195,24 @@ export class GlobalStore {
                 return resultsTyped;
             });
     }
+
+    public getCountMesuresForChannelMission = (missionId: number, capteurId: number, channelId: number): Promise<number> => {
+        if (!channelId || !missionId) {
+            return Promise.resolve(undefined);
+        }
+        var request = 'http://test.ideesalter.com/alia_getCountMesuresForChannelMission.php?mission_id=' + missionId + '&capteur_id=' + capteurId + '&channel_id=' + channelId;
+        return fetch(request)
+            .then((response) => response.json())
+            .then((results: { count: number }[]) => {
+                console.log('getCountMesuresForChannelMission ' + results[0].count)
+                return results[0].count;
+            });
+    }
+
+    public navigateToTab = (selectedTab: NavBarTabEnum) => {
+        this.selectedTab = selectedTab;
+    }
+
 
     public writeClient = (client: IClient, password: string) => {
         return fetch(`http://testbase.ideesalter.com/alia_writeClient.php` +
@@ -314,21 +332,6 @@ export class GlobalStore {
                     // TODO : impossible de supprimer...
             }
         });
-    }
-
-    public getCountMesuresForChannelMission = (missionId: number, capteurId: number, channelId: number): Promise<number> => {
-        if (!channelId || !missionId) {
-            return Promise.resolve(0);
-          }
-          return fetch(`http://test.ideesalter.com/alia_getCountMesuresForChannelMission.php?mission_id=${missionId}&capteur_id=${capteurId}&channel_id=${channelId}`)
-            .then((response) => response.json())
-            .then((results) => {
-                return results[0]['count(*)'];
-            });
-      }
-
-    public navigateToTab = (selectedTab: NavBarTabEnum) => {
-        this.selectedTab = selectedTab;
     }
 
     public createSheet = (sheetType: ESheetType, mission: IMission, dateDebut: Date, dateFin: Date): void => {
