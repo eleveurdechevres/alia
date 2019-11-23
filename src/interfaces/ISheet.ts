@@ -17,6 +17,7 @@ export interface ISheet {
 export enum ESheetType {
     MOLLIER_CHART,
     TIME_CHART,
+    AVG_DELTA_CHART,
     CANDLE_CHART,
     TEXT_REPORT,
     SCATTER_PLOT,
@@ -43,6 +44,13 @@ export const ISheetTypes: Map<ESheetType, ISheetTypeProperties> = new Map([
         {
             name: 'y=f(t)',
             icon: 'timeline-line-chart',
+        } as ISheetTypeProperties
+    ],
+    [
+        ESheetType.AVG_DELTA_CHART,
+        {
+            name: 'M(Δ)=f(t, ☼)',
+            icon: 'step-chart',
         } as ISheetTypeProperties
     ],
     [   ESheetType.CANDLE_CHART,

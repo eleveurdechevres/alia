@@ -55,11 +55,14 @@ interface IProps {
                             {this.buildButton(ESheetType.TIME_CHART)}
                         </div>
                         <div className={style(csstips.margin(10), csstips.horizontal, csstips.flex, csstips.height(200))}>
+                            {this.buildButton(ESheetType.AVG_DELTA_CHART)}
                             {this.buildButton(ESheetType.CANDLE_CHART)}
-                            {this.buildButton(ESheetType.TEXT_REPORT)}
                         </div>
                         <div className={style(csstips.margin(10), csstips.horizontal, csstips.flex, csstips.height(200))}>
+                            {this.buildButton(ESheetType.TEXT_REPORT)}
                             {this.buildButton(ESheetType.SCATTER_PLOT)}
+                        </div>
+                        <div className={style(csstips.margin(10), csstips.horizontal, csstips.flex, csstips.height(200))}>
                             {this.buildButton(ESheetType.RADAR_CHART)}
                         </div>
                     </div>

@@ -216,7 +216,7 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
                                     }}
                                     // minDate={this.dateInterval.minDate}
                                     // maxDate={this.dateInterval.maxDate}
-                                    dateFormat="dd/MM/YYYY"
+                                    dateFormat="dd/MM/yyyy"
                                     placeholderText="Date de début"
                                 />
                             </div>
@@ -233,7 +233,7 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
                                     }}
                                     // minDate={this.dateInterval.minDate}
                                     // maxDate={this.dateInterval.maxDate}
-                                    dateFormat="dd/MM/YYYY"
+                                    dateFormat="dd/MM/yyyy"
                                     placeholderText="Date de fin"
                                 />
                             </div>

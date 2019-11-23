@@ -407,7 +407,7 @@ interface ICrosshair {
                 onChange={this.handleChangeStartDate}
                 minDate={this.dateInterval.minDate}
                 maxDate={this.dateInterval.maxDate}
-                dateFormat="dd/MM/YYYY"
+                dateFormat="dd/MM/yyyy"
                 placeholderText="Date de début"
             />
             <DatePicker
@@ -415,7 +415,7 @@ interface ICrosshair {
                 onChange={this.handleChangeStopDate}
                 minDate={this.dateInterval.minDate}
                 maxDate={this.dateInterval.maxDate}
-                dateFormat="dd/MM/YYYY"
+                dateFormat="dd/MM/yyyy"
                 placeholderText="Date de fin"
             />
             {

@@ -12,6 +12,7 @@ import { ISheet, ESheetType } from 'src/interfaces/ISheet';
 import { MollierSheetComponent } from './SheetComponents/MollierSheetComponent';
 import { LineChartSheetComponent } from './SheetComponents/LineChartSheetComponent';
 import { TextReportSheetComponent } from './SheetComponents/TextReportSheetComponent';
+import { AvgDeltaChartSheetComponent } from './SheetComponents/AvgDeltaChartSheetComponent';
 
 interface IProps {
     globalStore: GlobalStore
@@ -53,9 +54,17 @@ interface IProps {
                                             sheet={sheet}
                                         />
                                     );
-                                case ESheetType.TIME_CHART:
+                                    case ESheetType.TIME_CHART:
                                     return (
                                         <LineChartSheetComponent
+                                            key={'SheetComponent' + sheet.sheetName}
+                                            globalStore={this.props.globalStore}
+                                            sheet={sheet}
+                                        />
+                                    );
+                                case ESheetType.AVG_DELTA_CHART:
+                                    return (
+                                        <AvgDeltaChartSheetComponent
                                             key={'SheetComponent' + sheet.sheetName}
                                             globalStore={this.props.globalStore}
                                             sheet={sheet}
