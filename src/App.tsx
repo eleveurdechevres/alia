@@ -62,15 +62,13 @@ export const enum NavBarTabEnum {
             default:
                 break;
         }
-        let mainBoard = <div id="content" className={style(csstips.fillParent, csstips.height('100%'))}>{mainContent}</div>
+        let mainBoard = <div id="content" className={style(csstips.fillParent)}>{mainContent}</div>
     
         return (
-            <div className={style(csstips.fillParent, csstips.vertical)}>
-                <div className={style(csstips.flex)}>
-                    <AliaNavBar
-                        globalStore={this.props.globalStore}
-                    />
-                </div>
+            <div>
+                <AliaNavBar
+                    globalStore={this.props.globalStore}
+                />
                 {mainBoard}
             </div>
         );

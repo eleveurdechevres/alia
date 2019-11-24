@@ -22,6 +22,7 @@ interface IProps {
         return (
             <Navbar 
                 className={style(csstips.margin(0, 0, 10, 0), { boxShadow: '1px 1px 10px #888' })}
+                fixedToTop={false}
             >
                 <NavbarGroup align={Alignment.LEFT} className={style(csstips.horizontallySpaced(10), csstips.horizontal, csstips.flex)}>
                     <img src="./favicon.ico" className={style({ width: 32, height: 32 })}/>
