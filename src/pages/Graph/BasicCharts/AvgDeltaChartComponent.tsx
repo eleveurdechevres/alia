@@ -247,12 +247,14 @@ const zoomTransition = defaultTransition;
         //     [props.sheet.sheetDef.dateDebutMission, props.sheet.sheetDef.dateFinMission],
         //     [yMin, yMax]
         // );
-        this.baseChart.updateSeries(this.props.series);
-        this.saveXDomain = this.baseChart.timeScaleChartDomainDefault;
-        this.saveYDomain = this.baseChart.yChartDomainDefault
-        this.updateChartComponent(this.saveXDomain, this.saveYDomain);
-        this.updateComponents();
+        if (props.series.length !== this.props.series.length) {
+            this.baseChart.updateSeries(this.props.series);
+            this.saveXDomain = this.baseChart.timeScaleChartDomainDefault;
+            this.saveYDomain = this.baseChart.yChartDomainDefault
+            this.updateChartComponent(this.saveXDomain, this.saveYDomain);
+            this.updateComponents();
         // this.drawChart(false);
+        }
     }
 
 

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { style } from 'typestyle';
 import * as csstips from 'csstips';
-import { Menu, MenuItem } from '@blueprintjs/core';
+import { Menu, MenuItem, Icon } from '@blueprintjs/core';
 import { autorun } from 'mobx';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
@@ -18,6 +18,8 @@ import { ISerieData } from 'src/interfaces/ISerieData';
 // import { IPlan } from 'src/interfaces/IPlan';
 import { AvgDeltaChartComponent } from 'src/pages/Graph/BasicCharts/AvgDeltaChartComponent';
 import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMission';
+import { TypeOfMeasureSelector } from '../Detail/TypeOfMeasureSelector';
+import { TMesure } from 'src/interfaces/Types';
 
 @observer export class AvgDeltaChartSheetComponent<P extends IGenericSheetComponentProps> extends GenericSheetComponent {
 
@@ -149,20 +151,51 @@ import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMiss
     //     this.forceUpdate();
     // }
 
-    private temperatureSensor: IChannelOfTypeFromMission;
+    @observable private typeOfMeasure: TMesure = undefined;
+
+    @observable private firstChannel: IChannelOfTypeFromMission;
+    @observable private secondChannel: IChannelOfTypeFromMission;
     protected buildConfigBar = () => {
         return (
-            <div className={style(csstips.gridSpaced(10))}>
-                <MultiSensorSelector
+            <div className={style(csstips.horizontal, csstips.gridSpaced(10))}>
+                <TypeOfMeasureSelector
                     globalStore={this.props.globalStore}
-                    type="Température"
-                    mission={this.props.sheet.sheetDef.mission}
-                    sensorSelected={this.temperatureSensor}
-                    handleSelect={(sensor: IChannelOfTypeFromMission) => {
-                        this.temperatureSensor = sensor;
+                    typeOfMeasure={this.typeOfMeasure}
+                    handleSelectTypeOfMeasure={(typeOfMeasure: TMesure) => {
+                        if (this.typeOfMeasure !== typeOfMeasure) {
+                            this.typeOfMeasure = typeOfMeasure
+                            this.firstChannel = undefined;
+                            this.secondChannel = undefined;
+                        }
                     }}
-                    filter={() => true}
                 />
+                { this.typeOfMeasure ? 
+                    <div className={style(csstips.horizontal, csstips.horizontallySpaced(10), {alignItems: 'center'})}>
+                        <MultiSensorSelector
+                            legend="Capteur 1"
+                            globalStore={this.props.globalStore}
+                            type={this.typeOfMeasure}
+                            mission={this.props.sheet.sheetDef.mission}
+                            sensorSelected={this.firstChannel}
+                            handleSelect={(sensor: IChannelOfTypeFromMission) => {
+                                this.firstChannel = sensor;
+                            }}
+                            filter={() => true}
+                        />
+                        <Icon icon="small-minus"/>
+                        <MultiSensorSelector
+                            legend="Capteur 2"
+                            globalStore={this.props.globalStore}
+                            type={this.typeOfMeasure}
+                            mission={this.props.sheet.sheetDef.mission}
+                            sensorSelected={this.secondChannel}
+                            handleSelect={(sensor: IChannelOfTypeFromMission) => {
+                                this.secondChannel = sensor;
+                            }}
+                            filter={() => true}
+                        />
+                    </div> : ''
+                }
             </div>
         );
     }

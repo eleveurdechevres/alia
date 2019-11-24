@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Popover, Button, Position, Menu, MenuItem } from '@blueprintjs/core';
 import { observer } from 'mobx-react';
-import { observable } from 'mobx';
+import { autorun, observable } from 'mobx';
 import { style } from 'typestyle';
 import * as csstips from 'csstips';
 import { TMesure } from '../../../interfaces/Types'
@@ -10,6 +10,7 @@ import { IMission } from 'src/interfaces/IMission';
 import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMission';
 
 interface IProps {
+    legend?: string;
     type?: TMesure;
     mission: IMission;
     globalStore: GlobalStore;
@@ -25,20 +26,22 @@ interface IProps {
     public constructor(props: IProps) {
         super(props);
 
-        if (this.props.type) {
-            this.props.globalStore.getAllChannelsOfTypeFromMission(this.props.type, this.props.mission.id).then(
-                (listSensors: IChannelOfTypeFromMission[]) => {
-                    this.listSensors = listSensors;
-                }
-            )
-        }
-        else {
-            this.props.globalStore.getAllChannelsFromMission(this.props.mission.id).then(
-                (listSensors: IChannelOfTypeFromMission[]) => {
-                    this.listSensors = listSensors;
-                }
-            )
-        }
+        autorun(() => {
+            if (this.props.type) {
+                this.props.globalStore.getAllChannelsOfTypeFromMission(this.props.type, this.props.mission.id).then(
+                    (listSensors: IChannelOfTypeFromMission[]) => {
+                        this.listSensors = listSensors;
+                    }
+                )
+            }
+            else {
+                this.props.globalStore.getAllChannelsFromMission(this.props.mission.id).then(
+                    (listSensors: IChannelOfTypeFromMission[]) => {
+                        this.listSensors = listSensors;
+                    }
+                )
+            }
+        });
     }
 
     public render() {
@@ -50,7 +53,11 @@ interface IProps {
                 minimal={true}
                 position={Position.BOTTOM_LEFT}
             >
-                <Button text={this.buildLegend(this.props.sensorSelected)}/>
+                <Button
+                    className={style(csstips.width(300))}
+                    rightIcon="caret-down"
+                    text={this.buildLegend(this.props.sensorSelected)}
+                />
             </Popover>
         );
     }
@@ -76,6 +83,8 @@ interface IProps {
     }
 
     private buildLegend = (sensor: IChannelOfTypeFromMission): string => {
-        return sensor ? sensor.capteur_reference_id + ' [plan ' + sensor.plan_id + '][channel ' + sensor.channel_id + ']' : this.props.type + '...';
+        return sensor ?
+            sensor.capteur_reference_id + ' [plan ' + sensor.plan_id + '][channel ' + sensor.channel_id + ']'
+            : this.props.legend ? this.props.legend + ' (' + this.props.type + ')...' : this.props.type + '...';
     }
 }
