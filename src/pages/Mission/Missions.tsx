@@ -125,13 +125,6 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
                     SubComponent={ row => {
                         return (
                             <div className={style(csstips.gridSpaced(5), csstips.margin(10))}>
-                                <Button
-                                    icon="insert"
-                                    text="Ajouter un plan"
-                                    onClick={() => {
-                                        console.log('TODO : create plan')
-                                    }}
-                                />
                                 <PlansTable
                                     globalStore={this.props.globalStore}
                                     habitat={this.props.globalStore.habitat}

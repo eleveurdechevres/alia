@@ -84,6 +84,7 @@ export class SunBehaviourManager {
                         }
                     }
                     this.mapSunriseSunset.set(date.toString(), answer);
+                    console.log(date.toString() + ', ' + answer.sunrise + ', ' + answer.sunset)
                 }
             });
     }

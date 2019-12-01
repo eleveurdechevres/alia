@@ -26,6 +26,7 @@ export class GlobalStore {
     @observable private _clients: IClient[] = [];
     @observable private _habitatsForClient: IHabitat[] = [];
     @observable private _missionsForHabitat: IMission[] = [];
+    @observable private _planForHabitat: Map<number, IPlan[]> = new Map();
 
     @observable sheets: ISheet[] = [];
     @observable private closedSheets: Array<ISheet> = [];
@@ -58,6 +59,10 @@ export class GlobalStore {
         return this._missionsForHabitat;
     }
 
+    public get plansForHabitat(): Map<number, IPlan[]> {
+        return this._planForHabitat;
+    }
+
     private reloadClients() {
         this.getClients().then(
             (clients: IClient[]) => {
@@ -70,6 +75,14 @@ export class GlobalStore {
         this.getHabitatsFromClient(client).then(
             (habitats: IHabitat[]) => {
                 this._habitatsForClient = habitats;
+            }
+        );
+    }
+
+    public reloadPlansForHabitat(habitatId: number) {
+        this.getPlansForHabitat(habitatId).then(
+            (plans: IPlan[]) => {
+                this._planForHabitat.set(habitatId, plans);
             }
         );
     }
@@ -109,6 +122,15 @@ export class GlobalStore {
             .then((habitats) => habitats);
     }
 
+    public getPlansForHabitat = (habitatId: number) => {
+        if (!habitatId) {
+            return Promise.resolve([]);
+        }
+        return fetch(`http://test.ideesalter.com/alia_searchPlan.php?habitat_id=${habitatId}`)
+            .then((response) => response.json())
+            .then((plans) => plans);
+    }
+    
     public getMissionsForHabitat = (habitat: IHabitat): Promise<IMission[]> => {
         if (!habitat) {
           return Promise.resolve([]);
@@ -314,6 +336,19 @@ export class GlobalStore {
             .then((response) => {
                 if (response.status === 200) {
                     this.reloadHabitatsFromClient(this.client)
+                } else {
+                    console.log(response);
+                    // TODO : impossible de supprimer...
+                }
+            }
+        );
+    }
+
+    public deletePlan = (plan: IPlan, password: string) => {
+        return fetch(`http://testbase.ideesalter.com/alia_deletePlan.php?id=` + plan.id + `&password=` + encodeURIComponent(password))
+            .then((response) => {
+                if (response.status === 200) {
+                    this.reloadPlansForHabitat(plan.habitatId)
                 } else {
                     console.log(response);
                     // TODO : impossible de supprimer...

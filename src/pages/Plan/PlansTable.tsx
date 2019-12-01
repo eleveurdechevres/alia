@@ -1,8 +1,10 @@
 import * as React from 'react';
+import { style } from 'typestyle/lib';
+import * as csstips from 'csstips';
 // import { render } from "react-dom";
 
 // Import React Table
-import ReactTable from 'react-table';
+import ReactTable, { RowInfo } from 'react-table';
 import 'react-table/react-table.css';
 import { Plan } from '../Plan/Plan';
 // import { zip } from "d3-array";
@@ -13,6 +15,7 @@ import { observer } from 'mobx-react';
 import { IPlan } from 'src/interfaces/IPlan';
 import { IMission } from 'src/interfaces/IMission';
 import { GlobalStore } from 'src/stores/GlobalStore';
+import { Icon, InputGroup, Dialog, Button, Intent } from '@blueprintjs/core';
 
 interface IProps {
     globalStore: GlobalStore;
@@ -23,7 +26,8 @@ interface IProps {
 @observer export class PlansTable extends React.Component<IProps, {}> {
 
     @observable private habitat: IHabitat;
-    @observable private plans: IPlan[] = [];
+    @observable private planToDelete: IPlan | undefined = undefined;
+    private password: string = '';
 
   // https://react-table.js.org/#/story/readme
   constructor(props: IProps) {
@@ -32,21 +36,8 @@ interface IProps {
     this.habitat = props.habitat;
   }
 
-  getPlansForHabitat = (id: number) => {
-    if (!id) {
-      return Promise.resolve({ plans: [] });
-    }
-
-    return fetch(`http://test.ideesalter.com/alia_searchPlan.php?habitat_id=${id}`)
-      .then((response) => response.json())
-      .then((plans) => {
-          this.plans = plans
-      }
-    );
-  }
-
   componentDidMount() {
-    this.getPlansForHabitat(this.habitat.id);
+    this.props.globalStore.reloadPlansForHabitat(this.habitat.id);
   }
 
   // componentWillReceiveProps(nextProps) {
@@ -78,52 +69,113 @@ interface IProps {
     }
   }
 
-  render() {
-    const columns = [
-      { Header: 'Plan id',
-        accessor: 'id'
-      },
-      { Header: 'Etage',
-        accessor: 'etage'
-      },
-      // { Header: "localisation",
-      //   accessor: d =>  ({latitude: d.gps_latitude,
-      //                     longitude: d.gps_longitude,
-      //                     elevation: d.gps_elevation
-      //                   })
-      // },
-    ];
+    render() {
+        const columns = [
+            { Header: 'Plan id',
+                accessor: 'id'
+            },
+            { Header: 'Etage',
+                accessor: 'etage'
+            },
+            {
+                width: 40,
+                Cell: (row: RowInfo) => {
+                    return (
+                        <Icon
+                            icon="trash"
+                            
+                            onClick={() => {
+                                this.planToDelete = row.original;
+                            }}
+                        />
+                    );
+                }
+            }
+    // { Header: "localisation",
+        //   accessor: d =>  ({latitude: d.gps_latitude,
+        //                     longitude: d.gps_longitude,
+        //                     elevation: d.gps_elevation
+        //                   })
+        // },
+        ];
 
-    if ( this.plans.length === 0 ||
-        (this.plans.length === 1 && this.plans[0] === undefined ) ) {
-      return (
-        <div/>
-      );
-    }
-    return (
-      <div>
-        <ReactTable
-          data={this.plans.slice()}
-          noDataText="Pas de plan pour cet habitat"
-          columns={columns}
-          defaultPageSize={this.plans.length}
-          showPagination={false}
-          showPageJump={false}
-          className="-striped -highlight"
-          getTrProps={this.handleEventsOnPlan}
-          SubComponent={ row => {
+        let plans = this.props.globalStore.plansForHabitat.get(this.habitat.id);
+        if ( plans === undefined || plans.length === 0 ||
+            (plans.length === 1 && plans[0] === undefined ) ) {
             return (
-                <Plan
-                    globalStore={this.props.globalStore}
-                    habitat={this.habitat}
-                    planId={row.original.id}
-                    mission={this.props.mission}
-                />
+                <React.Fragment/>
             );
-          }}
-        />
-        <br />
-      </div>
-    );
-  }
+        }
+        return (
+            <div>
+                <ReactTable
+                    data={plans.slice()}
+                    noDataText="Pas de plan pour cet habitat"
+                    columns={columns}
+                    defaultPageSize={plans.length}
+                    showPagination={false}
+                    showPageJump={false}
+                    className="-striped -highlight"
+                    getTrProps={this.handleEventsOnPlan}
+                    SubComponent={ row => {
+                        return (
+                            <Plan
+                                globalStore={this.props.globalStore}
+                                habitat={this.habitat}
+                                planId={row.original.id}
+                                mission={this.props.mission}
+                            />
+                        );
+                    }}
+                />
+                <br />
+                <Dialog
+                    autoFocus={true}
+                    enforceFocus={true}
+                    usePortal={true}
+                    canOutsideClickClose={true}
+                    canEscapeKeyClose={true}
+                    isOpen={this.planToDelete !== undefined}
+                    title={this.planToDelete !== undefined ? 'Suppression plan  id[' + this.planToDelete.id + ']' : 'Erreur plan inexistant'}
+                    icon="warning-sign"
+                    onClose={() => { this.planToDelete = undefined; }}
+                >
+                    <div className={style(csstips.flex, csstips.vertical)}>
+                        <div className={style(csstips.margin(20), csstips.flex)}>
+                            Opération irréversible : confirmer ?
+                        </div>
+                        <div className={style(csstips.margin(20), csstips.flex)}>
+                            <InputGroup
+                                placeholder="password"
+                                onChange={(event: any) => { this.password = event.target.value }}
+                                type="password"
+                            />
+                        </div>
+                        <div className={style(csstips.horizontal, csstips.flex)}>
+                            <Button
+                                className={style(csstips.margin(10), csstips.flex)}
+                                intent={Intent.NONE}
+                                text="Annuler"
+                                onClick={() => { this.planToDelete = undefined; }}
+                            />
+                            <Button
+                                className={style(csstips.margin(10), csstips.flex)}
+                                intent={Intent.DANGER}
+                                icon="warning-sign"
+                                text="Supprimer"
+                                onClick={this.handleDeletePlan}
+                            />
+                        </div>
+                    </div>
+                </Dialog>
+            </div>
+        );
+    }
+
+    private handleDeletePlan = () => {
+        this.props.globalStore.deletePlan(this.planToDelete, this.password);
+        this.planToDelete = undefined;
+    }
+
 }
+
