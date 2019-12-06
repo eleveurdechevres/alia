@@ -89,8 +89,10 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
                     return (
                         <div className={style(csstips.gridSpaced(10))}>
                             <Icon
+                                className={style({cursor: 'pointer'})}
                                 icon="trash"
                                 title="Supprimer la mission"
+                                intent={Intent.DANGER}
                                 onClick={() => {
                                     this.enableLineSelect = false;
                                     this.missionToDelete = row.original;
@@ -129,6 +131,7 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
                                     globalStore={this.props.globalStore}
                                     habitat={this.props.globalStore.habitat}
                                     mission={row.original}
+                                    editable={false}
                                 />
                             </div>
                         );

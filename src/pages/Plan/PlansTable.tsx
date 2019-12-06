@@ -21,6 +21,7 @@ interface IProps {
     globalStore: GlobalStore;
     habitat: IHabitat;
     mission: IMission;
+    editable: boolean;
 }
 
 @observer export class PlansTable extends React.Component<IProps, {}> {
@@ -75,28 +76,26 @@ interface IProps {
                 accessor: 'id'
             },
             { Header: 'Etage',
-                accessor: 'etage'
+                accessor: 'etage',
+
+                
             },
             {
                 width: 40,
                 Cell: (row: RowInfo) => {
-                    return (
-                        <Icon
-                            icon="trash"
-                            
-                            onClick={() => {
-                                this.planToDelete = row.original;
-                            }}
-                        />
-                    );
+                    return this.props.editable ?
+                        (
+                            <Icon
+                                className={style({cursor: 'pointer'})}
+                                icon="trash"
+                                intent={Intent.DANGER}
+                                onClick={() => {
+                                    this.planToDelete = row.original;
+                                }}
+                            />
+                        ) : <React.Fragment/>;
                 }
             }
-    // { Header: "localisation",
-        //   accessor: d =>  ({latitude: d.gps_latitude,
-        //                     longitude: d.gps_longitude,
-        //                     elevation: d.gps_elevation
-        //                   })
-        // },
         ];
 
         let plans = this.props.globalStore.plansForHabitat.get(this.habitat.id);

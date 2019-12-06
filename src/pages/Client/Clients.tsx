@@ -86,7 +86,9 @@ const dialogFieldValueStyle = style(csstips.flex);
                 Cell: (row: RowInfo) => {
                     return (
                         <Icon
+                            className={style({cursor: 'pointer'})}    
                             icon="trash"
+                            intent={Intent.DANGER}
                             onClick={() => {
                                 this.enableLineSelect = false;
                                 this.clientToDelete = row.original;

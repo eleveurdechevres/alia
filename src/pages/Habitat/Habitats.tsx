@@ -102,13 +102,26 @@ const dialogFieldValueStyle = style(csstips.flex);
                 accessor: 'gps_elevation',
                 width: 150
             },
+            // { Cell: (row: RowInfo) => {
+            //         let habitat: IHabitat = row.original;
+                    
+            //         const localisation = 'http://maps.google.com/maps?' + 
+            //         'q=' + habitat.gps_latitude + 'N' +
+            //         '+' + habitat.gps_longitude + 'W+(label)&' +
+            //         'll=' + habitat.gps_latitude + ',' + (-habitat.gps_longitude) +
+            //         '&spn=' + 0.004250 + ',' + 0.011579 +
+            //         '&t=h&iwloc=A&hl=fr';
+            //         return(<a href={localisation}>Localisation</a>);
+            //     }
+            // },
             {
                 width: 40,
                 Cell: (row: RowInfo) => {
                     return (
                         <Icon
+                            className={style({cursor: 'pointer'})}
                             icon="trash"
-                            
+                            intent={Intent.DANGER}
                             onClick={() => {
                                 this.enableLineSelect = false;
                                 this.habitatToDelete = row.original;
@@ -146,6 +159,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                                     globalStore={this.props.globalStore}
                                     habitat={row.original}
                                     mission={undefined}
+                                    editable={true}
                                 />
                             </div>
                         );
