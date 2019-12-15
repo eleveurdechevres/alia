@@ -2,6 +2,8 @@ import * as React from 'react';
 import * as d3 from 'd3';
 // import $ from 'jquery'; 
 // import { window } from 'd3-selection';
+import { style } from 'typestyle/lib';
+import * as csstips from 'csstips';
 import * as ReactModal from 'react-modal';
 import { GraphBoard } from '../Graph/GraphBoard';
 import { observable, autorun } from 'mobx';
@@ -10,6 +12,7 @@ import { ICapteur } from 'src/interfaces/ICapteur';
 import { IHabitat } from 'src/interfaces/IHabitat';
 import { IMission } from 'src/interfaces/IMission';
 import { GlobalStore } from 'src/stores/GlobalStore';
+import { ContextMenu, Menu, MenuItem, MenuDivider } from '@blueprintjs/core';
 
 const customStyles = {
     overlay : {
@@ -124,8 +127,14 @@ interface IProps {
 
         image.attr('xlink:href', this.planImage)
             .attr('x', 0)
-            .attr('y', 0);
-        this.getImageSize(this.planImage);
+            .attr('y', 0)
+            .on('contextmenu', () => {
+                d3.event.preventDefault();
+
+                this.showContextMenu();
+            });
+            this.getImageSize(this.planImage);
+
 
         var transitionNewCapteur = d3.transition()
             .duration(3000)
@@ -224,36 +233,79 @@ interface IProps {
                     />
                     {/* {this.graphContent} */}
                 </ReactModal >
-                <svg ref={(ref) => {this.svgRef = ref}} width={this.width} height={this.height}>
-                    <image ref={(ref) => {this.imageRef = ref}} />
-                    <g ref={(ref) => {this.gCapteurLegend = ref}} opacity="0">
-                        <rect
-                            ref={(ref) => {this.rectCapteurLegend = ref}} 
-                            x="0"
-                            y="0"
-                            width="100"
-                            height="14"
-                            fill="green"
-                            stroke="black"
-                            strokeWidth="1"
-                        />
-                        <text
-                            ref={(ref) => {this.textCapteurLegend = ref}}
-                            x="50"
-                            y="7"
-                            fontSize="11"
-                            textAnchor="middle"
-                            alignmentBaseline="middle"
-                            fill="black"
-                        >
-                            capteur
-                        </text>
-                    </g>
-                </svg>
+                <div className={style(csstips.margin(10))}>
+                    <svg ref={(ref) => {this.svgRef = ref}} width={this.width} height={this.height}>
+                        <image ref={(ref) => {this.imageRef = ref}} />
+                        <g ref={(ref) => {this.gCapteurLegend = ref}} opacity="0">
+                            <rect
+                                ref={(ref) => {this.rectCapteurLegend = ref}} 
+                                x="0"
+                                y="0"
+                                width="100"
+                                height="14"
+                                fill="green"
+                                stroke="black"
+                                strokeWidth="1"
+                            />
+                            <text
+                                ref={(ref) => {this.textCapteurLegend = ref}}
+                                x="50"
+                                y="7"
+                                fontSize="11"
+                                textAnchor="middle"
+                                alignmentBaseline="middle"
+                                fill="black"
+                            >
+                                capteur
+                            </text>
+                        </g>
+                    </svg>
+                </div>
                 <div>
                     {/* <PopupboxContainer /> */}
                 </div>
             </div>
         );
+    }
+
+    private showContextMenu = (): void => {
+        // let mouseDate = this.baseChart.timeScaleChart.invert(this.xLastClick);
+        // this.newMarkerYValue = this.baseChart.yChart.invert(this.yLastClick);
+        let srcElement = d3.event.target || d3.event.srcElement;
+        const xLastClick = d3.mouse(srcElement)[0];
+        const yLastClick = d3.mouse(srcElement)[1];
+
+        const xPercent = xLastClick * 100 / this.width ;
+        const yPercent = yLastClick * 100 / this.height;
+        const menu = ( // <div/>
+            <Menu>
+                <MenuItem text="Capteur virtuel" icon="add" onClick={() => this.addVirtualCapteur(xPercent, yPercent)}/>
+                <MenuDivider />
+                <MenuItem text="Observation" icon="add" onClick={() => this.addObservation(xPercent, yPercent)}/>
+            </Menu>
+        );
+
+        // mouse position is available on event
+        ContextMenu.show(menu, { left: d3.event.clientX - 20, top: d3.event.clientY - 20}, () => {
+            // menu was closed; callback optional
+        });
+    }
+
+    private addVirtualCapteur = (x: number, y: number) => {
+        console.log('+ Capteur virtuel [' + x + ', ' + y + ']' );
+    }
+
+    private addObservation = (x: number, y: number) => {
+        console.log('+ Capteur observation [' + x + ', ' + y + ']' );
+        // http://testbase.ideesalter.com/alia_writeObservation.php?id=3&
+        // mission_id=1&
+        // plan_id=1&
+        // coordonneesPlanX=140&
+        // coordonneesPlanY=140&
+        // coordonneesPlanZ=0&
+        // label=Label%20test&
+        // description=Description%20test&
+        // dateObservation=2017-12-26%2014:26:00&
+        // image=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQ
     }
 }
