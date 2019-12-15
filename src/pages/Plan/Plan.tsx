@@ -13,6 +13,7 @@ import { IHabitat } from 'src/interfaces/IHabitat';
 import { IMission } from 'src/interfaces/IMission';
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { ContextMenu, Menu, MenuItem, MenuDivider } from '@blueprintjs/core';
+import { IObservation } from 'src/interfaces/IObservation';
 
 const customStyles = {
     overlay : {
@@ -55,14 +56,15 @@ interface IProps {
     @observable width: number = undefined;
     @observable height: number = undefined;
     @observable capteurs: ICapteur[] = [];
+    @observable observations: IObservation[] = [];
     @observable modalIsOpen: boolean = false;
     @observable capteurDisplayed: ICapteur = undefined;
 
     svgRef: SVGGElement;
     imageRef: SVGGElement;
-    gCapteurLegend: SVGGElement;
-    rectCapteurLegend: SVGGElement;
-    textCapteurLegend: SVGGElement;
+    gItemLegend: SVGGElement;
+    rectItemLegend: SVGGElement;
+    textItemLegend: SVGGElement;
 
     constructor(props: IProps) {
         super(props);
@@ -100,12 +102,27 @@ interface IProps {
                 this.capteurs = capteurs;
             }
         );
-      }
+    }
+
+    getObservationsForPlan = (planId: number, missionId: number) => {
+        if (!planId) {
+            return Promise.resolve({ observations: [] });
+        }
+    
+        return fetch(`http://test.ideesalter.com/alia_searchObservationsForPlan.php?plan_id=${planId}&mission_id=${missionId}`)
+            .then((response) => response.json())
+            .then((observations) => {
+                // TODO : grouper les observations par coordonnées
+                this.observations = observations;
+            }
+        );
+    }
 
     componentDidMount() {
         this.getPlan(this.props.planId);
         if (this.props.mission) {
             this.getCapteursForPlan(this.props.planId, this.props.mission.id);
+            this.getObservationsForPlan(this.props.planId, this.props.mission.id);
         }
     }
 
@@ -121,7 +138,7 @@ interface IProps {
     }
 
     componentDidUpdate() {
-        this.masqueLegendeCapteur();
+        this.masqueLegende();
 
         var image = d3.select(this.imageRef);
 
@@ -153,13 +170,15 @@ interface IProps {
         // easeExp
         // easeBack
 
-        d3.select(this.svgRef).selectAll('circle')
+        // Capteurs
+        d3.select(this.svgRef).selectAll('classCapteur')
             .data(this.capteurs)
             .enter()
             .append('circle')
             .on('mouseover', this.afficheLegendeCapteur)
-            .on('mouseout', this.masqueLegendeCapteur)
-            .on('click', (capteur) => {this.openModal(capteur)})
+            .on('mouseout', this.masqueLegende)
+            .on('click', (capteur) => {this.openModalCapteur(capteur)})
+            .attr('class', 'classCapteur')
             .attr('cx', (capteur) => capteur.coordonneePlanX)
             .attr('cy', (capteur) => capteur.coordonneePlanY)
             .attr('r', 0)
@@ -170,11 +189,37 @@ interface IProps {
             .transition(transitionNewCapteur)
                 .attr('r', 10)
                 .attr('opacity', 1);
+
+        // Observations
+        d3.select(this.svgRef).selectAll('classObservation')
+            .data(this.observations)
+            .enter()
+            .append('circle')
+            .on('mouseover', this.afficheLegendeObservation)
+            .on('mouseout', this.masqueLegende)
+            .on('click', (observation) => {this.openModalObservations(observation)})
+            .attr('class', 'classObservation')
+            .attr('cx', (observation) => observation.coordonneesPlanX)
+            .attr('cy', (observation) => observation.coordonneesPlanY)
+            .attr('r', 0)
+            .attr('stroke', 'black')
+            .attr('strokeWidth', 1)
+            .attr('fill', 'white')
+            .attr('opacity', 0)
+            .transition(transitionNewCapteur)
+                .attr('r', 10)
+                .attr('opacity', 1);
+
+
     }
 
-    openModal = (capteur: ICapteur) => {
+    openModalCapteur = (capteur: ICapteur) => {
         this.capteurDisplayed = capteur;
         this.modalIsOpen = true;
+    }
+
+    openModalObservations = (observation: IObservation) => {
+        // console.log(JSON.stringify(observation));
     }
 
     afterOpenModal = () => {
@@ -185,27 +230,43 @@ interface IProps {
         this.modalIsOpen = false;
     }
 
-    afficheLegendeCapteur = (capteur: ICapteur) => {
-        var x = parseInt(capteur.coordonneePlanX, 10) + 10;
-        var y = parseInt(capteur.coordonneePlanY, 10) - 20;
+    private afficheLegendeCapteur = (capteur: ICapteur) => {
+        let x = parseInt(capteur.coordonneePlanX, 10) + 10;
+        let y = parseInt(capteur.coordonneePlanY, 10) - 20;
+        let label = capteur.capteur_reference_id;
+        this.afficheLegende(x, y, label);
+    }
 
-        var transition = d3.transition()
+    private afficheLegendeObservation = (observation: IObservation) => {
+        // Position relative
+        let x = observation.coordonneesPlanX / 100 * this.width;
+        let y = observation.coordonneesPlanY / 100 * this.height;
+        let label = observation.label;
+        this.afficheLegende(x, y, label);
+    }
+
+    private afficheLegende = (x: number, y: number, label: string) => {
+        console.log(x, y, label)
+        x = x + 10;
+        y = y - 20;
+
+        let transition = d3.transition()
             .duration(200)
             .ease(d3.easeLinear);
 
-        d3.select(this.gCapteurLegend)
+        d3.select(this.gItemLegend)
             .attr('transform', 'translate(' + x + ',' + y + ')')
             .transition(transition)
             .attr('opacity', 1);
-        d3.select(this.textCapteurLegend).text(capteur.capteur_reference_id);
+        d3.select(this.textItemLegend).text(label);
     }
 
-    masqueLegendeCapteur = () => {
-        var transition = d3.transition()
+    private masqueLegende = () => {
+        let transition = d3.transition()
             .duration(200)
             .ease(d3.easeLinear);
 
-        d3.select(this.gCapteurLegend)
+        d3.select(this.gItemLegend)
             .transition(transition)
             .attr('opacity', 0);
     }
@@ -236,9 +297,9 @@ interface IProps {
                 <div className={style(csstips.margin(10))}>
                     <svg ref={(ref) => {this.svgRef = ref}} width={this.width} height={this.height}>
                         <image ref={(ref) => {this.imageRef = ref}} />
-                        <g ref={(ref) => {this.gCapteurLegend = ref}} opacity="0">
+                        <g ref={(ref) => {this.gItemLegend = ref}} opacity="0">
                             <rect
-                                ref={(ref) => {this.rectCapteurLegend = ref}} 
+                                ref={(ref) => {this.rectItemLegend = ref}} 
                                 x="0"
                                 y="0"
                                 width="100"
@@ -248,7 +309,7 @@ interface IProps {
                                 strokeWidth="1"
                             />
                             <text
-                                ref={(ref) => {this.textCapteurLegend = ref}}
+                                ref={(ref) => {this.textItemLegend = ref}}
                                 x="50"
                                 y="7"
                                 fontSize="11"
