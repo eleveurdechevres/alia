@@ -150,10 +150,10 @@ interface ICrosshair {
 
         let dateBegin = this.dateInterval.missionStartDate;
         let dateEnd = this.dateInterval.missionStopDate;
-        this.graphDataManager.loadVitesseVentFromAeroc(this.props.habitat.id, dateBegin, dateEnd, (mesures: IMesure[]) => {
+        this.graphDataManager.loadVitesseVentFromAeroc(this.props.mission.id, dateBegin, dateEnd, (mesures: IMesure[]) => {
             // console.log(mesures);
         });
-        this.graphDataManager.loadDirectionVentFromAeroc(this.props.habitat.id, dateBegin, dateEnd, (mesures: IMesure[]) => {
+        this.graphDataManager.loadDirectionVentFromAeroc(this.props.mission.id, dateBegin, dateEnd, (mesures: IMesure[]) => {
             // console.log(mesures);
         });
     }
@@ -373,6 +373,7 @@ interface ICrosshair {
                                 chartWidth={this.chartWidth} 
                                 chartHeight={this.chartHeight} 
                                 habitat={this.props.habitat}
+                                missionId={this.props.mission.id}
                                 capteurId={this.capteur.id}
                                 channelData={data} 
                                 chartIndex={index} 

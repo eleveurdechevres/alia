@@ -87,10 +87,11 @@ export class GraphDataManager {
     }
 
     // http://test.ideesalter.com/alia_readMeteoForChannelType.php?date_begin=2018/03/18%2000:00:00&date_end=2018/03/22%2019:00:00&habitat_id=2&channel_type=Direction%20vent
-    private loadMeteoDataFromAerocForChannelType = (habitatId: number, channelType: string, dateBegin: Date, dateEnd: Date, mesuresToStore: IMesure[], callback: (mesures: IMesure[]) => void) => {
+    private loadMeteoDataFromAerocForChannelType = (missionId: number, channelType: string, dateBegin: Date, dateEnd: Date, mesuresToStore: IMesure[], callback: (mesures: IMesure[]) => void) => {
         
-        var request = 'http://test.ideesalter.com/alia_readMeteoForChannelType.php?habitat_id=' + habitatId
+        var request = 'http://test.ideesalter.com/alia_readMeteoForChannelType.php?mission_id=' + missionId
             + '&channel_type=' + channelType + '&date_begin=' + dateToSql(dateBegin) + '&date_end=' + dateToSql(dateEnd);
+        console.log(request);
         return fetch(request)
             .then((response) => response.json())
             .then((data) => {
@@ -104,21 +105,21 @@ export class GraphDataManager {
     }
 
     public loadVitesseVentFromAeroc = (
-        habitatId: number,
+        missionId: number,
         dateBegin: Date,
         dateEnd: Date,
         callback: (mesures: IMesure[]) => void
     ) => {
-        this.loadMeteoDataFromAerocForChannelType(habitatId, 'Vitesse vent', dateBegin, dateEnd, this.vitesseVentValues, callback);
+        this.loadMeteoDataFromAerocForChannelType(missionId, 'Vitesse vent', dateBegin, dateEnd, this.vitesseVentValues, callback);
     }
 
     public loadDirectionVentFromAeroc = (
-        habitatId: number,
+        missionId: number,
         dateBegin: Date,
         dateEnd: Date,
         callback: (mesures: IMesure[]) => void
     ) => {
-        this.loadMeteoDataFromAerocForChannelType(habitatId, 'Direction vent', dateBegin, dateEnd, this.directionVentValues, callback);
+        this.loadMeteoDataFromAerocForChannelType(missionId, 'Direction vent', dateBegin, dateEnd, this.directionVentValues, callback);
     }
 
 }

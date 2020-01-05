@@ -18,6 +18,7 @@ interface IProps {
     chartWidth: number;
     chartHeight: number;
     habitat: IHabitat;
+    missionId: number;
     capteurId: number;
     channelData: IChannelData;
     chartIndex: number;
@@ -210,9 +211,9 @@ private gChartRef: SVGGElement | null;
             });
     }
 
-    loadJsonMeteoFromAeroc = (habitatId: number, channelId: number, dateBegin: Date, dateEnd: Date) => {
+    loadJsonMeteoFromAeroc = (missionId: number, typeMesureId: number, dateBegin: Date, dateEnd: Date) => {
 
-        this.props.globalStore.getMeteo(habitatId, channelId, dateBegin, dateEnd)
+        this.props.globalStore.getMeteo(missionId, typeMesureId, dateBegin, dateEnd)
             .then((data: IMesure[]) => {
 
                 this.mapMeteo.clear();
@@ -557,7 +558,7 @@ private gChartRef: SVGGElement | null;
             // this.loadJsonFromAeroc(props.capteurId, props.channelData.id, '2017/12/12 00:00:00', '2017/12/12 23:59:00');
             // this.loadJsonFromAeroc(props.capteurId, props.channelData.id, '2017/12/13 00:00:00', '2017/12/13 23:59:00');
             this.loadJsonDataFromAeroc(props.capteurId, props.channelData.id, this.startDate, this.stopDate);
-            this.loadJsonMeteoFromAeroc(props.habitat.id, props.channelData.id, this.startDate, this.stopDate);
+            this.loadJsonMeteoFromAeroc(props.missionId, props.channelData.id_type_mesure, this.startDate, this.stopDate);
         }
 
         this.displayVerticalCrosshair(props.displayCrossHairTime, props.crosshairTime.dataTimeMs, props.crosshairTime.timeMs);

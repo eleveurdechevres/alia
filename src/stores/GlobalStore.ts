@@ -203,9 +203,10 @@ export class GlobalStore {
             });
     }
 
-    public getMeteo = (habitatId: number, channelId: number, dateBegin: Date, dateEnd: Date): Promise<IMesure[]> => {
-        var request = 'http://test.ideesalter.com/alia_readMeteo.php?habitat_id=' + habitatId
-            + '&channel_id=' + channelId + '&date_begin=' + dateToSql(dateBegin) + '&date_end=' + dateToSql(dateEnd);
+    public getMeteo = (missionId: number, typeMesureId: number, dateBegin: Date, dateEnd: Date): Promise<IMesure[]> => {
+        var request = 'http://test.ideesalter.com/alia_readMeteo.php?mission_id=' + missionId
+            + '&type_mesure_id=' + typeMesureId + '&date_begin=' + dateToSql(dateBegin) + '&date_end=' + dateToSql(dateEnd);
+        console.log('getMeteo ' + request);
         return fetch(request)
             .then((response) => response.json())
             .then((results: {date: string, valeur: number}[]) => {
