@@ -50,6 +50,8 @@ const dialogFieldValueStyle = style(csstips.flex);
             onClick: (e: any) => {
                 if ( this.enableLineSelect ) {
                     this.props.globalStore.client = rowInfo.original;
+                    this.props.globalStore.habitat = undefined;
+                    this.props.globalStore.mission = undefined;
                 }
             }
         }

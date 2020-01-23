@@ -101,7 +101,7 @@ export class GraphDataManager {
                     mesuresToStore.push({ date: new Date(mesure.date), valeur: parseFloat(mesure.valeur)})
                 });
                 callback(mesuresToStore);
-            });
+        });
     }
 
     public loadVitesseVentFromAeroc = (

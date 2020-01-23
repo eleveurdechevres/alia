@@ -14,7 +14,18 @@ import { IMission } from 'src/interfaces/IMission';
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { ContextMenu, Menu, MenuItem, MenuDivider } from '@blueprintjs/core';
 import { IObservation } from 'src/interfaces/IObservation';
+import { CapteurForPlan } from './CapteurForPlan';
+import { DialogNouvelleObservation } from './DialogNouvelleObservation';
+import { ObservationForPlan } from './ObservationForPlan';
 
+// const transitionNewCapteur = d3.transition()
+// .duration(3000)
+// .ease(d3.easeElastic);
+
+const legend = {
+    width: 100,
+    height: 14
+}
 const customStyles = {
     overlay : {
       position          : 'fixed',
@@ -59,14 +70,16 @@ interface IProps {
     @observable observations: IObservation[] = [];
     @observable modalIsOpen: boolean = false;
     @observable capteurDisplayed: ICapteur = undefined;
+    @observable isDialogObservationOpened: boolean = false;
 
-    svgRef: SVGGElement;
-    imageRef: SVGGElement;
-    gItemLegend: SVGGElement;
-    rectItemLegend: SVGGElement;
-    textItemLegend: SVGGElement;
+    // private svgRef: SVGGElement;
+    private imageRef: SVGGElement;
+    private gItemLegend: SVGGElement;
+    private textItemLegend: SVGGElement;
+    private xLastClickPercent: number = undefined;
+    private yLastClickPercent: number = undefined;
 
-    constructor(props: IProps) {
+    public constructor(props: IProps) {
         super(props);
 
         autorun(() => {
@@ -74,6 +87,15 @@ interface IProps {
                 this.forceUpdate();
             }
         });
+    }
+
+    private saveLastClick = () => {
+        let srcElement = d3.event.target || d3.event.srcElement;
+        const xLastClick = d3.mouse(srcElement)[0];
+        const yLastClick = d3.mouse(srcElement)[1];
+
+        this.xLastClickPercent = xLastClick * 100 / this.width ;
+        this.yLastClickPercent = yLastClick * 100 / this.height;
     }
 
     private getPlan = (id: number) => {
@@ -122,7 +144,7 @@ interface IProps {
         this.getPlan(this.props.planId);
         if (this.props.mission) {
             this.getCapteursForPlan(this.props.planId, this.props.mission.id);
-            this.getObservationsForPlan(this.props.planId, this.props.mission.id);
+            this.reloadObservations();
         }
     }
 
@@ -153,10 +175,6 @@ interface IProps {
             this.getImageSize(this.planImage);
 
 
-        var transitionNewCapteur = d3.transition()
-            .duration(3000)
-            .ease(d3.easeElastic);
-
         // TRANSITIONS
         // ============
         // easeElastic
@@ -170,45 +188,47 @@ interface IProps {
         // easeExp
         // easeBack
 
+        // console.log(JSON.stringify(this.capteurs))
         // Capteurs
-        d3.select(this.svgRef).selectAll('classCapteur')
-            .data(this.capteurs)
-            .enter()
-            .append('circle')
-            .on('mouseover', this.afficheLegendeCapteur)
-            .on('mouseout', this.masqueLegende)
-            .on('click', (capteur) => {this.openModalCapteur(capteur)})
-            .attr('class', 'classCapteur')
-            .attr('cx', (capteur) => capteur.coordonneePlanX)
-            .attr('cy', (capteur) => capteur.coordonneePlanY)
-            .attr('r', 0)
-            .attr('stroke', 'black')
-            .attr('strokeWidth', 1)
-            .attr('fill', 'white')
-            .attr('opacity', 0)
-            .transition(transitionNewCapteur)
-                .attr('r', 10)
-                .attr('opacity', 1);
+        // d3.select(this.svgRef).selectAll('classCapteur')
+        //     .data(this.capteurs)
+        //     .enter()
+        //     .append('circle')
+        //     .on('mouseover', this.afficheLegendeCapteur)
+        //     .on('mouseout', this.masqueLegende)
+        //     .on('click', (capteur: ICapteur) => {this.openModalCapteur(capteur)})
+        //     .attr('class', 'classCapteur')
+        //     .attr('cx', (capteur: ICapteur) => capteur.coordonneePlanX)
+        //     .attr('cy', (capteur: ICapteur) => capteur.coordonneePlanY)
+        //     // .attr('r', 0)
+        //     .attr('stroke', 'black')
+        //     .attr('strokeWidth', 1)
+        //     .attr('fill', 'white')
+        //     // .attr('opacity', 0)
+        //     // .transition(transitionNewCapteur)
+        //         .attr('r', 10)
+        //         .attr('opacity', 1);
 
         // Observations
-        d3.select(this.svgRef).selectAll('classObservation')
-            .data(this.observations)
-            .enter()
-            .append('circle')
-            .on('mouseover', this.afficheLegendeObservation)
-            .on('mouseout', this.masqueLegende)
-            .on('click', (observation) => {this.openModalObservations(observation)})
-            .attr('class', 'classObservation')
-            .attr('cx', (observation) => observation.coordonneesPlanX)
-            .attr('cy', (observation) => observation.coordonneesPlanY)
-            .attr('r', 0)
-            .attr('stroke', 'black')
-            .attr('strokeWidth', 1)
-            .attr('fill', 'white')
-            .attr('opacity', 0)
-            .transition(transitionNewCapteur)
-                .attr('r', 10)
-                .attr('opacity', 1);
+        // d3.select(this.svgRef).selectAll('classObservation')
+        //     .exit().remove()
+        //     .data(this.observations)
+        //     .enter()
+        //     .append('circle')
+        //     .attr('class', 'classObservation')
+        //     // .attr('r', 0)
+        //     .attr('cx', (observation: IObservation) => observation.coordonneesPlanX * this.width / 100)
+        //     .attr('cy', (observation: IObservation) => observation.coordonneesPlanY * this.height / 100)
+        //     .attr('stroke', 'black')
+        //     .attr('strokeWidth', 1)
+        //     .attr('fill', 'blue')
+        //     // .on('mouseover', this.afficheLegendeObservation)
+        //     // .on('mouseout', this.masqueLegende)
+        //     // .on('click', (observation: IObservation) => {this.openModalObservations(observation)})
+        //     // .attr('opacity', 0)
+        //     // .transition(transitionNewCapteur)
+        //         .attr('r', 10)
+        //         .attr('opacity', 1);
 
 
     }
@@ -230,33 +250,43 @@ interface IProps {
         this.modalIsOpen = false;
     }
 
-    private afficheLegendeCapteur = (capteur: ICapteur) => {
-        let x = parseInt(capteur.coordonneePlanX, 10) + 10;
-        let y = parseInt(capteur.coordonneePlanY, 10) - 20;
-        let label = capteur.capteur_reference_id;
-        this.afficheLegende(x, y, label);
-    }
+    // private afficheLegendeCapteur = (capteur: ICapteur) => {
+    //     let x = capteur.coordonneePlanX + 10;
+    //     let y = capteur.coordonneePlanY - 20;
+    //     let label = capteur.capteur_reference_id;
+    //     this.afficheLegende(x, y, label);
+    // }
 
-    private afficheLegendeObservation = (observation: IObservation) => {
-        // Position relative
-        let x = observation.coordonneesPlanX / 100 * this.width;
-        let y = observation.coordonneesPlanY / 100 * this.height;
-        let label = observation.label;
-        this.afficheLegende(x, y, label);
-    }
+    // private afficheLegendeObservation = (observation: IObservation) => {
+    //     // Position relative
+    //     let x = observation.coordonneesPlanX / 100 * this.width;
+    //     let y = observation.coordonneesPlanY / 100 * this.height;
+    //     let label = observation.label;
+    //     this.afficheLegende(x, y, label);
+    // }
 
     private afficheLegende = (x: number, y: number, label: string) => {
-        console.log(x, y, label)
-        x = x + 10;
-        y = y - 20;
-
+        let xDecalage = 10;
+        let yDecalage = 10;
+        if ( x > this.width / 2 ) {
+            x = x - legend.width - xDecalage;
+        }
+        else {
+            x = x + xDecalage;
+        }
+        if ( y > this.height / 2 ) {
+            y = y - legend.height - yDecalage;
+        }
+        else {
+            y = y + yDecalage;
+        }
         let transition = d3.transition()
-            .duration(200)
+            .duration(100)
             .ease(d3.easeLinear);
 
         d3.select(this.gItemLegend)
-            .attr('transform', 'translate(' + x + ',' + y + ')')
             .transition(transition)
+            .attr('transform', 'translate(' + x + ',' + y + ')')
             .attr('opacity', 1);
         d3.select(this.textItemLegend).text(label);
     }
@@ -276,9 +306,24 @@ interface IProps {
     }
 
     render() {
-
+        
         return (
             <div className="container">
+                {
+                    this.props.mission ? 
+                        <DialogNouvelleObservation
+                            isOpen={this.isDialogObservationOpened}
+                            close={() => {
+                                this.hideAddObservationModal();
+                            }}
+                            coordonneesPlanX={this.xLastClickPercent}
+                            coordonneesPlanY={this.yLastClickPercent}
+                            mission={this.props.mission}
+                            planId={this.props.planId}
+                            handleAddObservationToMission={this.writeObservation}
+                        />
+                    : <React.Fragment/>
+                }
                 <ReactModal  
                     isOpen={this.modalIsOpen}
                     onAfterOpen={this.afterOpenModal}
@@ -295,11 +340,47 @@ interface IProps {
                     {/* {this.graphContent} */}
                 </ReactModal >
                 <div className={style(csstips.margin(10))}>
-                    <svg ref={(ref) => {this.svgRef = ref}} width={this.width} height={this.height}>
+                    <svg width={this.width} height={this.height}>
+                    {/* <svg ref={(ref) => {this.svgRef = ref}} width={this.width} height={this.height}> */}
                         <image ref={(ref) => {this.imageRef = ref}} />
+                        {
+                            this.props.mission ? 
+                                this.capteurs.map((capteur: ICapteur) => {
+                                    let x = capteur.coordonneePlanX * this.width / 100;
+                                    let y = capteur.coordonneePlanY * this.height / 100;
+                                    return <CapteurForPlan
+                                        key={capteur.id}
+                                        capteur={capteur}
+                                        x={x}
+                                        y={y}
+                                        onClick={() => {this.openModalCapteur(capteur)}}
+                                        onMouseOver={() => { this.afficheLegende(x, y, capteur.capteur_reference_id)}}
+                                        onMouseOut={() => { this.masqueLegende()}}
+                                    />
+                                })
+                            : <React.Fragment/>
+                        }
+                        {
+                            this.props.mission ? 
+                                this.observations.map((observation: IObservation) => {
+                                    let x = observation.coordonneesPlanX * this.width / 100;
+                                    let y = observation.coordonneesPlanY * this.height / 100;
+                                    return <ObservationForPlan
+                                        key={observation.id}
+                                        observation={observation}
+                                        x={x}
+                                        y={y}
+                                        onClick={() => {
+                                            console.log('clic', observation)
+                                        }}
+                                        onMouseOver={() => { this.afficheLegende(x, y, observation.label)}}
+                                        onMouseOut={() => { this.masqueLegende()}}
+                                    />
+                                })
+                            : <React.Fragment/>
+                        }
                         <g ref={(ref) => {this.gItemLegend = ref}} opacity="0">
                             <rect
-                                ref={(ref) => {this.rectItemLegend = ref}} 
                                 x="0"
                                 y="0"
                                 width="100"
@@ -332,19 +413,15 @@ interface IProps {
     private showContextMenu = (): void => {
         // let mouseDate = this.baseChart.timeScaleChart.invert(this.xLastClick);
         // this.newMarkerYValue = this.baseChart.yChart.invert(this.yLastClick);
-        let srcElement = d3.event.target || d3.event.srcElement;
-        const xLastClick = d3.mouse(srcElement)[0];
-        const yLastClick = d3.mouse(srcElement)[1];
+        this.saveLastClick();
 
-        const xPercent = xLastClick * 100 / this.width ;
-        const yPercent = yLastClick * 100 / this.height;
-        const menu = ( // <div/>
+        const menu = this.props.mission ? ( // <div/>
             <Menu>
-                <MenuItem text="Capteur virtuel" icon="add" onClick={() => this.addVirtualCapteur(xPercent, yPercent)}/>
+                <MenuItem text="Capteur virtuel" icon="add" onClick={() => this.showAddVirtualCapteurModal()}/>
                 <MenuDivider />
-                <MenuItem text="Observation" icon="add" onClick={() => this.addObservation(xPercent, yPercent)}/>
+                <MenuItem text="Observation" icon="add" onClick={() => this.showAddObservationModal()}/>
             </Menu>
-        );
+        ) : <React.Fragment/>;
 
         // mouse position is available on event
         ContextMenu.show(menu, { left: d3.event.clientX - 20, top: d3.event.clientY - 20}, () => {
@@ -352,21 +429,75 @@ interface IProps {
         });
     }
 
-    private addVirtualCapteur = (x: number, y: number) => {
-        console.log('+ Capteur virtuel [' + x + ', ' + y + ']' );
+    private showAddVirtualCapteurModal = () => {
+        console.log('+ Capteur virtuel [' + this.xLastClickPercent + ', ' + this.yLastClickPercent + ']' );
     }
 
-    private addObservation = (x: number, y: number) => {
-        console.log('+ Capteur observation [' + x + ', ' + y + ']' );
-        // http://testbase.ideesalter.com/alia_writeObservation.php?id=3&
-        // mission_id=1&
-        // plan_id=1&
-        // coordonneesPlanX=140&
-        // coordonneesPlanY=140&
-        // coordonneesPlanZ=0&
-        // label=Label%20test&
-        // description=Description%20test&
-        // dateObservation=2017-12-26%2014:26:00&
-        // image=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQ
+    private showAddObservationModal = () => {
+        this.isDialogObservationOpened = true;
+    }
+
+    private hideAddObservationModal = () => {
+        this.isDialogObservationOpened = false;
+    }
+
+    public writeObservation = (observation: IObservation) => {
+        // let req = 'http://testbase.ideesalter.com/alia_writeObservation.php?id=3&' + 
+        // '&mission_id=' + this.props.mission.id + 
+        // '&plan_id=' + this.props.planId + 
+        // '&coordonneesPlanX=' + this.xLastClickPercent + 
+        // '&coordonneesPlanY=' + this.yLastClickPercent +
+        // '&coordonneesPlanZ=0' + 
+        // '&label=' + observation.label
+        // '&description=' + observation.description
+        // '&dateObservation=' + observation.dateObservation
+        // '&image=' + observation.image;
+        // console.log(req);
+        // console.log(observation.image)
+
+        fetch(`http://testbase.ideesalter.com/alia_writeObservation.php`, {
+                method: 'post',
+                headers: {
+                //     'Access-Control-Allow-Origin:': '*',
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                body: JSON.stringify({
+                    mission_id: observation.mission_id,
+                    plan_id: observation.plan_id,
+                    coordonneesPlanX: observation.coordonneesPlanX,
+                    coordonneesPlanY: observation.coordonneesPlanY,
+                    coordonneesPlanZ: observation.coordonneesPlanZ,
+                    label: observation.label,
+                    description: observation.description,
+                    dateObservation: observation.dateObservation,
+                    image: observation.image
+                })
+            }
+        ).then((response) => {
+                if (response.status === 200) {
+                    this.reloadObservations()
+                } else {
+                    console.log(response);
+                    // TODO : impossible de sauvegarder...
+            }
+        });
+        this.hideAddObservationModal();
+
+        // let req = 'http://testbase.ideesalter.com/alia_writeObservation.php?id=3&' + 
+        // '&mission_id=' + this.props.mission.id + 
+        // '&plan_id=' + this.props.planId + 
+        // '&coordonneesPlanX=' + this.xLastClickPercent + 
+        // '&coordonneesPlanY=' + this.yLastClickPercent +
+        // '&coordonneesPlanZ=0' + 
+        // '&label=Label%20test' + 
+        // '&description=Description%20test' +
+        // '&dateObservation=2017-12-26%2014:26:00' +
+        // '&image=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQ';
+        // console.log(req);
+    }
+
+    private reloadObservations() {
+        this.getObservationsForPlan(this.props.planId, this.props.mission.id);
     }
 }
