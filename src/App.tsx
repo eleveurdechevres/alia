@@ -62,7 +62,7 @@ export const enum NavBarTabEnum {
             default:
                 break;
         }
-        let mainBoard = <div id="content" className={style(csstips.fillParent)}>{mainContent}</div>
+        let mainBoard = <div id="content" className={style(csstips.fillParent, csstips.padding(50, 0, 0, 0))}>{mainContent}</div>
     
         return (
             <div>

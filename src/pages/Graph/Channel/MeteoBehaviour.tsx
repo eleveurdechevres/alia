@@ -150,7 +150,7 @@ const maxTemperaturePosition = 5; // en %
                         </svg>
                     </div>
                     <div>
-                            Wind
+                        Wind
                     </div>
                     <div className={style(csstips.content, csstips.center, csstips.vertical, {marginTop: 10, marginBottom: 10})}>
                         <svg width="50" height="50">
