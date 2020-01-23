@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { style } from 'typestyle';
 import * as csstips from 'csstips';
-import { Menu, MenuItem } from '@blueprintjs/core';
+import { Menu, MenuItem, Spinner } from '@blueprintjs/core';
 import { observable, observe } from 'mobx';
 import { observer } from 'mobx-react';
 import { GenericSheetComponent, IGenericSheetComponentProps } from './GenericSheetComponent';
@@ -9,6 +9,8 @@ import { IDateInterval } from 'src/pages/Graph/GraphBoard';
 // import { MultiSensorListSelector } from '../Detail/MultiSensorListSelector';
 import { IChannelFromMission } from 'src/interfaces/IChannelFromMission';
 import { ICapteur } from 'src/interfaces/ICapteur';
+
+
 // import { ISerieData } from 'src/interfaces/ISerieData';
 // import { IMesure } from 'src/managers/GraphDataManager';
 // import { ISerieDef } from 'src/interfaces/ISeriesDef';
@@ -98,25 +100,24 @@ interface ICapteurDescription {
     }
     
     private buildCapteurList(): JSX.Element {
-        console.log(JSON.stringify(this.capteurDescriptionList))
+        // console.log(JSON.stringify(this.capteurDescriptionList))
         let jsxCapteurList: JSX.Element[] = [];
-        console.log('buildCapteurList ' + this.capteurDescriptionList.length)
+        // console.log('buildCapteurList ' + this.capteurDescriptionList.length)
         this.capteurDescriptionList.forEach((capteurDescription: ICapteurDescription, index: number) => {
             jsxCapteurList.push(
                 <li key={index}>
                     {capteurDescription.capteur.capteur_reference_id}
-                    <table>
-                        <thead>
+                    <table className={style(csstips.border('1px solid gray'))}>
+                        <thead className={style({backgroundColor: 'lightgray'})}>
                             <tr>
-                                <th colSpan={1}/>
-                                <th colSpan={3}>Range</th>
+                                <th colSpan={1} rowSpan={2} align={'center'}>Channel</th>
+                                <th colSpan={3} align={'center'}>Range</th>
+                                <th colSpan={1} rowSpan={2} align={'center'}>Mesures</th>
                             </tr>
                             <tr>
-                                <th colSpan={1}>Channel</th>
-                                <th colSpan={1}>Min</th>
-                                <th colSpan={1}>Max</th>
-                                <th colSpan={1}>Step</th>
-                                <th colSpan={1}>Mesures</th>
+                                <th colSpan={1} align={'center'}>Min</th>
+                                <th colSpan={1} align={'center'}>Max</th>
+                                <th colSpan={1} align={'center'}>Step</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -129,26 +130,24 @@ interface ICapteurDescription {
             );
         });
         return (
-            <ul>{jsxCapteurList}</ul>
+            <ul>{jsxCapteurList.length > 0 ? jsxCapteurList : <Spinner/>}</ul>
         );
     }
 
     private buildChannelList(channels: IChannelDescription[]): JSX.Element[] {
         let jsxChannelList: JSX.Element[] = [];
-        console.log('buildChannelList ' + channels.length)
         channels.forEach((channel: IChannelDescription, index: number) => {
             let minRange: string;
             let maxRange: string;
             let stepRange: string;
             if (channel.unit !== 'boolean') {
-                minRange = channel.min_range.toString() + ' ' + channel.unit;
-                maxRange = channel.max_range.toString() + ' ' + channel.unit;
-                stepRange = channel.precision_step.toString() + ' ' + channel.unit;
+                minRange = channel.min_range ? channel.min_range.toString() + ' ' + channel.unit : '-';
+                maxRange = channel.max_range ? channel.max_range.toString() + ' ' + channel.unit : '-';
             } else {
                 minRange = 'False';
                 maxRange = 'True';
-                stepRange = '-';
             }
+            stepRange = channel.precision_step ? channel.precision_step.toString() + ' ' + channel.unit : '-';
             jsxChannelList.push(
                 <tr key={index}>
                     <td>{channel.measure_type}</td>
