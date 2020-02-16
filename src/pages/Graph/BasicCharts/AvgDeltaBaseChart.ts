@@ -1,8 +1,6 @@
 import * as d3 from 'd3';
-import * as Moment from 'moment';
-import { BaseChart, ILegendItem, IMargin, svgBorderWidth } from './BaseChart';
+import { BaseChart, IMargin, svgBorderWidth } from './BaseChart';
 import { ISerieData } from 'src/interfaces/ISerieData';
-import { ScaleOrdinal } from 'd3';
 import { ISheet } from 'src/interfaces/ISheet';
 // import { toJS } from 'mobx';
 
@@ -16,30 +14,32 @@ const defautMarginChart: IMargin = {
     right: svgBorderWidth
 };
 
-export interface IDisplayedPath {
-    legendItem: ILegendItem;
-    serieData: ISerieData;
-    path: any;
+export interface IAvgDelta {
+    latitude: number,
+    longitude: number,
+    dateBegin: Date,
+    dateEnd: Date,
+    isDay: boolean,
+    delta: number
 }
 
 // This class is used both on server and client side
 export class AvgDeltaBaseChart extends BaseChart {
 
     // data
-    seriesData: ISerieData[] = [];
+    datum: IAvgDelta[] = [];
 
     // Params
     private marginChart: IMargin;
 
     // Measures
-    private legendRectSize = 14;
-    private legendSpacing = 4;
-    private legendItemHeight: number = this.legendRectSize + this.legendSpacing;
+    // private legendRectSize = 14;
+    // private legendSpacing = 4;
+    // private legendItemHeight: number = this.legendRectSize + this.legendSpacing;
     private legendLeftMargin = 10;
 
     private chartWidth = 0;
     private chartHeight = 0;
-    private legendNbItemPerCol = 0;
     private legendNbColumn = 0;
     public legendWidth = 0;
     private legendColumnWidth = 0;
@@ -56,15 +56,13 @@ export class AvgDeltaBaseChart extends BaseChart {
     private yAxisChart: d3.Axis<number | { valueOf(): number; }>;
     private yGridChart: d3.Axis<number | { valueOf(): number; }>;
 
-    private zColors: ScaleOrdinal<string, {}>;
-
     // svg components
     protected svgElementBase: any;
     public legends: any;
     public legendCheckBoxes: any;
     public legendTexts: any;
     private gChart: any;
-    private gAxisChartTimePeriod: any;
+    // private gAxisChartTimePeriod: any;
     private gAxisChartTime: any;
     private gAxisChartX: any;
     private gAxisChartY: any;
@@ -78,10 +76,8 @@ export class AvgDeltaBaseChart extends BaseChart {
     public crossHairTimeFormat: string;
 
     private updatetimeDomain() {
-        const time_start = this.seriesData.reduce((start, serieData) => serieData.timeStart.getDate() < start ? serieData.timeStart : start, Number.POSITIVE_INFINITY);
-        const time_end = this.seriesData.reduce((end, serieData) => serieData.timeEnd.getDate() > end ? serieData.timeEnd : end, Number.NEGATIVE_INFINITY);
-        // console.log('updatetimeDomain time_start' + time_start)
-        // console.log('updatetimeDomain time_end' + time_start)
+        const time_start = this.datum.reduce((end: number, data: IAvgDelta) => data.dateEnd.getDate() > end ? data.dateEnd : end, Number.NEGATIVE_INFINITY);
+        const time_end = this.datum.reduce((start: number, data: IAvgDelta) => data.dateBegin.getDate() < start ? data.dateBegin : start, Number.POSITIVE_INFINITY);
         if (time_start !== Infinity && time_end !== Infinity) {
             this.timeScaleChartDomainDefault = [new Date(time_start), new Date(time_end)];
             this.timeScaleChart.domain(this.timeScaleChartDomainDefault).range([0, this.chartWidth]);
@@ -92,12 +88,10 @@ export class AvgDeltaBaseChart extends BaseChart {
     }
 
     private updateYDomain() {
-        this.yMin = this.seriesData.reduce(
-            (ymin, sd) => sd.yMin < ymin ? sd.yMin : ymin, Number.POSITIVE_INFINITY
-        ) as number;
-        this.yMax = this.seriesData.reduce(
-            (ymax, sd) => sd.yMax > ymax ? sd.yMax : ymax, Number.NEGATIVE_INFINITY
-        ) as number;
+        const values = this.datum.map((data: IAvgDelta) => data.delta);
+
+        this.yMin = 0;
+        this.yMax = d3.max(values);
         this.yChartDomainDefault = [this.yMax, this.yMin];
         this.yChart.domain(this.yChartDomainDefault).range([0, this.chartHeight]);
 
@@ -105,28 +99,7 @@ export class AvgDeltaBaseChart extends BaseChart {
         this.yGridChart = d3.axisLeft(this.yChart).tickSizeInner(-this.chartWidth).tickSizeOuter(0);
     }
 
-    public updateSeries(newSeriesData: ISerieData[]) {
-        let seriesToAdd = newSeriesData.filter(((newSerieData: ISerieData) => !this.seriesData.includes(newSerieData)))
-        this.legendNbColumn = Math.ceil(newSeriesData.length / this.legendNbItemPerCol);
-
-        let seriesToDelete = this.seriesData.filter(((value: ISerieData) => !newSeriesData.includes(value)));
-
-
-        this.seriesData = [...newSeriesData];
-
-        this.updatetimeDomain();
-        this.updateYDomain();
-
-        this.removeSeries(seriesToDelete);
-        this.addSeries(seriesToAdd);
-
-        // draw Axis
-        this.updateXAxis();
-        this.updateYAxis();
-        this.updatePathes();
-    }
-
-    constructor(
+     constructor(
         protected sheet: ISheet,
         width: number,
         height: number,
@@ -139,13 +112,10 @@ export class AvgDeltaBaseChart extends BaseChart {
         this.totalHeight = height;
         this.marginChart = margin;
         this.chartHeight = this.totalHeight - this.marginChart.top - this.marginChart.bottom;
-        this.legendNbItemPerCol = Math.floor(this.chartHeight / this.legendItemHeight);
         this.legendColumnWidth = 180;
         
         this.legendWidth = this.legendNbColumn * this.legendColumnWidth + this.legendLeftMargin;
         this.chartWidth = this.totalWidth - this.marginChart.left - this.marginChart.right - this.legendLeftMargin - this.legendWidth;
-
-        this.zColors = d3.scaleOrdinal(d3.schemeCategory10);
     }
 
     public getYRangeEnd = () => {
@@ -162,19 +132,54 @@ export class AvgDeltaBaseChart extends BaseChart {
         this.updateYAxis();
     }
 
-    public updatePathes = () => {
-        // this.displayedPathes.forEach((data: IDisplayedPath) => {
-        //     data.path.transition().attr('d', this.createLineChart(data.serieData));
-        // });
-        this.displayedPathes.forEach((serieData: ISerieData, legendText: string) => {
-            d3.select('.' + legendText).transition().attr('d', this.createLineChart(serieData));
-        });
-        
+    public setData = (datum: IAvgDelta[]) => {
+        this.datum = datum;
+        this.updatetimeDomain();
+        this.updateYDomain();
+        this.updateRectangles();
+        this.updateChart();
+    }
+
+    public getDeltaRectangles = () => {
+        return this.gChart.selectAll('.delta_rect');
+    }
+    public updateRectanglesZoom = () => {
+        this.gChart.selectAll('.delta_rect')
+        .transition()
+        .attr('x', (d: IAvgDelta) => this.timeScaleChart(d.dateBegin))
+        .attr('width', (data: IAvgDelta) => {
+            return this.timeScaleChart(data.dateEnd) - this.timeScaleChart(data.dateBegin)
+        })
+        .attr('y', (d: IAvgDelta) => this.yChart(d.delta))
+        .attr('height', (d: IAvgDelta) => this.chartHeight - this.yChart(d.delta))
+    }
+
+    public updateRectangles = () => {
+        const rectangles = this.gChart.selectAll('delta_rect')
+            .data(this.datum);
+        rectangles.exit().remove();
+        rectangles.enter()
+            .append('rect')
+            .attr('class', 'delta_rect')
+            .attr('fill', (d: IAvgDelta) => d.isDay ? 'LightGoldenRodYellow' : 'steelblue')
+            .attr('stroke', 'gray')
+            .attr('clip-path', 'url(#clip)')
+            .attr('cursor', 'crosshair')
+            .attr('shape-rendering', 'geometricPrecision')
+            .attr('x', (d: IAvgDelta) => this.timeScaleChart(d.dateBegin))
+            .attr('width', (data: IAvgDelta) => {
+                return this.timeScaleChart(data.dateEnd) - this.timeScaleChart(data.dateBegin)
+            })
+            .attr('y', this.chartHeight)
+            .attr('height', 0)
+            .transition()
+            .attr('y', (d: IAvgDelta) => this.yChart(d.delta))
+            .attr('height', (d: IAvgDelta) => this.chartHeight - this.yChart(d.delta))
     }
 
     public updateXAxis = () => {
 
-        this.drawLabelDayAboveTimeAxis();
+        // this.drawLabelDayAboveTimeAxis();
 
         this.customizeAxisTime(this.timeScaleChart, this.timeAxisChart);
 
@@ -188,85 +193,6 @@ export class AvgDeltaBaseChart extends BaseChart {
         this.gAxisChartY.transition().call(this.customAxis, this.yAxisChart);
         this.gAxisGridY.transition().call(this.customGrid, this.yGridChart);
     }
-
-    private createLegendText(serieData: ISerieData): string {
-        let legendText = serieData.serieDef.capteur.capteur_reference_id +
-        '_' + serieData.serieDef.capteur.id +
-        '_plan' + serieData.serieDef.plan.id + 
-        '_' + serieData.serieDef.typeMesure.type;
-        return legendText;
-
-    }
-
-    private removeSeries(series: ISerieData[]) {
-        series.forEach( (serieData) => {
-            let legendText: string = this.createLegendText(serieData);
-            this.displayedPathes.delete(legendText);
-            d3.select('.' + legendText).remove();
-        });
-    }
-
-    private addSeries(series: ISerieData[]) {
-        series.forEach( (serieData) => {
-            // const legendItem = this.legendItemsBySeriesDefs[seriesDefIndex].find( v => serieData.serie_name === v.serieName );
-            // if (!legendItem) {
-            //     console.log('legendItem not found for serie ' + serieData.serie_name);
-            //     return;
-            // }
-            // console.log(serieData)
-            let legendText: string = this.createLegendText(serieData);
-            let strokeColor = this.zColors(legendText);
-            // let path = 
-            this.gChart.append('path')
-                .datum(serieData.points)
-                .attr('class', legendText)
-                .attr('fill', 'none')
-                .attr('stroke', strokeColor)
-                .attr('stroke-linejoin', 'round')
-                .attr('stroke-linecap', 'round')
-                .attr('stroke-width', 1.1)
-                .attr('clip-path', 'url(#clip)')
-                .attr('cursor', 'crosshair')
-                .attr('shape-rendering', 'geometricPrecision')
-                .attr('d', this.createEmptyLineChart(serieData))
-                .transition()
-                .attr('d', this.createLineChart(serieData))
-                .style('opacity', 1);
-            this.displayedPathes.set(legendText, serieData);
-            // this.displayedPathes.push({ serieData: legendItem, serieData: serieData, path: path });
-        });
-    }
-
-    // private drawLegends() {
-    //     // draw legends
-    //     this.legends = this.gChart.selectAll('.legend')
-    //         .data(this.flatLegendItems)
-    //         .enter()
-    //         .append('g')
-    //         .attr('class', 'legend')
-    //         .attr('transform', (d: any, i: number) => {
-    //             let column = ~~(i / this.legendNbItemPerCol);
-    //             let rankInCol = i % this.legendNbItemPerCol;
-    //             let voffset = column * this.legendColumnWidth;
-    //             let horz = this.chartWidth + this.legendLeftMargin + voffset;
-    //             let vert = rankInCol * this.legendItemHeight;
-    //             return `translate(${horz}, ${vert})`;
-    //         })
-    //         .style('cursor', 'pointer');
-
-    //     this.legendCheckBoxes = this.legends.append('rect')
-    //         .attr('width', this.legendRectSize)
-    //         .attr('height', this.legendRectSize)
-    //         .attr('fill', this.legendCheckBoxFill)
-    //         .attr('stroke', this.zColors);
-
-    //     this.legendTexts = this.legends.append('text')
-    //         .attr('x', this.legendRectSize + this.legendSpacing)
-    //         .attr('y', this.legendRectSize - this.legendSpacing)
-    //         .attr('font-size', 10)
-    //         .attr('fill', 'black')
-    //         .text((d: ILegendItem) => d.serieName);
-    // }
 
     public createChart = (svgRef: Element) => {
         this.svgElementBase = d3.select(svgRef);
@@ -283,82 +209,51 @@ export class AvgDeltaBaseChart extends BaseChart {
             .attr('transform', 'translate(' + this.marginChart.left + ',' + this.marginChart.top + ')');
 
         this.gAxisChartTime = this.gChart.append('g').attr('transform', 'translate(0,0)');
-        this.gAxisChartTimePeriod = this.gAxisChartTime.append('g').attr('transform', 'translate(0,0)');
+        // this.gAxisChartTimePeriod = this.gAxisChartTime.append('g').attr('transform', 'translate(0,0)');
         this.gAxisChartX = this.gChart.append('g').attr('transform', 'translate(0,' + this.chartHeight + ')');
         this.gAxisChartY = this.gChart.append('g').attr('transform', 'translate(0,0)');
 
         this.gAxisGridY = this.gChart.append('g').attr('transform', 'translate(0,0)');
     }
 
-    // public buildLegend = (serieName: string, value?: number): string => {
-    //     return serieName + ( value ? ' : ' + value : '');
-    // }
+    // private drawLabelDayAboveTimeAxis = () => {
 
-    // public legendCheckBoxFill = (legendItem: ILegendItem) => {
-    //     if ( legendItem.isShown ) {
-    //         return this.zColors(legendItem.serieName);
+    //     let timeDomain = this.timeScaleChart.domain();
+    //     let beginTimeDomain: Date = timeDomain[0];
+    //     let endTimeDomain: Date = timeDomain[1];
+    //     let beginMoment: Moment.Moment = Moment(beginTimeDomain);
+    //     let endMoment: Moment.Moment = Moment(endTimeDomain);
+
+    //     let labelDayText: string | undefined = undefined;
+    //     // Same day => draw label with the day above time axis
+    //     if (endMoment.isSame(beginMoment, 'day')) {
+    //         labelDayText = beginMoment.format('YYYY-MM-DD').toString();
     //     }
-    //     return 'none';
+
+    //     this.gAxisChartTimePeriod.selectAll().remove();
+
+    //     if (labelDayText) {
+    //         let labelDayRect = { width: 100, height: 14 };
+
+    //         this.gAxisChartTimePeriod.append('rect')
+    //             .attr('x', 0)
+    //             .attr('y', -xAxisHeight - labelDayRect.height)
+    //             .attr('width', labelDayRect.width)
+    //             .attr('height', labelDayRect.height)
+    //             .attr('rx', 3)
+    //             .attr('ry', 3)
+    //             .attr('stroke', 'magenta')
+    //             .attr('fill', 'yellow');
+
+    //         this.gAxisChartTimePeriod.append('text')
+    //             .attr('x', labelDayRect.width / 2)
+    //             .attr('y', -xAxisHeight)
+    //             // .attr('transform', 'translate(100, 100)')
+    //             .attr('font-size', 12)
+    //             .attr('text-anchor', 'middle')
+    //             .attr('alignment-baseline', 'after-edge')
+    //             .attr('fill', 'cyan')
+    //             .text(labelDayText);
+    //     }
     // }
-
-    private createLineChart(serie: ISerieData) {
-        return d3.line<number>()
-            .defined((d) => { return d !== null; })
-            // .x((d, i, a) => this.xChart(this.xData.shots[i]))
-            .x((d, i, a) => this.timeScaleChart(serie.points[i].date))
-            .y((d, i, a) => this.yChart(serie.points[i].valeur));
-    }
-
-    private createEmptyLineChart(serie: ISerieData) {
-        return d3.line<number>()
-            .defined((d) => { return d !== null; })
-            // .x((d, i, a) => this.xChart(this.xData.shots[i]))
-            .x((d, i, a) => this.timeScaleChart(serie.points[i].date))
-            .y((d, i, a) => this.yChart(0));
-    }
-
-    // private updateLegendTexts = () => {
-    //     this.legendTexts.attr('fill', 'green');
-    // }
-
-    private drawLabelDayAboveTimeAxis = () => {
-
-        let timeDomain = this.timeScaleChart.domain();
-        let beginTimeDomain: Date = timeDomain[0];
-        let endTimeDomain: Date = timeDomain[1];
-        let beginMoment: Moment.Moment = Moment(beginTimeDomain);
-        let endMoment: Moment.Moment = Moment(endTimeDomain);
-
-        let labelDayText: string | undefined = undefined;
-        // Same day => draw label with the day above time axis
-        if (endMoment.isSame(beginMoment, 'day')) {
-            labelDayText = beginMoment.format('YYYY-MM-DD').toString();
-        }
-
-        this.gAxisChartTimePeriod.selectAll().remove();
-
-        if (labelDayText) {
-            let labelDayRect = { width: 100, height: 14 };
-
-            this.gAxisChartTimePeriod.append('rect')
-                .attr('x', 0)
-                .attr('y', -xAxisHeight - labelDayRect.height)
-                .attr('width', labelDayRect.width)
-                .attr('height', labelDayRect.height)
-                .attr('rx', 3)
-                .attr('ry', 3)
-                .attr('stroke', 'magenta')
-                .attr('fill', 'yellow');
-
-            this.gAxisChartTimePeriod.append('text')
-                .attr('x', labelDayRect.width / 2)
-                .attr('y', -xAxisHeight)
-                // .attr('transform', 'translate(100, 100)')
-                .attr('font-size', 12)
-                .attr('text-anchor', 'middle')
-                .attr('alignment-baseline', 'after-edge')
-                .attr('fill', 'cyan')
-                .text(labelDayText);
-        }
-    }
 }

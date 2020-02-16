@@ -2,20 +2,11 @@ import * as React from 'react';
 import { style } from 'typestyle';
 import * as csstips from 'csstips';
 import { Menu, MenuItem, Icon } from '@blueprintjs/core';
-import { autorun } from 'mobx';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
 import { GenericSheetComponent, IGenericSheetComponentProps } from './GenericSheetComponent';
 import { IDateInterval } from 'src/pages/Graph/GraphBoard';
 import { MultiSensorSelector } from '../Detail/MultiSensorSelector';
-// import { IChannelFromMission } from 'src/interfaces/IChannelFromMission';
-import { ISerieData } from 'src/interfaces/ISerieData';
-// import { IMesure } from 'src/managers/GraphDataManager';
-// import { ISerieDef } from 'src/interfaces/ISeriesDef';
-// import { ICapteur } from 'src/interfaces/ICapteur';
-// import { IChannel } from 'src/interfaces/IChannel';
-// import { ITypeMesure } from 'src/interfaces/ITypeMesure';
-// import { IPlan } from 'src/interfaces/IPlan';
 import { AvgDeltaChartComponent } from 'src/pages/Graph/BasicCharts/AvgDeltaChartComponent';
 import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMission';
 import { TypeOfMeasureSelector } from '../Detail/TypeOfMeasureSelector';
@@ -23,18 +14,21 @@ import { TMesure } from 'src/interfaces/Types';
 
 @observer export class AvgDeltaChartSheetComponent<P extends IGenericSheetComponentProps> extends GenericSheetComponent {
 
-    // @observable private selectedChannelList: IChannelFromMission[] = [];
+    // @observable private selectedSeries: ISerieData[] = [];
+    @observable private typeOfMeasure: TMesure = undefined;
 
-    // private mapSelectedChannelSelectedSerie: Map<IChannelFromMission, ISerieData> = new Map();
-    
+    @observable private firstChannel: IChannelOfTypeFromMission = undefined;
+    @observable private secondChannel: IChannelOfTypeFromMission = undefined;
+
     public constructor(props: P) {
         super(props);
 
-        autorun(() => {
-            // if (this.temperatureSensor) {
-            //     this.humiditySensor = undefined;
-            // }
-        })
+        // autorun(() => {
+        //     if (this.firstChannel && this.secondChannel) {
+        //         console.log('autorun ', JSON.stringify(this.firstChannel), JSON.stringify(this.secondChannel));
+        //     }
+        //     // TODO : updateSerieData
+        // })
     }
 
     protected buildChart = () => {
@@ -53,15 +47,14 @@ import { TMesure } from 'src/interfaces/Types';
                         chartWidth={this.windowWidth - 60}
                         chartHeight={500}
                         dateInterval={dateInterval}
-                        series={this.selectedSeries}
+                        firstChannel={this.firstChannel}
+                        secondChannel={this.secondChannel}
                     />
                 </div>
             </div>
         );
     }
     
-    @observable private selectedSeries: ISerieData[] = [];
-
     // private addChannel = (channelForMission: IChannelFromMission) => {
 
     //     if (!this.selectedChannelList.includes(channelForMission)) {
@@ -151,10 +144,6 @@ import { TMesure } from 'src/interfaces/Types';
     //     this.forceUpdate();
     // }
 
-    @observable private typeOfMeasure: TMesure = undefined;
-
-    @observable private firstChannel: IChannelOfTypeFromMission;
-    @observable private secondChannel: IChannelOfTypeFromMission;
     protected buildConfigBar = () => {
         return (
             <div className={style(csstips.horizontal, csstips.gridSpaced(10))}>

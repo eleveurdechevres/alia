@@ -50,9 +50,9 @@ const marginToLegend = 2;
     }
 
     public render() {
-        let lineStroke = 'black';
+        let lineStroke = 'gray';
         let rectFill = 'steelblue';
-        let rectStroke = 'blue';
+        let rectStroke = 'gray';
         let textFill = 'white';
         let timeFormat = d3.timeFormat(this.props.crosshairState.crossHairTimeFormat);
         return (

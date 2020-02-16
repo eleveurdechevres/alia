@@ -9,20 +9,22 @@ import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import * as React from 'react';
 import { GenericChartComponent, IMargin } from './GenericChartComponent';
-import { ISerieData } from 'src/interfaces/ISerieData';
 import { ISheet } from 'src/interfaces/ISheet';
 import { ILineChartCrosshairState } from './LineCrosshair';
 import { LineCrosshair } from './LineCrosshair';
 // import { ILegendItem } from './BaseChart';
 import { IDateInterval } from '../GraphBoard';
-import { AvgDeltaBaseChart } from './AvgDeltaBaseChart';
+import { AvgDeltaBaseChart, IAvgDelta } from './AvgDeltaBaseChart';
+import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMission';
+import { dateToSql } from 'src/utils/DateUtils';
 
 interface IProps {
     sheet: ISheet;
     chartWidth: number;
     chartHeight: number;
     dateInterval: IDateInterval;
-    series: ISerieData[];
+    firstChannel: IChannelOfTypeFromMission;
+    secondChannel: IChannelOfTypeFromMission;
 }
 
 // interface IProps extends IPropsGenericChartComponent {
@@ -238,43 +240,79 @@ const zoomTransition = defaultTransition;
     }
 
     public componentWillReceiveProps(props: IProps) {
-        // console.log('componentWillReceiveProps')
-        // console.log(toJS(props))
-        // let yMin = d3.min(props.series, (serie) => serie.yMin)
-        // let yMax = d3.max(props.series, (serie) => serie.yMax)
-
-        // this.updateChartComponent(
-        //     [props.sheet.sheetDef.dateDebutMission, props.sheet.sheetDef.dateFinMission],
-        //     [yMin, yMax]
-        // );
-        if (props.series.length !== this.props.series.length) {
-            this.baseChart.updateSeries(this.props.series);
-            this.saveXDomain = this.baseChart.timeScaleChartDomainDefault;
-            this.saveYDomain = this.baseChart.yChartDomainDefault
-            this.updateChartComponent(this.saveXDomain, this.saveYDomain);
-            this.updateComponents();
-        // this.drawChart(false);
+        if (
+            props.firstChannel !== this.props.firstChannel ||
+            props.secondChannel !== this.props.secondChannel
+        ) {
+            this.loadJsonFromAeroc(
+                props.dateInterval.missionStartDate,
+                props.dateInterval.missionStopDate,
+                props.firstChannel,
+                props.secondChannel
+            );
         }
     }
 
+    private loadJsonFromAeroc = (dateBegin: Date, dateEnd: Date, channel1: IChannelOfTypeFromMission, channel2: IChannelOfTypeFromMission) => {
+        // LOAD DATA from AEROC
+        if (channel1 !== undefined && channel2 !== undefined) {
+            
+            // http://test.ideesalter.com/alia_readDeltaJourNuit.php?date_begin=2017-12-09%2020:30:00&date_end=2017-12-26%2000:00:00&capteur_id=1&channel_id=1
+            var httpReq = 'http://test.ideesalter.com/alia_readDeltaJourNuit.php?' 
+                + 'date_begin=' + dateToSql(dateBegin)
+                + '&date_end=' + dateToSql(dateEnd)
+                + '&capteur_id=' + channel1.capteur_id
+                + '&channel_id=' + channel1.channel_id;
+                // + '&capteur2_id=' + channel2.capteur_id
+                // + '&channel2_id=' + channel2.channel_id;
+            // console.log(httpReq);
+            return fetch(httpReq)
+                .then((response) => response.json())
+                .then((data) => {
+                    const formatedData: IAvgDelta[] = data.map((d: any) => {
+                        return {
+                            latitude: d.latitude as number,
+                            longitude: d.longitude as number,
+                            dateBegin: new Date(d.dateBegin),
+                            dateEnd: new Date(d.dateEnd),
+                            isDay: d.isDay === '1' ? true : false,
+                            delta: d.delta as number
+                        }
+                    });
+                    this.baseChart.setData(formatedData);
+                    this.updateChartComponent(undefined, undefined);
+                    this.updateComponents();
+
+                    this.baseChart.getDeltaRectangles()
+                        // .attr('pointer-events', 'stroke')
+                        .on('mouseover', (d: IAvgDelta) => { this.deltaRectMouseOver(d); })
+                        .on('mousemove', (d: IAvgDelta) => { this.deltaRectMouseOver(d); })
+                        .on('mouseout', (d: IAvgDelta) => { this.deltaRectMouseOver(d); })
+                        .on('mousedown', () => { this.dispatchEventToGeneralBrush('mousedown'); })
+                        .on('click', () => { this.dispatchEventToGeneralBrush('click'); })
+                        .on('dblclick', () => { this.dispatchEventToGeneralBrush('dblclick'); });
+                                
+                    // this.resetZoom();
+                    // this.scaleX.domain([minChannel1,maxChannel1]);
+                    // this.scaleY.domain([minChannel2,maxChannel2]);
+
+                    // this.drawGraph();
+                    // this.drawXAxis();
+                    // this.drawYAxis();
+                });
+        }
+        return undefined;
+    }
 
     public shouldComponentUpdate(props: IProps) {
         return false;
     }
 
-    public componentDidUpdate() {
-        // this.baseChart.updateChart(this.props.lookAndFeelStore.getMode());
-        // this.updateComponents();
-    }
+    // public componentDidUpdate() {
+    //     //
+    // }
 
     public render() {
-        // if (true) {
-        //     return (
-        //         <div className={style(csstips.flex, csstips.border('1px solid red'))}>
-        //             toto
-        //         </div>
-        //     );
-        // }
         return (
             <svg width={this.totalWidth} height={this.totalHeight} id="svgChart">
                 <defs>
@@ -294,15 +332,17 @@ const zoomTransition = defaultTransition;
                         ref={(ref) => { if (ref) { this.refGVerticalBrushDetail = ref; } }}
                         transform={'translate(' + (- yAxisWidth) + ',0)'}
                     />
-                    <g id="generalBrush" ref={(ref) => {if (ref) { this.refGBrush = ref; } }}>
-                        <rect
-                            width={this.chartWidth}
-                            height={this.chartHeight}
-                            fill="none"
-                        />
-                    </g>
                 </g>
                 <g ref={(ref) => { if (ref) { this.refGChart = ref; } }}/>
+                <g transform={'translate(' + this.marginChart.left + ',' + this.marginChart.top + ')'}>
+                    <g id="generalBrush" ref={(ref) => {if (ref) { this.refGBrush = ref; } }}>
+                            <rect
+                                width={this.chartWidth}
+                                height={this.chartHeight}
+                                fill="none"
+                            />
+                    </g>
+                </g>
                 <g transform={'translate(' + this.marginChart.left + ',' + this.marginChart.top + ')'}>
                     <LineCrosshair
                         crosshairWidth={this.chartWidth}
@@ -407,21 +447,15 @@ const zoomTransition = defaultTransition;
         if ( domainY ) {
             this.baseChart.yChart.domain(domainY);
         }
-        const yMin = this.props.series.reduce(
-            (ymin, serie) => serie.yMin < ymin ? serie.yMin : ymin, Number.POSITIVE_INFINITY
-        ) as number;
-        const yMax = this.props.series.reduce(
-            (ymax, serie) => serie.yMax > ymax ? serie.yMax : ymax, Number.NEGATIVE_INFINITY
-        ) as number;
-        let yDomain = [yMin, yMax];
+        let yDomain: number[] = this.baseChart.yChart.domain();
 
-        const time_start: number = this.props.series.reduce((start, serie) => serie.timeStart.getTime() < start ? serie.timeStart.getTime() : start, Number.POSITIVE_INFINITY);
-        const time_end: number = this.props.series.reduce((end, serie) => serie.timeEnd.getTime() > end ? serie.timeEnd.getTime() : end, Number.NEGATIVE_INFINITY);
+        const time_start = this.props.dateInterval.missionStartDate;
+        const time_end = this.props.dateInterval.missionStopDate;
         let xTimeDomain = [new Date(time_start), new Date(time_end)];
 
         this.xHorizontalContextTime = d3.scaleTime().domain(xTimeDomain).range([0, this.chartWidth]);
-        this.yHorizontalContext = d3.scaleLinear().domain(yDomain).range([horizontalContextHeight, 0]);
-        this.yVerticalContext = d3.scaleLinear().domain(yDomain).range([this.chartHeight, 0]);
+        this.yHorizontalContext = d3.scaleLinear().domain(yDomain).range([0, horizontalContextHeight]);
+        this.yVerticalContext = d3.scaleLinear().domain(yDomain).range([0, this.chartHeight]);
 
         this.xAxisContext = d3.axisBottom(this.xHorizontalContextTime);
         this.baseChart.customizeAxisTime(this.xHorizontalContextTime, this.xAxisContext);
@@ -482,7 +516,7 @@ const zoomTransition = defaultTransition;
         let selectionTime = d3.event.selection || this.xHorizontalContextTime.range();
         this.baseChart.timeScaleChart.domain(selectionTime.map(this.xHorizontalContextTime.invert, this.xHorizontalContextTime));
 
-        this.baseChart.updatePathes();
+        this.baseChart.updateRectanglesZoom();
         this.baseChart.updateXAxis();
         // this.updateVerticalMarkers();
     }
@@ -506,7 +540,7 @@ const zoomTransition = defaultTransition;
         }
         let selection = d3.event.selection || this.yVerticalContext.range();
         this.baseChart.yChart.domain(selection.map(this.yVerticalContext.invert, this.yVerticalContext));
-        this.baseChart.updatePathes();
+        this.baseChart.updateRectanglesZoom();
         this.baseChart.updateYAxis();
         // this.updateHorizontalMarkers();
         // this.updateAnomalyMarkers();
@@ -739,15 +773,15 @@ const zoomTransition = defaultTransition;
         }
         // Courbes résumé de contexte
         d3.select(this.refGHorizontalContextPathes).selectAll('.contextArea').remove();
-        this.props.series.forEach( serie => {
-                let datum: IHorizontalContextDatum[] = [];
-                for ( let indexValue = 0 ; indexValue < serie.points.length ; indexValue++ ) {
-                    datum.push({x: serie.points[indexValue].date, y: serie.points[indexValue].valeur});
-                }
-                d3.select(this.refGHorizontalContextPathes).append('path').datum(datum)
-                    .attr('class', 'contextArea')
-                    .attr('d', this.lineHorizontalContext);
-        });
+        // this.props.series.forEach( serie => {
+        //         let datum: IHorizontalContextDatum[] = [];
+        //         for ( let indexValue = 0 ; indexValue < serie.points.length ; indexValue++ ) {
+        //             datum.push({x: serie.points[indexValue].date, y: serie.points[indexValue].valeur});
+        //         }
+        let datum: IHorizontalContextDatum[] = [];
+        d3.select(this.refGHorizontalContextPathes).append('path').datum(datum)
+            .attr('class', 'contextArea')
+            .attr('d', this.lineHorizontalContext);
 
         d3.select(this.refGBrush)
             .on('dblclick.zoom', this.resetZoom)
@@ -789,18 +823,6 @@ const zoomTransition = defaultTransition;
         //     .on('mouseout', this.legendMouseHandle)
         //     .on('click', this.legendMouseHandle);
 
-        // this.baseChart.displayedPathes.forEach((displayedPath: IDisplayedPath) => {
-            
-        //     // TODO : CREATE SERIE NAME let serieName = displayedPath.serieData.serie_name;
-        //     displayedPath.path.attr('pointer-events', 'stroke')
-        //         .on('mouseover', (d: any, i: any, g: any) => { this.pathMouseOver(d, i, g, displayedPath); })
-        //         .on('mousemove', (d: any, i: any, g: any) => { this.pathMouseOver(d, i, g, displayedPath); })
-        //         .on('mouseout', (d: any, i: any, g: any) => { this.pathMouseOver(d, i, g, displayedPath); })
-        //         .on('mousedown', () => { this.dispatchEventToGeneralBrush('mousedown'); })
-        //         .on('click', () => { this.dispatchEventToGeneralBrush('click'); })
-        //         .on('dblclick', () => { this.dispatchEventToGeneralBrush('dblclick'); });
-        // });
-
         if ( callBrushes ) {
 
             d3.select(this.refGBrush)
@@ -821,26 +843,48 @@ const zoomTransition = defaultTransition;
                 .call(this.verticalBrushDetail);
         }
     }
+    private deltaRectMouseOver = (data: IAvgDelta) => {
+        console.log(JSON.stringify(data));
+        // let path: any = d3.select(d3.event.srcElement);
+        
+        switch ( d3.event.type ) {
+            case 'mouseover':
+            case 'mousemove':
+                // path.attr('stroke-width', 2);
+                // this.legendStrokeHighlight(displayedPath);
+                this.crosshairState.textDisplayed = 'serie name TODO'; // TODO : CREATE SERIE NAME displayedPath.serieData.serie_name;
+                this.displayCrosshair();
+                break;
+            case 'mouseout':
+                // path.attr('stroke-width', 1.2);
+                // this.legendStrokeHighlight();
+                this.crosshairState.textDisplayed = null;
+                this.displayCrosshair();
+                break;
+            default:
+                break;
+        }
+    }
 
-    // private dispatchEventToGeneralBrush = (event: string): void => {
-    //     // voir cette adresse pour pouvoir cliquer sur les path pour lancer le brush
-    //     // https://bl.ocks.org/mthh/99dc420cd7e276ecafe4ef4bf12c6927
-    //     const brushOverlayElement: Element = d3.select('#generalBrush > .overlay').node() as Element;
-    //     const brushSelectionElement: Element = d3.select('#generalBrush > .selection').node() as Element;
+    private dispatchEventToGeneralBrush = (event: string): void => {
+        // voir cette adresse pour pouvoir cliquer sur les path pour lancer le brush
+        // https://bl.ocks.org/mthh/99dc420cd7e276ecafe4ef4bf12c6927
+        const brushOverlayElement: Element = d3.select('#generalBrush > .overlay').node() as Element;
+        const brushSelectionElement: Element = d3.select('#generalBrush > .selection').node() as Element;
 
-    //     if ( brushSelectionElement ) {
-    //         const newClickEvent = new MouseEvent(event, {
-    //             clientX: d3.event.clientX,
-    //             clientY: d3.event.clientY,
-    //             bubbles: true,
-    //             cancelable: true,
-    //             view: window
-    //         });
-    //         if ( brushOverlayElement ) {
-    //             brushOverlayElement.dispatchEvent(newClickEvent);
-    //         }
-    //     }
-    // }
+        if ( brushSelectionElement ) {
+            const newClickEvent = new MouseEvent(event, {
+                clientX: d3.event.clientX,
+                clientY: d3.event.clientY,
+                bubbles: true,
+                cancelable: true,
+                view: window
+            });
+            if ( brushOverlayElement ) {
+                brushOverlayElement.dispatchEvent(newClickEvent);
+            }
+        }
+    }
 
     // private legendMouseHandle = (legendItem: ILegendItem): void => {
     //     switch ( d3.event.type ) {
@@ -860,28 +904,6 @@ const zoomTransition = defaultTransition;
     //             this.baseChart.displayedPathes
     //                 .filter( displayedPath => displayedPath.legendItem === legendItem )
     //                 .map( displayedPath => displayedPath.path.style('opacity', legendItem.isShown ? 1 : 0) );
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    // }
-
-    // private pathMouseOver = (data: any, index: any, group: any, displayedPath: IDisplayedPath): void => {
-    //     let path: any = d3.select(d3.event.srcElement);
-        
-    //     switch ( d3.event.type ) {
-    //         case 'mouseover':
-    //         case 'mousemove':
-    //             path.attr('stroke-width', 2);
-    //             this.legendStrokeHighlight(displayedPath);
-    //             this.crosshairState.textDisplayed = 'serie name TODO'; // TODO : CREATE SERIE NAME displayedPath.serieData.serie_name;
-    //             this.displayCrosshair();
-    //             break;
-    //         case 'mouseout':
-    //             path.attr('stroke-width', 1.2);
-    //             this.legendStrokeHighlight();
-    //             this.crosshairState.textDisplayed = null;
-    //             this.displayCrosshair();
     //             break;
     //         default:
     //             break;

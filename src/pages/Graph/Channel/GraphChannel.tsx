@@ -243,7 +243,7 @@ private gChartRef: SVGGElement | null;
         if ( this.props.sunBehaviourManager ) {
             this.props.sunBehaviourManager.getSunriseSunsetData().forEach ((data: ISunriseSunset) => {
                 let sunrise = data.sunrise;
-                let solar_noon = data.solar_noon;
+                // let solar_noon = data.solar_noon;
                 let sunset = data.sunset;
                 
                 // d3.select(this.chartRef).append('rect')
@@ -260,7 +260,7 @@ private gChartRef: SVGGElement | null;
         
                 var sunBehaviour = d3.line<Date>()
                     .x((d, i) => { return this.timeScale(d); })
-                    .y((d, i) => { return this.chartHeight - this.chartHeight * data.sunHeight(d)
+                    .y((d, i) => { return this.chartHeight // - this.chartHeight * data.sunHeight(d)
                         // switch (i) {
                         //     case 0:
                         //     case 2:
@@ -273,7 +273,7 @@ private gChartRef: SVGGElement | null;
                     .curve(d3.curveMonotoneX);
 
                 d3.select(this.chartRef).append('path')
-                    .datum([sunrise, solar_noon, sunset])
+                    .datum([sunrise, /* solar_noon, */ sunset])
                     .attr('class', 'sunriseSunsetClass')
                     .attr('clip-path', 'url(#id_clipPath)')
                     .attr('fill', 'yellow')
