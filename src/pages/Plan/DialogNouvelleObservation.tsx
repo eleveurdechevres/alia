@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
-import { Dialog, InputGroup, FileInput, Button, Intent, Checkbox } from '@blueprintjs/core';
+import { Dialog, InputGroup, FileInput, Button, Intent, Checkbox, TextArea } from '@blueprintjs/core';
 import { style } from 'typestyle/lib';
 import * as csstips from 'csstips';
 import { IObservation } from '../../interfaces/IObservation';
@@ -76,11 +76,18 @@ const dialogFieldValueStyle = style(csstips.flex);
                             Description
                         </div>
                         <div className={dialogFieldValueStyle}>
-                            <InputGroup
-                                leftIcon="edit"
+                            <TextArea
+                                growVertically={true}
+                                large={true}
+                                intent={Intent.PRIMARY}
                                 placeholder="Description"
                                 onChange={(event: any) => { this.observationToCreate.description = event.target.value }}
                             />
+                            {/* <InputGroup
+                                leftIcon="edit"
+                                placeholder="Description"
+                                onChange={(event: any) => { this.observationToCreate.description = event.target.value }}
+                            /> */}
                         </div>
                     </div>
                     <div className={dialogLineStyle}>

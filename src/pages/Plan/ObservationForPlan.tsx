@@ -9,18 +9,20 @@ const transition = d3.transition()
 .duration(3000)
 .ease(d3.easeElastic);
 
+const rectWidth = 16;
 interface IProps {
     x: number;
     y: number;
     observation: IObservation;
     onClick: (observation: IObservation) => void;
+    onRightClick: (observation: IObservation) => void;
     onMouseOver: () => void;
     onMouseOut: () => void;
 }
 
 @observer export class ObservationForPlan extends React.Component<IProps, {}> {
 
-    private observationRef: SVGCircleElement;
+    private observationRef: SVGRectElement;
     public constructor(props: IProps) {
         super(props);
     }
@@ -30,7 +32,12 @@ interface IProps {
     }
 
     componentDidUpdate() {
-        // this.animateCapteurs();
+        d3.select(this.observationRef)
+            .on('contextmenu', () => {
+                d3.event.preventDefault();
+
+                this.props.onRightClick(this.props.observation);
+            });
     }
 
     animateObservations() {
@@ -43,20 +50,37 @@ interface IProps {
 
     render() {
         return (
-            <circle
+            // <circle
+            //     ref={(ref) => {this.observationRef = ref}}
+            //     className="observationForPlan"
+            //     cx={this.props.x ? this.props.x : 0}
+            //     cy={this.props.y ? this.props.y : 0}
+            //     r={0}
+            //     stroke="black"
+            //     strokeWidth={1}
+            //     fill="blue"
+            //     opacity={1}
+            //     onClick={(evt) => this.props.onClick(this.props.observation)}
+            //     onMouseOver={this.props.onMouseOver}
+            //     onMouseOut={this.props.onMouseOut}
+            // />
+            <rect
                 ref={(ref) => {this.observationRef = ref}}
                 className="observationForPlan"
-                cx={this.props.x ? this.props.x : 0}
-                cy={this.props.y ? this.props.y : 0}
-                r={0}
+                x={this.props.x ? this.props.x - rectWidth / 2 : 0}
+                y={this.props.y ? this.props.y - rectWidth / 2 : 0}
+                width={rectWidth}
+                height={rectWidth}
                 stroke="black"
                 strokeWidth={1}
-                fill="blue"
+                radius={2}
+                fill="cyan"
                 opacity={1}
-                onClick={() => this.props.onClick(this.props.observation)}
+                onClick={(evt) => this.props.onClick(this.props.observation)}
                 onMouseOver={this.props.onMouseOver}
                 onMouseOut={this.props.onMouseOut}
             />
+
         );
     }
 }

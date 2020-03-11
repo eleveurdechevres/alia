@@ -1,15 +1,15 @@
 import * as React from 'react';
 
 const numberFormater = new Intl.NumberFormat('en-US', { minimumIntegerDigits: 2 });
-// const dateFormater = new Intl.DateTimeFormat('en-US', {
-//     year: 'numeric',
-//     month: 'numeric',
-//     day: 'numeric',
-//     hour: 'numeric',
-//     minute: 'numeric',
-//     second: 'numeric',
-//     hour12: false
-// });
+const dateFormater = new Intl.DateTimeFormat('fr-FR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: false
+});
 
 /**
  * Return a date formated for the path : DD/MM/YYYY_hh:mm:ss
@@ -29,12 +29,13 @@ export const dateForPath: formatDateForPath = (d: Date) => {
  * @param date date to format.
  */
 type formatDateType = (date: Date) => string;
-export const date: formatDateType = (d: Date) => {
-    let dateFormated: string = d.getUTCFullYear() + '/' + numberFormater.format(d.getUTCMonth() + 1) + '/' + numberFormater.format(d.getUTCDate());
-    dateFormated += ' ' + numberFormater.format(d.getUTCHours());
-    dateFormated += ':' + numberFormater.format(d.getUTCMinutes());
-    dateFormated += ':' + numberFormater.format(d.getUTCSeconds());
-    return dateFormated;
+export const dateForGui: formatDateType = (d: Date) => {
+    // let dateFormated: string = d.getUTCFullYear() + '/' + numberFormater.format(d.getUTCMonth() + 1) + '/' + numberFormater.format(d.getUTCDate());
+    // dateFormated += ' ' + numberFormater.format(d.getUTCHours());
+    // dateFormated += ':' + numberFormater.format(d.getUTCMinutes());
+    // dateFormated += ':' + numberFormater.format(d.getUTCSeconds());
+    // return dateFormated;
+    return dateFormater.format(d);
 };
 
 /**

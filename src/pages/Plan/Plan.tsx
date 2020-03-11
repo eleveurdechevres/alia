@@ -5,7 +5,6 @@ import * as d3 from 'd3';
 import { style } from 'typestyle/lib';
 import * as csstips from 'csstips';
 import * as ReactModal from 'react-modal';
-import { GraphBoard } from '../Graph/GraphBoard';
 import { observable, autorun } from 'mobx';
 import { observer } from 'mobx-react';
 import { ICapteur } from 'src/interfaces/ICapteur';
@@ -17,6 +16,9 @@ import { IObservation } from 'src/interfaces/IObservation';
 import { CapteurForPlan } from './CapteurForPlan';
 import { DialogNouvelleObservation } from './DialogNouvelleObservation';
 import { ObservationForPlan } from './ObservationForPlan';
+import { ModalCapteur } from './ModalCapteur';
+import { ModalObservation } from './ModalObservation';
+import * as FormatUtils from '../../utils/FormatUtils';
 
 // const transitionNewCapteur = d3.transition()
 // .duration(3000)
@@ -26,30 +28,6 @@ const legend = {
     width: 100,
     height: 14
 }
-const customStyles = {
-    overlay : {
-      position          : 'fixed',
-      top               : 0,
-      left              : 0,
-      right             : 0,
-      bottom            : 0,
-      backgroundColor   : 'rgba(255, 255, 255, 0.75)'
-    },
-    content : {
-      position                   : 'absolute',
-      top                        : '40px',
-      left                       : '40px',
-      right                      : '40px',
-      bottom                     : '40px',
-      border                     : '1px solid #ccc',
-      background                 : '#fff',
-      overflow                   : 'auto',
-      WebkitOverflowScrolling    : 'touch',
-      borderRadius               : '4px',
-      outline                    : 'none',
-      padding                    : '20px'
-    }
-};
 
 interface IProps {
     globalStore: GlobalStore;
@@ -68,8 +46,10 @@ interface IProps {
     @observable height: number = undefined;
     @observable capteurs: ICapteur[] = [];
     @observable observations: IObservation[] = [];
-    @observable modalIsOpen: boolean = false;
+    @observable isModalCapteurOpen: boolean = false;
+    @observable isModalObservationOpen: boolean = false;
     @observable capteurDisplayed: ICapteur = undefined;
+    @observable observationDisplayed: IObservation = undefined;
     @observable isDialogObservationOpened: boolean = false;
 
     // private svgRef: SVGGElement;
@@ -89,13 +69,19 @@ interface IProps {
         });
     }
 
-    private saveLastClick = () => {
-        let srcElement = d3.event.target || d3.event.srcElement;
-        const xLastClick = d3.mouse(srcElement)[0];
-        const yLastClick = d3.mouse(srcElement)[1];
+    private saveLastClick = (observation?: IObservation) => {
+        if (observation) {
+            this.xLastClickPercent = observation.coordonneesPlanX;
+            this.yLastClickPercent = observation.coordonneesPlanY;
+        }
+        else {
+            let srcElement = d3.event.target || d3.event.srcElement;
+            const xLastClick = d3.mouse(srcElement)[0];
+            const yLastClick = d3.mouse(srcElement)[1];
 
-        this.xLastClickPercent = xLastClick * 100 / this.width ;
-        this.yLastClickPercent = yLastClick * 100 / this.height;
+            this.xLastClickPercent = xLastClick * 100 / this.width ;
+            this.yLastClickPercent = yLastClick * 100 / this.height;
+        }
     }
 
     private getPlan = (id: number) => {
@@ -131,7 +117,8 @@ interface IProps {
             return Promise.resolve({ observations: [] });
         }
     
-        return fetch(`http://test.ideesalter.com/alia_searchObservationsForPlan.php?plan_id=${planId}&mission_id=${missionId}`)
+        const req = `http://test.ideesalter.com/alia_searchObservationsForPlan.php?plan_id=${planId}&mission_id=${missionId}`;
+        return fetch(req)
             .then((response) => response.json())
             .then((observations) => {
                 // TODO : grouper les observations par coordonnées
@@ -149,7 +136,7 @@ interface IProps {
     }
 
     getImageSize = (data: string) => {
-        var i = new Image(); 
+        let i = new Image(); 
         i.onload = () => {
             if ( this.width === undefined && this.height === undefined ) {
                 this.width = i.width;
@@ -162,7 +149,7 @@ interface IProps {
     componentDidUpdate() {
         this.masqueLegende();
 
-        var image = d3.select(this.imageRef);
+        let image = d3.select(this.imageRef);
 
         image.attr('xlink:href', this.planImage)
             .attr('x', 0)
@@ -235,19 +222,26 @@ interface IProps {
 
     openModalCapteur = (capteur: ICapteur) => {
         this.capteurDisplayed = capteur;
-        this.modalIsOpen = true;
+        this.isModalCapteurOpen = true;
     }
 
-    openModalObservations = (observation: IObservation) => {
-        // console.log(JSON.stringify(observation));
+    openModalObservation = (observation: IObservation) => {
+        this.observationDisplayed = observation;
+        this.isModalObservationOpen = true;
     }
 
     afterOpenModal = () => {
         // references are now sync'd and can be accessed.
     }
 
-    closeModal = () => {
-        this.modalIsOpen = false;
+    closeModalCapteur = () => {
+        this.isModalCapteurOpen = false;
+        this.capteurDisplayed = undefined;
+    }
+
+    closeModalObservation = () => {
+        this.isModalObservationOpen = false;
+        this.observationDisplayed = undefined;
     }
 
     // private afficheLegendeCapteur = (capteur: ICapteur) => {
@@ -324,21 +318,24 @@ interface IProps {
                         />
                     : <React.Fragment/>
                 }
-                <ReactModal  
-                    isOpen={this.modalIsOpen}
-                    onAfterOpen={this.afterOpenModal}
-                    onRequestClose={this.closeModal}
-                    contentLabel="Example Modal"
-                    style={customStyles}
-                >
-                    <GraphBoard
-                        globalStore={this.props.globalStore}
-                        habitat={this.props.habitat}
-                        capteur={this.capteurDisplayed}
-                        mission={this.props.mission}
-                    />
-                    {/* {this.graphContent} */}
-                </ReactModal >
+                <ModalCapteur
+                    label={this.capteurDisplayed ? this.capteurDisplayed.capteur_reference_id : 'Capteur'}
+                    isOpen={this.isModalCapteurOpen}
+                    onClose={this.closeModalCapteur}
+
+                    capteur={this.capteurDisplayed}
+                    globalStore={this.props.globalStore}
+                    habitat={this.props.habitat}
+                    mission={this.props.mission}
+                    planId={this.props.planId}
+                />
+                <ModalObservation
+                    label={this.observationDisplayed ? this.observationDisplayed.label + ' (' + FormatUtils.dateForGui(new Date(this.observationDisplayed.dateObservation)) + ')' : 'Observation'}
+                    isOpen={this.isModalObservationOpen}
+                    onClose={this.closeModalObservation}
+
+                    observation={this.observationDisplayed}
+                />
                 <div className={style(csstips.margin(10))}>
                     <svg width={this.width} height={this.height}>
                     {/* <svg ref={(ref) => {this.svgRef = ref}} width={this.width} height={this.height}> */}
@@ -353,9 +350,9 @@ interface IProps {
                                         capteur={capteur}
                                         x={x}
                                         y={y}
-                                        onClick={() => {this.openModalCapteur(capteur)}}
-                                        onMouseOver={() => { this.afficheLegende(x, y, capteur.capteur_reference_id)}}
-                                        onMouseOut={() => { this.masqueLegende()}}
+                                        onClick={() => this.openModalCapteur(capteur)}
+                                        onMouseOver={() => this.afficheLegende(x, y, capteur.capteur_reference_id)}
+                                        onMouseOut={() => this.masqueLegende()}
                                     />
                                 })
                             : <React.Fragment/>
@@ -370,11 +367,10 @@ interface IProps {
                                         observation={observation}
                                         x={x}
                                         y={y}
-                                        onClick={() => {
-                                            console.log('clic', observation)
-                                        }}
-                                        onMouseOver={() => { this.afficheLegende(x, y, observation.label)}}
-                                        onMouseOut={() => { this.masqueLegende()}}
+                                        onClick={() => this.openModalObservation(observation)}
+                                        onRightClick={this.showContextMenu}
+                                        onMouseOver={() => this.afficheLegende(x, y, observation.label)}
+                                        onMouseOut={() => this.masqueLegende()}
                                     />
                                 })
                             : <React.Fragment/>
@@ -410,15 +406,22 @@ interface IProps {
         );
     }
 
-    private showContextMenu = (): void => {
+    private showContextMenu = (observation?: IObservation): void => {
         // let mouseDate = this.baseChart.timeScaleChart.invert(this.xLastClick);
         // this.newMarkerYValue = this.baseChart.yChart.invert(this.yLastClick);
-        this.saveLastClick();
+        this.saveLastClick(observation);
 
         const menu = this.props.mission ? ( // <div/>
             <Menu>
-                <MenuItem text="Capteur virtuel" icon="add" onClick={() => this.showAddVirtualCapteurModal()}/>
-                <MenuDivider />
+                {
+                    observation === undefined ?
+                    [
+                        <MenuItem key={'contextMenuCapteurVirtuelMenuItem'} text="Capteur virtuel" icon="add" onClick={() => this.showAddVirtualCapteurModal()}/>,
+                        <MenuDivider key={'contextMenuDivider1'} />
+                    ]
+                    :
+                    <React.Fragment/>
+                }
                 <MenuItem text="Observation" icon="add" onClick={() => this.showAddObservationModal()}/>
             </Menu>
         ) : <React.Fragment/>;
