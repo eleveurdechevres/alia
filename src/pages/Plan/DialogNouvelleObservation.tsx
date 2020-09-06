@@ -11,15 +11,15 @@ import ReactDatePicker from 'react-datepicker';
 interface IProps {
     mission: IMission;
     planId: number;
-    coordonneesPlanX: number;
-    coordonneesPlanY: number;
+    coordonneePlanX: number;
+    coordonneePlanY: number;
     isOpen: boolean;
     close: () => void;
     handleAddObservationToMission: (newObservation: IObservation) => void;
 }
 
 const dialogLineStyle = style(csstips.margin(10), csstips.flex, csstips.horizontal);
-const dialogFieldNameStyle = style(csstips.width(80), csstips.margin(5, 5));
+// const dialogFieldNameStyle = style(csstips.width(80), csstips.margin(5, 5));
 const dialogFieldValueStyle = style(csstips.flex);
 
 @observer export class DialogNouvelleObservation extends React.Component<IProps, {}> {
@@ -31,9 +31,9 @@ const dialogFieldValueStyle = style(csstips.flex);
         id: undefined,
         plan_id: undefined,
         mission_id: undefined,
-        coordonneesPlanX: undefined,
-        coordonneesPlanY: undefined,
-        coordonneesPlanZ: undefined,
+        coordonneePlanX: undefined,
+        coordonneePlanY: undefined,
+        coordonneePlanZ: undefined,
         label: undefined,
         description: undefined,
         image: undefined,
@@ -60,9 +60,6 @@ const dialogFieldValueStyle = style(csstips.flex);
             >
                 <div className={style(csstips.flex, csstips.vertical)}>
                     <div className={dialogLineStyle}>
-                        <div className={dialogFieldNameStyle}>
-                            Label
-                        </div>
                         <div className={dialogFieldValueStyle}>
                             <InputGroup
                                 leftIcon="citation"
@@ -72,14 +69,12 @@ const dialogFieldValueStyle = style(csstips.flex);
                         </div>
                     </div>
                     <div className={dialogLineStyle}>
-                        <div className={dialogFieldNameStyle}>
-                            Description
-                        </div>
                         <div className={dialogFieldValueStyle}>
                             <TextArea
                                 growVertically={true}
                                 large={true}
-                                intent={Intent.PRIMARY}
+                                fill={true}
+                                intent={Intent.NONE}
                                 placeholder="Description"
                                 onChange={(event: any) => { this.observationToCreate.description = event.target.value }}
                             />
@@ -91,12 +86,10 @@ const dialogFieldValueStyle = style(csstips.flex);
                         </div>
                     </div>
                     <div className={dialogLineStyle}>
-                        <div className={dialogFieldNameStyle}>
-                            Image
-                        </div>
                         <div className={dialogFieldValueStyle}>
                             <FileInput
                                 className={style(csstips.fillParent)}
+                                inputProps={{placeholder: 'Choisissez une image...'}}
                                 disabled={false}
                                 text={this.observationToCreate.image ? this.observationToCreate.image : 'Choisissez un fichier'}
                                 onChange={(event: any) => {
@@ -121,22 +114,23 @@ const dialogFieldValueStyle = style(csstips.flex);
                             disabled={this.observationToCreate.image === undefined}
                             label="Utiliser la date du fichier"
                             checked={this.useDateFichier && this.observationToCreate.image !== undefined}
-                            onChange={() => { this.useDateFichier = !this.useDateFichier; }}
+                            onChange={() => {
+                                this.useDateFichier = !this.useDateFichier;
+                                this.computeDateObservation();
+                            }}
                         />
                     </div>
                     <div className={dialogLineStyle}>
-                        <div className={dialogFieldNameStyle}>
-                            Date
-                        </div>
                         <div className={dialogFieldValueStyle}>
                             <ReactDatePicker
                                 disabled={this.useDateFichier}
-                                selected={this.computeObservation()}
+                                selected={this.observationToCreate.dateObservation}
                                 onChange={this.handleChangeDateObservation}
                                 minDate={new Date(this.props.mission.date_debut)}
                                 maxDate={new Date(this.props.mission.date_fin)}
                                 dateFormat="dd/MM/yyyy"
                                 placeholderText="Date de l'observation"
+                                showTimeInput={true}
                             />
                         </div>
                     </div>
@@ -152,7 +146,10 @@ const dialogFieldValueStyle = style(csstips.flex);
                             intent={Intent.PRIMARY}
                             icon="add"
                             text="Créer"
-                            onClick={() => { this.props.handleAddObservationToMission(this.observationToCreate); }}
+                            onClick={() => {
+                                this.props.handleAddObservationToMission(this.observationToCreate);
+                            }}
+                            disabled={!this.isObservationValide()}
                         />
                     </div>
                 </div>
@@ -160,26 +157,35 @@ const dialogFieldValueStyle = style(csstips.flex);
         )
     }
 
+    private isObservationValide = (): boolean => {
+        return (
+            this.observationToCreate.label !== undefined && this.observationToCreate.label !== '' &&
+            this.observationToCreate.description !== undefined && this.observationToCreate.description !== '' &&
+            this.observationToCreate.image !== undefined &&
+            this.observationToCreate.dateObservation !== undefined
+        );
+    }
+
     private initNewObservation = () => {
         this.observationToCreate.plan_id = this.props.planId;
         this.observationToCreate.mission_id = this.props.mission.id;
-        this.observationToCreate.dateObservation = this.computeObservation();
-        this.observationToCreate.coordonneesPlanX = this.props.coordonneesPlanX;
-        this.observationToCreate.coordonneesPlanY = this.props.coordonneesPlanY;
-        this.observationToCreate.coordonneesPlanZ = 0;
+        this.observationToCreate.dateObservation = undefined;
+        this.observationToCreate.coordonneePlanX = this.props.coordonneePlanX;
+        this.observationToCreate.coordonneePlanY = this.props.coordonneePlanY;
+        this.observationToCreate.coordonneePlanZ = 0;
     }
 
     private handleChangeDateObservation = (date: Date) => {
         this.selectedDate = date;
+        this.computeDateObservation();
     }
 
-    private computeObservation = (): Date => {
+    private computeDateObservation = (): void => {
         if (this.useDateFichier && this.dateFichier !== undefined) {
-            return this.dateFichier;
+            this.observationToCreate.dateObservation = this.dateFichier;
         }
         else if (this.selectedDate !== undefined) {
-            return this.selectedDate;
+            this.observationToCreate.dateObservation = this.selectedDate;
         }
-        return new Date();
     }
 }

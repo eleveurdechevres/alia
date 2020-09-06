@@ -106,7 +106,7 @@ const SENSOR_DATA_MULTI_SELECT = MultiSelect.ofType<ISerieDef>();
         return  (
             seriesDef.plan.description + '(' + seriesDef.plan.etage + ')' +
             seriesDef.capteur.capteur_reference_id + '(' + seriesDef.capteur.id + ')' +
-            seriesDef.typeMesure.type + '(' + seriesDef.typeMesure.unit + ')'
+            seriesDef.typeMesure.measure_type + '(' + seriesDef.typeMesure.unit + ')'
         );
     }
 

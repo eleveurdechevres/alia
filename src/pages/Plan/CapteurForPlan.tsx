@@ -56,6 +56,7 @@ interface IProps {
                 onClick={() => this.props.onClick(this.props.capteur)}
                 onMouseOver={this.props.onMouseOver}
                 onMouseOut={this.props.onMouseOut}
+                style={{cursor: 'pointer'}}
             />
         );
     }

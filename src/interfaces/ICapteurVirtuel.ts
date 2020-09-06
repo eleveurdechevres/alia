@@ -1,11 +1,10 @@
 import { ILocalizable } from './ILocalizable';
 
-export interface IObservation extends ILocalizable {
+export interface ICapteurVirtuel extends ILocalizable {
     id: number;
     mission_id: number;
     plan_id: number;
     label: string;
     description: string;
-    image: string;
-    dateObservation: Date;
+    type_mesure: number;
 }

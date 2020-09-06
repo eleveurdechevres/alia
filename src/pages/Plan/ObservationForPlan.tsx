@@ -9,7 +9,9 @@ const transition = d3.transition()
 .duration(3000)
 .ease(d3.easeElastic);
 
-const rectWidth = 16;
+const cameraWidth = 22;
+const cameraHeight = 16;
+
 interface IProps {
     x: number;
     y: number;
@@ -22,7 +24,7 @@ interface IProps {
 
 @observer export class ObservationForPlan extends React.Component<IProps, {}> {
 
-    private observationRef: SVGRectElement;
+    private observationRef: SVGGElement;
     public constructor(props: IProps) {
         super(props);
     }
@@ -64,23 +66,33 @@ interface IProps {
             //     onMouseOver={this.props.onMouseOver}
             //     onMouseOut={this.props.onMouseOut}
             // />
-            <rect
+            <g
                 ref={(ref) => {this.observationRef = ref}}
                 className="observationForPlan"
-                x={this.props.x ? this.props.x - rectWidth / 2 : 0}
-                y={this.props.y ? this.props.y - rectWidth / 2 : 0}
-                width={rectWidth}
-                height={rectWidth}
-                stroke="black"
-                strokeWidth={1}
-                radius={2}
-                fill="cyan"
-                opacity={1}
                 onClick={(evt) => this.props.onClick(this.props.observation)}
                 onMouseOver={this.props.onMouseOver}
                 onMouseOut={this.props.onMouseOut}
-            />
-
+                transform={`translate(${this.props.x ? this.props.x - cameraWidth / 2 : 0},${this.props.y ? this.props.y - cameraWidth / 2 : 0})`}
+            >
+                <rect
+                    x={0}
+                    y={0}
+                    width={cameraWidth}
+                    height={cameraHeight}
+                    stroke="white"
+                    strokeWidth={1}
+                    fill="black"
+                    opacity={1}
+                />
+                <circle
+                    cx={cameraWidth / 2}
+                    cy={cameraHeight / 2}
+                    r={5}
+                    stroke="white"
+                    strokeWidth={2}
+                    fill="cyan"
+                />
+            </g>
         );
     }
 }

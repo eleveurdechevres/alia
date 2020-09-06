@@ -193,7 +193,7 @@ export class LineBaseChart extends BaseChart {
         let legendText = serieData.serieDef.capteur.capteur_reference_id +
         '_' + serieData.serieDef.capteur.id +
         '_plan' + serieData.serieDef.plan.id + 
-        '_' + serieData.serieDef.typeMesure.type;
+        '_' + serieData.serieDef.typeMesure.measure_type;
         return legendText;
 
     }

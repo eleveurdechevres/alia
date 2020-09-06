@@ -47,6 +47,7 @@ const customStyle = {
                 onRequestClose={this.props.onClose}
                 contentLabel={this.props.label}
                 style={customStyle}
+                appElement={document.getElementById('root')}
             >
                 <div className={style(csstips.horizontal, {width: '100%'})} >
                     <div className={style(csstips.fillParent)}>{this.props.label}</div>

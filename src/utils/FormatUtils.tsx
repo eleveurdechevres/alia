@@ -110,3 +110,17 @@ export function highlightText(text: string, query: string) {
 function escapeRegExpChars(text: string) {
     return text.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
 }
+
+export function formatTextWithBr (text: string): JSX.Element {
+    const keyBase = Math.random();
+    const textWithBr = text.split('\n').map((line: string, index: number, array: string[]): JSX.Element => {
+        const isLastLine: boolean = index === array.length;
+        return (
+            <React.Fragment key={keyBase + index}>
+                {line}
+                {isLastLine ? <React.Fragment/> : <br/>}
+            </React.Fragment>
+        );
+    }).concat();
+    return (<p>{textWithBr}</p>)
+}

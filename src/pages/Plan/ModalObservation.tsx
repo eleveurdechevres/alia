@@ -5,6 +5,9 @@ import { observable } from 'mobx';
 import { autorun } from 'mobx';
 import * as Modal from '../../components/Modal';
 import { IObservation } from 'src/interfaces/IObservation';
+import { style } from 'typestyle/lib';
+import * as csstips from 'csstips';
+import * as FormatUtils from '../../utils/FormatUtils';
 
 interface IProps extends Modal.IProps {
     observation: IObservation;
@@ -45,10 +48,12 @@ interface IProps extends Modal.IProps {
     protected renderInternalComponent = (): JSX.Element => {
         return (
             <React.Fragment>
-                {/* {this.imageElement} */}
-                <svg width={this.width} height={this.height}>
-                    <image ref={(ref) => {this.imageRef = ref}} />
-                </svg>
+                <div className={style(csstips.vertical)}>
+                    {this.props.observation ? <p>{FormatUtils.formatTextWithBr(this.props.observation.description)}</p> : <React.Fragment/>}
+                    <svg width={this.width} height={this.height}>
+                        <image ref={(ref) => {this.imageRef = ref}} />
+                    </svg>
+                </div>
             </React.Fragment>
         );
     }
@@ -63,4 +68,5 @@ interface IProps extends Modal.IProps {
         };
         i.src = data;
     }
+
 }

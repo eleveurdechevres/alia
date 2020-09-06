@@ -1,5 +1,5 @@
 export interface ITypeMesure {
     id: number;
-    type: string;
+    measure_type: string;
     unit: string;
 }

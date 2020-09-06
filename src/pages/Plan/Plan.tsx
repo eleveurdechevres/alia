@@ -4,7 +4,6 @@ import * as d3 from 'd3';
 // import { window } from 'd3-selection';
 import { style } from 'typestyle/lib';
 import * as csstips from 'csstips';
-import * as ReactModal from 'react-modal';
 import { observable, autorun } from 'mobx';
 import { observer } from 'mobx-react';
 import { ICapteur } from 'src/interfaces/ICapteur';
@@ -15,10 +14,15 @@ import { ContextMenu, Menu, MenuItem, MenuDivider } from '@blueprintjs/core';
 import { IObservation } from 'src/interfaces/IObservation';
 import { CapteurForPlan } from './CapteurForPlan';
 import { DialogNouvelleObservation } from './DialogNouvelleObservation';
+import { DialogNouveauCapteurVirtuel } from './DialogNouveauCapteurVirtuel';
 import { ObservationForPlan } from './ObservationForPlan';
-import { ModalCapteur } from './ModalCapteur';
+import { CapteurVirtuelForPlan } from './CapteurVirtuelForPlan';
+// import { ModalCapteurVirtuel } from './ModalCapteurVirtuel';
 import { ModalObservation } from './ModalObservation';
 import * as FormatUtils from '../../utils/FormatUtils';
+import { ICapteurVirtuel } from 'src/interfaces/ICapteurVirtuel';
+import { ILocalizable } from 'src/interfaces/ILocalizable';
+import { ModalCapteurVirtuel } from './ModalCapteurVirtuel';
 
 // const transitionNewCapteur = d3.transition()
 // .duration(3000)
@@ -26,7 +30,7 @@ import * as FormatUtils from '../../utils/FormatUtils';
 
 const legend = {
     width: 100,
-    height: 14
+    height: 20
 }
 
 interface IProps {
@@ -45,13 +49,19 @@ interface IProps {
     @observable width: number = undefined;
     @observable height: number = undefined;
     @observable capteurs: ICapteur[] = [];
+    @observable capteursVirtuels: ICapteurVirtuel[] = [];
     @observable observations: IObservation[] = [];
     @observable isModalCapteurOpen: boolean = false;
     @observable isModalObservationOpen: boolean = false;
+    @observable isModalCapteurVirtuelOpen: boolean = false;
+
     @observable capteurDisplayed: ICapteur = undefined;
     @observable observationDisplayed: IObservation = undefined;
-    @observable isDialogObservationOpened: boolean = false;
+    @observable capteurVirtuelDisplayed: ICapteurVirtuel = undefined;
 
+    @observable isDialogObservationOpened: boolean = false;
+    @observable isDialogCapteurVirtuelOpened: boolean = false;
+    
     // private svgRef: SVGGElement;
     private imageRef: SVGGElement;
     private gItemLegend: SVGGElement;
@@ -69,84 +79,16 @@ interface IProps {
         });
     }
 
-    private saveLastClick = (observation?: IObservation) => {
-        if (observation) {
-            this.xLastClickPercent = observation.coordonneesPlanX;
-            this.yLastClickPercent = observation.coordonneesPlanY;
-        }
-        else {
-            let srcElement = d3.event.target || d3.event.srcElement;
-            const xLastClick = d3.mouse(srcElement)[0];
-            const yLastClick = d3.mouse(srcElement)[1];
-
-            this.xLastClickPercent = xLastClick * 100 / this.width ;
-            this.yLastClickPercent = yLastClick * 100 / this.height;
-        }
-    }
-
-    private getPlan = (id: number) => {
-        if (!id) {
-            return Promise.resolve({ plans: [] });
-        }
-        var request = `http://test.ideesalter.com/alia_afficheImagePlan.php?id=${this.props.planId}`;
-        return fetch(request)
-            .then((response) => {
-                return( response.text() );
-            })
-            .then((responseData) => {
-                this.planImage = responseData;
-            }
-        );
-    }
-
-    getCapteursForPlan = (planId: number, missionId: number) => {
-        if (!planId) {
-            return Promise.resolve({ capteurs: [] });
-        }
-    
-        return fetch(`http://test.ideesalter.com/alia_searchCapteursForPlan.php?plan_id=${planId}&mission_id=${missionId}`)
-            .then((response) => response.json())
-            .then((capteurs) => {
-                this.capteurs = capteurs;
-            }
-        );
-    }
-
-    getObservationsForPlan = (planId: number, missionId: number) => {
-        if (!planId) {
-            return Promise.resolve({ observations: [] });
-        }
-    
-        const req = `http://test.ideesalter.com/alia_searchObservationsForPlan.php?plan_id=${planId}&mission_id=${missionId}`;
-        return fetch(req)
-            .then((response) => response.json())
-            .then((observations) => {
-                // TODO : grouper les observations par coordonnées
-                this.observations = observations;
-            }
-        );
-    }
-
-    componentDidMount() {
+    public componentDidMount() {
         this.getPlan(this.props.planId);
         if (this.props.mission) {
             this.getCapteursForPlan(this.props.planId, this.props.mission.id);
             this.reloadObservations();
+            this.reloadCapteursVirtuels();
         }
     }
 
-    getImageSize = (data: string) => {
-        let i = new Image(); 
-        i.onload = () => {
-            if ( this.width === undefined && this.height === undefined ) {
-                this.width = i.width;
-                this.height = i.height;
-            }
-        };
-        i.src = data;
-    }
-
-    componentDidUpdate() {
+    public componentDidUpdate() {
         this.masqueLegende();
 
         let image = d3.select(this.imageRef);
@@ -216,93 +158,26 @@ interface IProps {
         //     // .transition(transitionNewCapteur)
         //         .attr('r', 10)
         //         .attr('opacity', 1);
-
-
     }
 
-    openModalCapteur = (capteur: ICapteur) => {
-        this.capteurDisplayed = capteur;
-        this.isModalCapteurOpen = true;
-    }
-
-    openModalObservation = (observation: IObservation) => {
-        this.observationDisplayed = observation;
-        this.isModalObservationOpen = true;
-    }
-
-    afterOpenModal = () => {
-        // references are now sync'd and can be accessed.
-    }
-
-    closeModalCapteur = () => {
-        this.isModalCapteurOpen = false;
-        this.capteurDisplayed = undefined;
-    }
-
-    closeModalObservation = () => {
-        this.isModalObservationOpen = false;
-        this.observationDisplayed = undefined;
-    }
-
-    // private afficheLegendeCapteur = (capteur: ICapteur) => {
-    //     let x = capteur.coordonneePlanX + 10;
-    //     let y = capteur.coordonneePlanY - 20;
-    //     let label = capteur.capteur_reference_id;
-    //     this.afficheLegende(x, y, label);
-    // }
-
-    // private afficheLegendeObservation = (observation: IObservation) => {
-    //     // Position relative
-    //     let x = observation.coordonneesPlanX / 100 * this.width;
-    //     let y = observation.coordonneesPlanY / 100 * this.height;
-    //     let label = observation.label;
-    //     this.afficheLegende(x, y, label);
-    // }
-
-    private afficheLegende = (x: number, y: number, label: string) => {
-        let xDecalage = 10;
-        let yDecalage = 10;
-        if ( x > this.width / 2 ) {
-            x = x - legend.width - xDecalage;
-        }
-        else {
-            x = x + xDecalage;
-        }
-        if ( y > this.height / 2 ) {
-            y = y - legend.height - yDecalage;
-        }
-        else {
-            y = y + yDecalage;
-        }
-        let transition = d3.transition()
-            .duration(100)
-            .ease(d3.easeLinear);
-
-        d3.select(this.gItemLegend)
-            .transition(transition)
-            .attr('transform', 'translate(' + x + ',' + y + ')')
-            .attr('opacity', 1);
-        d3.select(this.textItemLegend).text(label);
-    }
-
-    private masqueLegende = () => {
-        let transition = d3.transition()
-            .duration(200)
-            .ease(d3.easeLinear);
-
-        d3.select(this.gItemLegend)
-            .transition(transition)
-            .attr('opacity', 0);
-    }
-
-    componentWillMount() {
-        ReactModal.setAppElement('body')
-    }
-
-    render() {
-        
+    public render() {
         return (
             <div className="container">
+                {
+                    this.props.mission ? 
+                        <DialogNouveauCapteurVirtuel
+                            isOpen={this.isDialogCapteurVirtuelOpened}
+                            close={() => {
+                                this.hideAddVirtualCapteurModal();
+                            }}
+                            coordonneePlanX={this.xLastClickPercent}
+                            coordonneePlanY={this.yLastClickPercent}
+                            mission={this.props.mission}
+                            planId={this.props.planId}
+                            handleAddCapteurVirtuelToMission={this.writeCapteurVirtuel}
+                        />
+                    : <React.Fragment/>
+                }
                 {
                     this.props.mission ? 
                         <DialogNouvelleObservation
@@ -310,24 +185,19 @@ interface IProps {
                             close={() => {
                                 this.hideAddObservationModal();
                             }}
-                            coordonneesPlanX={this.xLastClickPercent}
-                            coordonneesPlanY={this.yLastClickPercent}
+                            coordonneePlanX={this.xLastClickPercent}
+                            coordonneePlanY={this.yLastClickPercent}
                             mission={this.props.mission}
                             planId={this.props.planId}
                             handleAddObservationToMission={this.writeObservation}
                         />
                     : <React.Fragment/>
                 }
-                <ModalCapteur
+                <ModalCapteurVirtuel
                     label={this.capteurDisplayed ? this.capteurDisplayed.capteur_reference_id : 'Capteur'}
-                    isOpen={this.isModalCapteurOpen}
-                    onClose={this.closeModalCapteur}
-
-                    capteur={this.capteurDisplayed}
-                    globalStore={this.props.globalStore}
-                    habitat={this.props.habitat}
-                    mission={this.props.mission}
-                    planId={this.props.planId}
+                    isOpen={this.isModalCapteurVirtuelOpen}
+                    onClose={this.closeModalCapteurVirtuel}
+                    capteurVirtuel={this.capteurVirtuelDisplayed}
                 />
                 <ModalObservation
                     label={this.observationDisplayed ? this.observationDisplayed.label + ' (' + FormatUtils.dateForGui(new Date(this.observationDisplayed.dateObservation)) + ')' : 'Observation'}
@@ -351,7 +221,25 @@ interface IProps {
                                         x={x}
                                         y={y}
                                         onClick={() => this.openModalCapteur(capteur)}
-                                        onMouseOver={() => this.afficheLegende(x, y, capteur.capteur_reference_id)}
+                                        onMouseOver={() => this.afficheLegende(x, y, 'Capteur [' + capteur.capteur_reference_id + ']')}
+                                        onMouseOut={() => this.masqueLegende()}
+                                    />
+                                })
+                            : <React.Fragment/>
+                        }
+                        {
+                            this.props.mission ? 
+                                this.capteursVirtuels.map((capteurVirtuel: ICapteurVirtuel) => {
+                                    let x = capteurVirtuel.coordonneePlanX * this.width / 100;
+                                    let y = capteurVirtuel.coordonneePlanY * this.height / 100;
+                                    return <CapteurVirtuelForPlan
+                                        key={capteurVirtuel.id}
+                                        capteurVirtuel={capteurVirtuel}
+                                        x={x}
+                                        y={y}
+                                        onClick={() => this.openModalCapteurVirtuel(capteurVirtuel)}
+                                        onRightClick={this.showContextMenu}
+                                        onMouseOver={() => this.afficheLegende(x, y, 'Capteur virtuel [' + capteurVirtuel.label + ']')}
                                         onMouseOut={() => this.masqueLegende()}
                                     />
                                 })
@@ -360,8 +248,8 @@ interface IProps {
                         {
                             this.props.mission ? 
                                 this.observations.map((observation: IObservation) => {
-                                    let x = observation.coordonneesPlanX * this.width / 100;
-                                    let y = observation.coordonneesPlanY * this.height / 100;
+                                    let x = observation.coordonneePlanX * this.width / 100;
+                                    let y = observation.coordonneePlanY * this.height / 100;
                                     return <ObservationForPlan
                                         key={observation.id}
                                         observation={observation}
@@ -369,33 +257,37 @@ interface IProps {
                                         y={y}
                                         onClick={() => this.openModalObservation(observation)}
                                         onRightClick={this.showContextMenu}
-                                        onMouseOver={() => this.afficheLegende(x, y, observation.label)}
+                                        onMouseOver={() => this.afficheLegende(x, y, 'Observation [' + observation.label + ']')}
                                         onMouseOut={() => this.masqueLegende()}
                                     />
                                 })
                             : <React.Fragment/>
                         }
-                        <g ref={(ref) => {this.gItemLegend = ref}} opacity="0">
+                        <g
+                            ref={(ref) => {this.gItemLegend = ref}}
+                            opacity="0"
+                            pointerEvents="none"
+                        >
                             <rect
                                 x="0"
                                 y="0"
-                                width="100"
-                                height="14"
-                                fill="green"
-                                stroke="black"
+                                rx="3"
+                                ry="3"
+                                // width={legend.width}
+                                height={legend.height}
+                                fill="#2485C1"
+                                stroke="#1F5A7F"
                                 strokeWidth="1"
                             />
                             <text
                                 ref={(ref) => {this.textItemLegend = ref}}
-                                x="50"
-                                y="7"
+                                // x={legend.width / 2}
+                                y={legend.height / 2}
                                 fontSize="11"
                                 textAnchor="middle"
                                 alignmentBaseline="middle"
-                                fill="black"
-                            >
-                                capteur
-                            </text>
+                                fill="white"
+                            />
                         </g>
                     </svg>
                 </div>
@@ -406,34 +298,191 @@ interface IProps {
         );
     }
 
-    private showContextMenu = (observation?: IObservation): void => {
+    private saveLastClick = (localizableItem?: ILocalizable) => {
+        if (localizableItem) {
+            this.xLastClickPercent = localizableItem.coordonneePlanX;
+            this.yLastClickPercent = localizableItem.coordonneePlanY;
+        }
+        else {
+            let srcElement = d3.event.target || d3.event.srcElement;
+            const xLastClick = d3.mouse(srcElement)[0];
+            const yLastClick = d3.mouse(srcElement)[1];
+
+            this.xLastClickPercent = xLastClick * 100 / this.width ;
+            this.yLastClickPercent = yLastClick * 100 / this.height;
+        }
+    }
+
+    private getPlan = (id: number) => {
+        if (!id) {
+            return Promise.resolve({ plans: [] });
+        }
+        var request = `http://test.ideesalter.com/alia_afficheImagePlan.php?id=${this.props.planId}`;
+        return fetch(request)
+            .then((response) => {
+                return( response.text() );
+            })
+            .then((responseData) => {
+                this.planImage = responseData;
+            }
+        );
+    }
+
+    private getCapteursForPlan = (planId: number, missionId: number) => {
+        if (!planId) {
+            return Promise.resolve({ capteurs: [] });
+        }
+    
+        return fetch(`http://test.ideesalter.com/alia_searchCapteursForPlan.php?plan_id=${planId}&mission_id=${missionId}`)
+            .then((response) => response.json())
+            .then((capteurs) => {
+                this.capteurs = capteurs;
+            }
+        );
+    }
+
+    private getCapteursVirtuelsForPlan = (planId: number, missionId: number) => {
+        if (!planId) {
+            return Promise.resolve({ capteurs: [] });
+        }
+    
+        let request = `http://test.ideesalter.com/alia_searchCapteursVirtuelsForPlan.php?plan_id=${planId}&mission_id=${missionId}`;
+        return fetch(request)
+            .then((response) => response.json())
+            .then((capteursVirtuels) => {
+                this.capteursVirtuels = capteursVirtuels;
+            }
+        );
+    }
+
+    private getObservationsForPlan = (planId: number, missionId: number) => {
+        if (!planId) {
+            return Promise.resolve({ observations: [] });
+        }
+    
+        const req = `http://test.ideesalter.com/alia_searchObservationsForPlan.php?plan_id=${planId}&mission_id=${missionId}`;
+        return fetch(req)
+            .then((response) => response.json())
+            .then((observations) => {
+                // TODO : grouper les observations par coordonnées
+                this.observations = observations;
+            }
+        );
+    }
+
+    private getImageSize = (data: string) => {
+        let i = new Image(); 
+        i.onload = () => {
+            if ( this.width === undefined && this.height === undefined ) {
+                this.width = i.width;
+                this.height = i.height;
+            }
+        };
+        i.src = data;
+    }
+
+
+    private openModalCapteur = (capteur: ICapteur) => {
+        this.capteurDisplayed = capteur;
+        this.isModalCapteurOpen = true;
+    }
+
+    private openModalObservation = (observation: IObservation) => {
+        this.observationDisplayed = observation;
+        this.isModalObservationOpen = true;
+    }
+
+    private closeModalObservation = () => {
+        this.isModalObservationOpen = false;
+        this.observationDisplayed = undefined;
+    }
+
+    private openModalCapteurVirtuel = (capteurVirtuel: ICapteurVirtuel) => {
+        this.capteurVirtuelDisplayed = capteurVirtuel;
+        this.isModalCapteurVirtuelOpen = true;
+    }
+
+    private closeModalCapteurVirtuel = () => {
+        this.isModalCapteurVirtuelOpen = false;
+        this.capteurVirtuelDisplayed = undefined;
+    }
+
+    private afficheLegende = (x: number, y: number, label: string) => {
+        let xDecalage = 10;
+        let yDecalage = 10;
+        const legendWidth = label.length * 8;
+        if ( x > this.width / 2 ) {
+            x = x - legendWidth - xDecalage;
+        }
+        else {
+            x = x + xDecalage;
+        }
+        if ( y > this.height / 2 ) {
+            y = y - legend.height - yDecalage;
+        }
+        else {
+            y = y + yDecalage;
+        }
+        let transition = d3.transition()
+            .duration(100)
+            .ease(d3.easeLinear);
+
+        d3.select(this.gItemLegend).select('rect')
+            .attr('width', legendWidth)
+        d3.select(this.gItemLegend).select('text')
+            .attr('x', legendWidth / 2)
+        d3.select(this.textItemLegend).text(label);
+        d3.select(this.gItemLegend)
+            .transition(transition)
+            .attr('transform', 'translate(' + x + ',' + y + ')')
+            .attr('opacity', 1);
+    }
+
+    private masqueLegende = () => {
+        let transition = d3.transition()
+            .duration(200)
+            .ease(d3.easeLinear);
+
+        d3.select(this.gItemLegend)
+            .transition(transition)
+            .attr('opacity', 0);
+    }
+
+
+    private showContextMenu = (item?: ILocalizable): void => {
         // let mouseDate = this.baseChart.timeScaleChart.invert(this.xLastClick);
         // this.newMarkerYValue = this.baseChart.yChart.invert(this.yLastClick);
-        this.saveLastClick(observation);
+        this.saveLastClick(item);
 
         const menu = this.props.mission ? ( // <div/>
             <Menu>
                 {
-                    observation === undefined ?
+                    item === undefined ?
                     [
                         <MenuItem key={'contextMenuCapteurVirtuelMenuItem'} text="Capteur virtuel" icon="add" onClick={() => this.showAddVirtualCapteurModal()}/>,
-                        <MenuDivider key={'contextMenuDivider1'} />
+                        <MenuDivider key={'contextMenuDivider1'} />,
+                        <MenuItem key={'contextMenuObservationMenuItem'} text="Observation" icon="add" onClick={() => this.showAddObservationModal()}/>
                     ]
                     :
                     <React.Fragment/>
                 }
-                <MenuItem text="Observation" icon="add" onClick={() => this.showAddObservationModal()}/>
             </Menu>
         ) : <React.Fragment/>;
 
         // mouse position is available on event
-        ContextMenu.show(menu, { left: d3.event.clientX - 20, top: d3.event.clientY - 20}, () => {
-            // menu was closed; callback optional
-        });
+        if (item === undefined) {
+            ContextMenu.show(menu, { left: d3.event.clientX - 20, top: d3.event.clientY - 20}, () => {
+                // menu was closed; callback optional
+            });
+        }
     }
 
     private showAddVirtualCapteurModal = () => {
-        console.log('+ Capteur virtuel [' + this.xLastClickPercent + ', ' + this.yLastClickPercent + ']' );
+        this.isDialogCapteurVirtuelOpened = true;
+    }
+
+    private hideAddVirtualCapteurModal = () => {
+        this.isDialogCapteurVirtuelOpened = false;
     }
 
     private showAddObservationModal = () => {
@@ -442,6 +491,49 @@ interface IProps {
 
     private hideAddObservationModal = () => {
         this.isDialogObservationOpened = false;
+    }
+
+    
+    public writeCapteurVirtuel = (capteurVirtuel: ICapteurVirtuel) => {
+        console.log('alia_writeCapteurVirtuel')
+        // let req = 'http://testbase.ideesalter.com/alia_writeCapteurVirtuel.php?id=3&' + 
+        // '&mission_id=' + capteurVirtuel.mission.id + 
+        // '&plan_id=' + capteurVirtuel.planId + 
+        // '&coordonneesPlanX=' + this.xLastClickPercent + 
+        // '&coordonneesPlanY=' + this.yLastClickPercent +
+        // '&coordonneesPlanZ=0' + 
+        // '&label=' + capteurVirtuel.label
+        // '&description=' + capteurVirtuel.description
+        // '&type_mesure=' + capteurVirtuel.type_mesure
+        // console.log(req);
+
+        fetch(`http://testbase.ideesalter.com/alia_writeCapteurVirtuel.php`, {
+                method: 'post',
+                headers: {
+                //     'Access-Control-Allow-Origin:': '*',
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                },
+                body: JSON.stringify({
+                    mission_id: capteurVirtuel.mission_id,
+                    plan_id: capteurVirtuel.plan_id,
+                    coordonneePlanX: capteurVirtuel.coordonneePlanX,
+                    coordonneePlanY: capteurVirtuel.coordonneePlanY,
+                    coordonneePlanZ: capteurVirtuel.coordonneePlanZ,
+                    label: capteurVirtuel.label,
+                    description: capteurVirtuel.description,
+                    type_mesure: capteurVirtuel.type_mesure
+                })
+            }
+        ).then((response) => {
+                if (response.status === 200) {
+                    this.reloadCapteursVirtuels()
+                } else {
+                    console.log(response);
+                    // TODO : impossible de sauvegarder...
+            }
+        });
+        this.hideAddVirtualCapteurModal();
     }
 
     public writeObservation = (observation: IObservation) => {
@@ -468,9 +560,9 @@ interface IProps {
                 body: JSON.stringify({
                     mission_id: observation.mission_id,
                     plan_id: observation.plan_id,
-                    coordonneesPlanX: observation.coordonneesPlanX,
-                    coordonneesPlanY: observation.coordonneesPlanY,
-                    coordonneesPlanZ: observation.coordonneesPlanZ,
+                    coordonneesPlanX: observation.coordonneePlanX,
+                    coordonneesPlanY: observation.coordonneePlanY,
+                    coordonneesPlanZ: observation.coordonneePlanZ,
                     label: observation.label,
                     description: observation.description,
                     dateObservation: observation.dateObservation,
@@ -486,21 +578,13 @@ interface IProps {
             }
         });
         this.hideAddObservationModal();
-
-        // let req = 'http://testbase.ideesalter.com/alia_writeObservation.php?id=3&' + 
-        // '&mission_id=' + this.props.mission.id + 
-        // '&plan_id=' + this.props.planId + 
-        // '&coordonneesPlanX=' + this.xLastClickPercent + 
-        // '&coordonneesPlanY=' + this.yLastClickPercent +
-        // '&coordonneesPlanZ=0' + 
-        // '&label=Label%20test' + 
-        // '&description=Description%20test' +
-        // '&dateObservation=2017-12-26%2014:26:00' +
-        // '&image=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQ';
-        // console.log(req);
     }
 
     private reloadObservations() {
         this.getObservationsForPlan(this.props.planId, this.props.mission.id);
+    }
+
+    private reloadCapteursVirtuels() {
+        this.getCapteursVirtuelsForPlan(this.props.planId, this.props.mission.id);
     }
 }
