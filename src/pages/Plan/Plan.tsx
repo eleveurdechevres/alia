@@ -1,7 +1,5 @@
 import * as React from 'react';
 import * as d3 from 'd3';
-// import $ from 'jquery'; 
-// import { window } from 'd3-selection';
 import { style } from 'typestyle/lib';
 import * as csstips from 'csstips';
 import { observable, autorun } from 'mobx';
@@ -17,7 +15,6 @@ import { DialogNouvelleObservation } from './DialogNouvelleObservation';
 import { DialogNouveauCapteurVirtuel } from './DialogNouveauCapteurVirtuel';
 import { ObservationForPlan } from './ObservationForPlan';
 import { CapteurVirtuelForPlan } from './CapteurVirtuelForPlan';
-// import { ModalCapteurVirtuel } from './ModalCapteurVirtuel';
 import { ModalObservation } from './ModalObservation';
 import * as FormatUtils from '../../utils/FormatUtils';
 import { ICapteurVirtuel } from 'src/interfaces/ICapteurVirtuel';
@@ -206,6 +203,14 @@ interface IProps {
 
                     observation={this.observationDisplayed}
                 />
+                {/* {   this.isModalCapteurOpen ? 
+                    <GraphBoard
+                        capteur={this.capteurDisplayed}
+                        globalStore={this.props.globalStore}
+                        habitat={this.props.habitat}
+                        mission={this.props.mission}
+                    /> : <React.Fragment/>
+                } */}
                 <div className={style(csstips.margin(10))}>
                     <svg width={this.width} height={this.height}>
                     {/* <svg ref={(ref) => {this.svgRef = ref}} width={this.width} height={this.height}> */}
