@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as d3 from 'd3';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
-import { autorun } from 'mobx';
+// import { autorun } from 'mobx';
 import * as Modal from '../../components/Modal';
 import { IObservation } from 'src/interfaces/IObservation';
 import { style } from 'typestyle/lib';
@@ -22,27 +22,39 @@ interface IProps extends Modal.IProps {
 
     public constructor(props: IProps) {
         super(props);
-        autorun(() => {
-            if (this.props.observation) {
-                var request = `http://test.ideesalter.com/alia_afficheImageObservation.php?observation_id=${this.props.observation.id}`;
-                fetch(request)
-                .then((response) => response.text())
-                .then((responseData) => {
-                    this.imageData = responseData;
+    }
 
-                    var image = d3.select(this.imageRef);
-        
-                    image
-                        .attr('opacity', 0)
-                        .attr('xlink:href', this.imageData)
-                        .attr('x', 0)
-                        .attr('y', 0)
-                        .transition()
-                        .attr('opacity', 1);
-                    this.getImageSize(this.imageData);
-                });
-            }
-        });
+    protected getTitle = () => {
+        return this.props.observation ?
+            `${this.props.observation.label} [${this.props.observation.id}] (${FormatUtils.dateForGui(new Date(this.props.observation.dateObservation))})`
+            :
+            'Observation';
+    }
+
+    protected onAfterOpen = () => {
+        if (this.props.observation) {
+            var request = `http://test.ideesalter.com/alia_afficheImageObservation.php?observation_id=${this.props.observation.id}`;
+            fetch(request)
+            .then((response) => response.text())
+            .then((responseData) => {
+                this.imageData = responseData;
+
+                var image = d3.select(this.imageRef);
+    
+                image
+                    .attr('opacity', 0)
+                    .attr('xlink:href', this.imageData)
+                    .attr('x', 0)
+                    .attr('y', 0)
+                    .transition()
+                    .attr('opacity', 1);
+                this.getImageSize(this.imageData);
+            });
+        }
+    }
+    
+    protected onAfterClose = () => {
+        // Nada
     }
 
     protected renderInternalComponent = (): JSX.Element => {

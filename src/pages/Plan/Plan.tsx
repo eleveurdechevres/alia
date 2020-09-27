@@ -16,7 +16,6 @@ import { DialogNouveauCapteurVirtuel } from './DialogNouveauCapteurVirtuel';
 import { ObservationForPlan } from './ObservationForPlan';
 import { CapteurVirtuelForPlan } from './CapteurVirtuelForPlan';
 import { ModalObservation } from './ModalObservation';
-import * as FormatUtils from '../../utils/FormatUtils';
 import { ICapteurVirtuel } from 'src/interfaces/ICapteurVirtuel';
 import { ILocalizable } from 'src/interfaces/ILocalizable';
 import { ModalCapteurVirtuel } from './ModalCapteurVirtuel';
@@ -171,7 +170,7 @@ interface IProps {
                             coordonneePlanY={this.yLastClickPercent}
                             mission={this.props.mission}
                             planId={this.props.planId}
-                            handleAddCapteurVirtuelToMission={this.writeCapteurVirtuel}
+                            handleAddCapteurVirtuelToMission={this.handleAddCapteurVirtuelToMission}
                         />
                     : <React.Fragment/>
                 }
@@ -186,18 +185,18 @@ interface IProps {
                             coordonneePlanY={this.yLastClickPercent}
                             mission={this.props.mission}
                             planId={this.props.planId}
-                            handleAddObservationToMission={this.writeObservation}
+                            handleAddObservationToMission={this.handleAddObservationToMission}
                         />
                     : <React.Fragment/>
                 }
                 <ModalCapteurVirtuel
-                    label={this.capteurDisplayed ? this.capteurDisplayed.capteur_reference_id : 'Capteur'}
                     isOpen={this.isModalCapteurVirtuelOpen}
                     onClose={this.closeModalCapteurVirtuel}
                     capteurVirtuel={this.capteurVirtuelDisplayed}
+                    mission={this.props.mission}
+                    globalStore={this.props.globalStore}
                 />
                 <ModalObservation
-                    label={this.observationDisplayed ? this.observationDisplayed.label + ' (' + FormatUtils.dateForGui(new Date(this.observationDisplayed.dateObservation)) + ')' : 'Observation'}
                     isOpen={this.isModalObservationOpen}
                     onClose={this.closeModalObservation}
 
@@ -499,97 +498,20 @@ interface IProps {
     }
 
     
-    public writeCapteurVirtuel = (capteurVirtuel: ICapteurVirtuel) => {
-        console.log('alia_writeCapteurVirtuel')
-        // let req = 'http://testbase.ideesalter.com/alia_writeCapteurVirtuel.php?id=3&' + 
-        // '&mission_id=' + capteurVirtuel.mission.id + 
-        // '&plan_id=' + capteurVirtuel.planId + 
-        // '&coordonneesPlanX=' + this.xLastClickPercent + 
-        // '&coordonneesPlanY=' + this.yLastClickPercent +
-        // '&coordonneesPlanZ=0' + 
-        // '&label=' + capteurVirtuel.label
-        // '&description=' + capteurVirtuel.description
-        // '&type_mesure=' + capteurVirtuel.type_mesure
-        // console.log(req);
-
-        fetch(`http://testbase.ideesalter.com/alia_writeCapteurVirtuel.php`, {
-                method: 'post',
-                headers: {
-                //     'Access-Control-Allow-Origin:': '*',
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json'
-                },
-                body: JSON.stringify({
-                    mission_id: capteurVirtuel.mission_id,
-                    plan_id: capteurVirtuel.plan_id,
-                    coordonneePlanX: capteurVirtuel.coordonneePlanX,
-                    coordonneePlanY: capteurVirtuel.coordonneePlanY,
-                    coordonneePlanZ: capteurVirtuel.coordonneePlanZ,
-                    label: capteurVirtuel.label,
-                    description: capteurVirtuel.description,
-                    type_mesure: capteurVirtuel.type_mesure
-                })
-            }
-        ).then((response) => {
-                if (response.status === 200) {
-                    this.reloadCapteursVirtuels()
-                } else {
-                    console.log(response);
-                    // TODO : impossible de sauvegarder...
-            }
-        });
+    private handleAddCapteurVirtuelToMission = (capteurVirtuel: ICapteurVirtuel) => {
+        this.props.globalStore.writeCapteurVirtuel(capteurVirtuel, this.reloadCapteursVirtuels);
         this.hideAddVirtualCapteurModal();
     }
 
-    public writeObservation = (observation: IObservation) => {
-        // let req = 'http://testbase.ideesalter.com/alia_writeObservation.php?id=3&' + 
-        // '&mission_id=' + this.props.mission.id + 
-        // '&plan_id=' + this.props.planId + 
-        // '&coordonneesPlanX=' + this.xLastClickPercent + 
-        // '&coordonneesPlanY=' + this.yLastClickPercent +
-        // '&coordonneesPlanZ=0' + 
-        // '&label=' + observation.label
-        // '&description=' + observation.description
-        // '&dateObservation=' + observation.dateObservation
-        // '&image=' + observation.image;
-        // console.log(req);
-        // console.log(observation.image)
+    private handleAddObservationToMission = (observation: IObservation) => {
+        this.props.globalStore.writeObservation(observation, this.reloadObservations);
+        this.hideAddObservationModal();    }
 
-        fetch(`http://testbase.ideesalter.com/alia_writeObservation.php`, {
-                method: 'post',
-                headers: {
-                //     'Access-Control-Allow-Origin:': '*',
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json'
-                },
-                body: JSON.stringify({
-                    mission_id: observation.mission_id,
-                    plan_id: observation.plan_id,
-                    coordonneesPlanX: observation.coordonneePlanX,
-                    coordonneesPlanY: observation.coordonneePlanY,
-                    coordonneesPlanZ: observation.coordonneePlanZ,
-                    label: observation.label,
-                    description: observation.description,
-                    dateObservation: observation.dateObservation,
-                    image: observation.image
-                })
-            }
-        ).then((response) => {
-                if (response.status === 200) {
-                    this.reloadObservations()
-                } else {
-                    console.log(response);
-                    // TODO : impossible de sauvegarder...
-            }
-        });
-        this.hideAddObservationModal();
-    }
-
-    private reloadObservations() {
+    private reloadObservations = () => {
         this.getObservationsForPlan(this.props.planId, this.props.mission.id);
     }
 
-    private reloadCapteursVirtuels() {
+    private reloadCapteursVirtuels = () => {
         this.getCapteursVirtuelsForPlan(this.props.planId, this.props.mission.id);
     }
 }

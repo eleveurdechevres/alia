@@ -15,6 +15,8 @@ import { dateToSql } from 'src/utils/DateUtils';
 import { ICapteur } from 'src/interfaces/ICapteur';
 import { IChannel } from 'src/interfaces/IChannel';
 import { ITypeMesure } from 'src/interfaces/ITypeMesure';
+import { ICapteurVirtuel } from 'src/interfaces/ICapteurVirtuel';
+import { IObservation } from 'src/interfaces/IObservation';
 
 export class GlobalStore {
 
@@ -247,14 +249,14 @@ export class GlobalStore {
             `&email=` + client.email +
             `&password=` + encodeURIComponent(password)
         ).then((response) => {
-                if (response.status === 200) {
-                    this.reloadClients();
-                } else {
-                    console.log(response);
-                    // TODO : impossible de sauvegarder...
-                }
+            if (response.status === 200) {
+                this.reloadClients();
             }
-        );
+            else {
+                console.log(response);
+                // TODO : impossible de sauvegarder...
+            }
+        });
     }
 
     public writeHabitat = (habitat: IHabitat, password: string) => {
@@ -267,11 +269,125 @@ export class GlobalStore {
             `&elevation=` + habitat.gps_elevation + 
             `&password=` + encodeURIComponent(password)
         ).then((response) => {
-                if (response.status === 200) {
-                    this.reloadHabitatsFromClient(this.client);
-                } else {
+            if (response.status === 200) {
+                this.reloadHabitatsFromClient(this.client);
+            }
+            else {
+                console.log(response);
+                // TODO : impossible de sauvegarder...
+            }
+        });
+    }
+
+    public writeCapteurVirtuel = (capteurVirtuel: ICapteurVirtuel, then: () => void) => {
+        const body: string = JSON.stringify({
+            mission_id: capteurVirtuel.mission_id,
+            plan_id: capteurVirtuel.plan_id,
+            coordonneePlanX: capteurVirtuel.coordonneePlanX,
+            coordonneePlanY: capteurVirtuel.coordonneePlanY,
+            coordonneePlanZ: capteurVirtuel.coordonneePlanZ,
+            label: capteurVirtuel.label,
+            description: capteurVirtuel.description,
+            type_mesure: capteurVirtuel.type_mesure
+        });
+        fetch(`http://testbase.ideesalter.com/alia_writeCapteurVirtuel.php`, {
+                method: 'POST',
+                headers: {
+                    // 'Access-Control-Allow-Origin:': '*',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: body
+            }
+        ).then((response) => {
+            if (response.status === 200) {
+                then();
+            }
+            else {
+                console.log(response);
+                // TODO : impossible de sauvegarder...
+            }
+        });
+    }
+
+    public writeObservation = (observation: IObservation, then: () => void) => {
+        const body: string = JSON.stringify({
+            mission_id: observation.mission_id,
+            plan_id: observation.plan_id,
+            coordonneePlanX: observation.coordonneePlanX,
+            coordonneePlanY: observation.coordonneePlanY,
+            coordonneePlanZ: observation.coordonneePlanZ,
+            label: observation.label,
+            description: observation.description,
+            dateObservation: observation.dateObservation,
+            image: observation.image
+        });
+        
+        fetch(`http://testbase.ideesalter.com/alia_writeObservation.php`, {
+                method: 'POST',
+                headers: {
+                //     'Access-Control-Allow-Origin:': '*',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: body
+            }
+        ).then((response) => {
+            if (response.status === 200) {
+                then();
+            }
+            else {
+                console.log(response);
+                // TODO : impossible de sauvegarder...
+            }
+        });
+    }
+
+    public writeMesureVirtuelle = (capteurVirtuel: ICapteurVirtuel, mesure: IMesure, then: () => void) => {
+        const body: string = JSON.stringify({
+            capteur_virtuel_id: capteurVirtuel.id,
+            date: dateToSql(mesure.date),
+            valeur: mesure.valeur
+        });
+        
+        fetch(`http://testbase.ideesalter.com/alia_writeMesureVirtuelle.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: body
+            }
+        ).then((response) => {
+            if (response.status === 200) {
+                then();
+            }
+            else {
+                console.log(response);
+            }
+        });
+    }
+
+    public deleteMesureVirtuelle = (capteurVirtuel: ICapteurVirtuel, mesure: IMesure, then: () => void) => {
+        const body: string = JSON.stringify({
+            capteur_virtuel_id: capteurVirtuel.id,
+            date: dateToSql(mesure.date)
+        });
+        
+        fetch(`http://test.ideesalter.com/alia_deleteMesureVirtuelle.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: body
+            }
+        ).then((response) => {
+            if (response.status === 200) {
+                then();
+            }
+            else {
                     console.log(response);
-                    // TODO : impossible de sauvegarder...
             }
         });
     }
@@ -280,9 +396,8 @@ export class GlobalStore {
         return fetch(`http://testbase.ideesalter.com/alia_writePlan.php`, {
                 method: 'post',
                 headers: {
-                //     'Access-Control-Allow-Origin:': '*',
                     'Content-Type': 'application/json',
-                    Accept: 'application/json'
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({
                     id: plan.id,
@@ -294,11 +409,12 @@ export class GlobalStore {
                 })
             }
         ).then((response) => {
-                if (response.status === 200) {
-                    this.reloadHabitatsFromClient(this.client)
-                } else {
-                    console.log(response);
-                    // TODO : impossible de sauvegarder...
+            if (response.status === 200) {
+                this.reloadHabitatsFromClient(this.client)
+            }
+            else {
+                console.log(response);
+                // TODO : impossible de sauvegarder...
             }
         });
     }
@@ -311,11 +427,12 @@ export class GlobalStore {
             `&date_fin=` + encodeURIComponent(mission.date_fin) + 
             `&password=` + encodeURIComponent(password)
         ).then((response) => {
-                if (response.status === 200) {
-                    this.reloadMissionsFromHabitat(this.habitat);
-                } else {
-                    console.log(response);
-                    // TODO : impossible de sauvegarder...
+            if (response.status === 200) {
+                this.reloadMissionsFromHabitat(this.habitat);
+            }
+            else {
+                console.log(response);
+                // TODO : impossible de sauvegarder...
             }
         });
     }  
@@ -325,7 +442,8 @@ export class GlobalStore {
             .then((response) => {
                 if (response.status === 200) {
                     this.reloadClients();
-                } else {
+                }
+                else {
                     console.log(response);
                     // TODO : impossible de supprimer...
                 }
@@ -338,7 +456,8 @@ export class GlobalStore {
             .then((response) => {
                 if (response.status === 200) {
                     this.reloadHabitatsFromClient(this.client)
-                } else {
+                }
+                else {
                     console.log(response);
                     // TODO : impossible de supprimer...
                 }
@@ -351,7 +470,8 @@ export class GlobalStore {
             .then((response) => {
                 if (response.status === 200) {
                     this.reloadPlansForHabitat(plan.habitatId)
-                } else {
+                }
+                else {
                     console.log(response);
                     // TODO : impossible de supprimer...
                 }
@@ -364,11 +484,13 @@ export class GlobalStore {
             .then((response) => {
                 if (response.status === 200) {
                     this.reloadMissionsFromHabitat(this.habitat);
-                } else {
+                }
+                else {
                     console.log(response);
                     // TODO : impossible de supprimer...
+                }
             }
-        });
+        );
     }
 
     public createSheet = (sheetType: ESheetType, mission: IMission, dateDebut: Date, dateFin: Date): void => {

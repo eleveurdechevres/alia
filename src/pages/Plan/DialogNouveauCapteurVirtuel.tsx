@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { observable, autorun } from 'mobx';
+import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { Dialog, InputGroup, Button, Intent, TextArea } from '@blueprintjs/core';
 import { style } from 'typestyle/lib';
@@ -42,12 +42,11 @@ const dialogFieldValueStyle = style(csstips.flex);
     public constructor(props: IProps) {
         super(props)
 
-        autorun(() => {
-            if (this.typeMesure) {
-                this.capteurVirtuelToCreate.type_mesure = this.typeMesure.id;
-                console.log('autorun ', this.typeMesure)
-            }
-        });
+        // autorun(() => {
+        //     if (this.typeMesure) {
+        //         this.capteurVirtuelToCreate.type_mesure = this.typeMesure.id;
+        //     }
+        // });
     }
 
     public render() {
@@ -94,7 +93,8 @@ const dialogFieldValueStyle = style(csstips.flex);
                             <TypeMesureSelector
                                 typeMesure={this.typeMesure}
                                 handleSelectTypeMesure={(typeMesure: ITypeMesure) => {
-                                    this.typeMesure = typeMesure
+                                    this.typeMesure = typeMesure;
+                                    this.capteurVirtuelToCreate.type_mesure = typeMesure.id;
                                 }}
                             />
                         </div>
@@ -126,6 +126,7 @@ const dialogFieldValueStyle = style(csstips.flex);
         this.capteurVirtuelToCreate.coordonneePlanX = this.props.coordonneePlanX;
         this.capteurVirtuelToCreate.coordonneePlanY = this.props.coordonneePlanY;
         this.capteurVirtuelToCreate.coordonneePlanZ = 0;
+        this.typeMesure = undefined;
     }
 
     private isCapteurValide = (): boolean => {

@@ -18,11 +18,11 @@ export function decimalTime(date: Date): number {
 }
 
 export function dateToSql(date: Date): string {
-    return moment(date).format('YYYY/MM/DD hh:mm:ss');
+    return moment(date).format('YYYY/MM/DD HH:mm:ss');
 }
 
 export function dateTimeString(date: Date): string {
-    return moment(date).format('DD/MM/YYYY hh:mm:ss');
+    return moment(date).format('DD/MM/YYYY HH:mm:ss');
 }
 
 export function dateFormat(date: Date, format: string): string {

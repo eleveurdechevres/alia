@@ -46,7 +46,6 @@ interface IProps {
     }
 
     animateCapteurVirtuel() {
-        console.log('animateCapteurVirtuel')
         // Capteurs
         // d3.select(this.capteurVirtuelRef)
         //     .transition(transition)
