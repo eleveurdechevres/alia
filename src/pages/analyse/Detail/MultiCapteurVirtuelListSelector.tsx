@@ -1,0 +1,127 @@
+import { ITagProps, MenuItem, Intent } from '@blueprintjs/core';
+import { MultiSelect, ItemPredicate, ItemRenderer, IItemRendererProps, IItemModifiers } from '@blueprintjs/select';
+import * as csstips from 'csstips';
+import { observable } from 'mobx';
+import { observer } from 'mobx-react';
+import * as React from 'react';
+import { style } from 'typestyle';
+import { IMission } from 'src/interfaces/IMission';
+import { GlobalStore } from 'src/stores/GlobalStore';
+import { highlightText } from 'src/utils/FormatUtils';
+import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMission';
+
+interface IProps {
+    mission: IMission;
+    globalStore: GlobalStore;
+    selectedCapteurVirtuelList: ICapteurVirtuelForMission[];
+    handleAddCapteurVirtuel: (capteurVirtuel: ICapteurVirtuelForMission) => void;
+    handleRemoveCapteurVirtuel: (capteurVirtuel: ICapteurVirtuelForMission) => void;
+}
+
+const SENSOR_MULTI_SELECT = MultiSelect.ofType<ICapteurVirtuelForMission>();
+
+@observer export class MultiCapteurVirtuelListSelector extends React.Component<IProps, {}> {
+
+    @observable capteurVirtuelListForMission: ICapteurVirtuelForMission[] = [];
+
+    public constructor(props: IProps) {
+        super(props);
+        this.props.globalStore.getAllCapteursVirtuelsFromMission(this.props.mission.id).then(
+            (result: ICapteurVirtuelForMission[]) => {
+                this.capteurVirtuelListForMission = result;
+            }
+        );
+    }
+
+    private tagInputProps = {
+        onRemove: (value: string, index: number) => {
+            this.props.handleRemoveCapteurVirtuel(this.props.selectedCapteurVirtuelList[index])
+            this.forceUpdate();
+        },
+        tagProps: (value: string, index: number): ITagProps => {
+            return {
+                intent: Intent.SUCCESS,
+                minimal: true
+            };
+        },
+        placeholder: 'Add virtual sensors(s)...'
+    };
+
+    public render() {
+        return (
+            <SENSOR_MULTI_SELECT
+                className={style(csstips.fillParent)}
+                itemPredicate={this.filterLine}
+                itemRenderer={this.itemRenderer}
+                tagRenderer={this.nameRenderer}
+                tagInputProps={this.tagInputProps}
+                items={this.capteurVirtuelListForMission}
+                selectedItems={this.props.selectedCapteurVirtuelList}
+                popoverProps={{ minimal: true }}
+                noResults={this.noResultRenderer}
+                openOnKeyDown={false}
+                onItemSelect={this.selectLine}
+            />
+        );
+    }
+
+    private isLineSelected = (capteurVirtuel: ICapteurVirtuelForMission): boolean => {
+        return this.props.selectedCapteurVirtuelList.includes(capteurVirtuel);
+    }
+
+    private selectLine = (channel: ICapteurVirtuelForMission): void => {
+        // if exists, remove line
+        if (this.isLineSelected(channel)) {
+            this.props.handleRemoveCapteurVirtuel(channel);
+        }
+        else { // add line
+            this.props.handleAddCapteurVirtuel(channel);
+        }
+    }
+
+    private filterLine: ItemPredicate<ICapteurVirtuelForMission> = (query, channel) => {
+        if ( this.nameRenderer(channel).indexOf(query.toLowerCase()) >= 0 ) {
+            return true;
+        }
+        // else if ( line.line_name.indexOf(query.toLowerCase()) >= 0 ) return true;
+        // else if ( formatUtils.date(new Date(line.start_time)).indexOf(query.toLowerCase()) >= 0 ) return true;
+        // else if ( formatUtils.date(new Date(line.end_time)).indexOf(query.toLowerCase()) >= 0 ) return true;
+        return false;
+    };
+
+    private nameRenderer = (capteurVirtuel: ICapteurVirtuelForMission): string => {
+        return 'Plan[' + capteurVirtuel.plan_id + '] - Capteur[' + capteurVirtuel.label + ']' + ' (' + capteurVirtuel.unit + ')';
+    }
+
+    private itemRenderer: ItemRenderer<ICapteurVirtuelForMission> = (capteurVirtuel: ICapteurVirtuelForMission, itemProps: IItemRendererProps): JSX.Element | null => {
+        let modifiers: IItemModifiers = itemProps.modifiers;
+        let handleClick: React.MouseEventHandler<HTMLElement> = itemProps.handleClick;
+        let query: string = itemProps.query;
+        if (!modifiers.matchesPredicate) {
+            return null;
+        }
+        // let startDate = formatUtils.date(new Date(line.start_time));
+        // let endDate = formatUtils.date(new Date(line.end_time));
+    
+        // const label = startDate + ' to ' + endDate;
+        const label = '-'
+    
+        return (
+            <MenuItem
+                icon={this.props.selectedCapteurVirtuelList.includes(capteurVirtuel) ? 'tick' : 'blank'}
+                active={modifiers.active}
+                disabled={modifiers.disabled}
+                label={label}
+                key={'CapteurVirtuel' + capteurVirtuel.id + '_'  + capteurVirtuel.label}
+                onClick={handleClick}
+                text={highlightText(this.nameRenderer(capteurVirtuel), query)}
+            />
+        );
+    };
+
+    private noResultRenderer: ItemRenderer<ICapteurVirtuelForMission> = (): JSX.Element => {
+        return (
+            <MenuItem disabled={true} text="No results."/>
+        );
+    };
+}

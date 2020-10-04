@@ -1,4 +1,5 @@
 export interface IChannelFromMission {
+    _objId: 'IChannelFromMission';
     mission_id: number;
     capteur_id: number;
     plan_id: number;

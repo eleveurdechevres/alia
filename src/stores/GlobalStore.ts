@@ -17,6 +17,7 @@ import { IChannel } from 'src/interfaces/IChannel';
 import { ITypeMesure } from 'src/interfaces/ITypeMesure';
 import { ICapteurVirtuel } from 'src/interfaces/ICapteurVirtuel';
 import { IObservation } from 'src/interfaces/IObservation';
+import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMission';
 
 export class GlobalStore {
 
@@ -159,7 +160,16 @@ export class GlobalStore {
           .then((response) => response.json())
           .then((results) => results);
     }
-    
+
+    public getAllCapteursVirtuelsFromMission = (missionId: number): Promise<ICapteurVirtuelForMission[]> => {
+        if (!missionId) {
+          return Promise.resolve([]);
+        }
+        return fetch(`http://test.ideesalter.com/alia_searchCapteursVirtuelsForMission.php?mission_id=${missionId}`)
+          .then((response) => response.json())
+          .then((results) => results);
+    }
+
     public getCapteur(capteurId: number, missionId: number): Promise<ICapteur> {
         return fetch(`http://test.ideesalter.com/alia_getCapteur.php?capteur_id=${capteurId}&mission_id=${missionId}`)
             .then((response) => response.json())
@@ -202,7 +212,34 @@ export class GlobalStore {
                     }
                 )
                 return resultsTyped;
-            });
+            }
+        );
+    }
+
+    public getMesuresViruelles = (capteurVirtuelId: number, dateBegin: Date, dateEnd: Date): Promise<IMesure[]> => {
+        const body: string = JSON.stringify({
+            capteur_virtuel_id: capteurVirtuelId,
+            date_begin: dateBegin,
+            date_end: dateEnd
+        });
+        return fetch(`http://test.ideesalter.com/alia_readMesureVirtuelle.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: body
+            }
+        )
+        .then((response) => response.json())
+        .then((results: {date: string, valeur: number}[]) => {
+            let resultsTyped: IMesure[] = results.map(
+                (r: {date: string, valeur: number}) => {
+                    return {date: new Date(r.date), valeur: r.valeur};
+                }
+            )
+            return resultsTyped;
+        });
     }
 
     public getMeteo = (missionId: number, typeMesureId: number, dateBegin: Date, dateEnd: Date): Promise<IMesure[]> => {

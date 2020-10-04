@@ -12,17 +12,21 @@ import { MultiSensorListSelector } from '../Detail/MultiSensorListSelector';
 import { IChannelFromMission } from 'src/interfaces/IChannelFromMission';
 import { ISerieData } from 'src/interfaces/ISerieData';
 import { IMesure } from 'src/managers/GraphDataManager';
-import { ISerieDef } from 'src/interfaces/ISeriesDef';
+import { ISerieDef, ISerieVirtuelleDef } from 'src/interfaces/ISeriesDef';
 import { ICapteur } from 'src/interfaces/ICapteur';
 import { IChannel } from 'src/interfaces/IChannel';
 import { ITypeMesure } from 'src/interfaces/ITypeMesure';
 import { IPlan } from 'src/interfaces/IPlan';
+import { MultiCapteurVirtuelListSelector } from '../Detail/MultiCapteurVirtuelListSelector';
+import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMission';
 
 @observer export class LineChartSheetComponent<P extends IGenericSheetComponentProps> extends GenericSheetComponent {
 
     @observable private selectedChannelList: IChannelFromMission[] = [];
-
+    @observable private selectedCapteurVirtuelList: ICapteurVirtuelForMission[] = [];
+    
     private mapSelectedChannelSelectedSerie: Map<IChannelFromMission, ISerieData> = new Map();
+    private mapSelectedCapteurVirtuelSelectedSerie: Map<ICapteurVirtuelForMission, ISerieData> = new Map();
     
     public constructor(props: P) {
         super(props);
@@ -74,6 +78,7 @@ import { IPlan } from 'src/interfaces/IPlan';
             yMin: undefined
         };
         let serieDef: ISerieDef = {
+            _objId: 'ISerieDef',
             capteur: undefined,
             channel: undefined,
             plan: undefined,
@@ -122,6 +127,62 @@ import { IPlan } from 'src/interfaces/IPlan';
         );
     }
 
+    private addCapteurVirtuel = (capteurVirtuelForMission: ICapteurVirtuelForMission) => {
+
+        if (!this.selectedCapteurVirtuelList.includes(capteurVirtuelForMission)) {
+            this.selectedCapteurVirtuelList.push(capteurVirtuelForMission);
+        }
+
+        let serieData: ISerieData = {
+            points: undefined,
+            serieDef: undefined,
+            timeEnd: undefined,
+            timeStart: undefined,
+            yMax: undefined,
+            yMin: undefined
+        };
+        let serieDefVirtuelle: ISerieVirtuelleDef = {
+            _objId: 'ISerieVirtuelleDef',
+            capteurVirtuel: undefined,
+            plan: undefined,
+            typeMesure: undefined,
+        };
+        let promiseMeasureType: Promise<ITypeMesure> = this.props.globalStore.getMesureType(capteurVirtuelForMission.type_mesure);
+        let promisePlan: Promise<IPlan> = this.props.globalStore.getPlan(capteurVirtuelForMission.plan_id);
+        let promiseMesures: Promise<IMesure[]> = this.props.globalStore.getMesuresViruelles(
+            capteurVirtuelForMission.id,
+            this.props.sheet.sheetDef.dateDebutMission,
+            this.props.sheet.sheetDef.dateFinMission
+        );
+
+        Promise.all( [
+                promiseMeasureType,
+                promisePlan,
+                promiseMesures
+            ]).then(([typeMesure, plan, mesures]: [ITypeMesure, IPlan, IMesure[]]) => {
+                serieDefVirtuelle.capteurVirtuel = capteurVirtuelForMission;    
+                serieDefVirtuelle.typeMesure = typeMesure[0];
+                serieDefVirtuelle.plan = plan[0];
+                serieData = {
+                    serieDef: serieDefVirtuelle,
+                    points: [],
+                    timeStart: this.props.sheet.sheetDef.dateDebutMission,
+                    timeEnd: this.props.sheet.sheetDef.dateFinMission,
+                    yMax: Number.NEGATIVE_INFINITY,
+                    yMin: Number.POSITIVE_INFINITY
+                };
+                mesures.forEach((mesure: IMesure) => {
+                    serieData.points.push(mesure);
+                    serieData.yMax = Math.max(serieData.yMax, mesure.valeur);
+                    serieData.yMin = Math.min(serieData.yMin, mesure.valeur);
+                });
+                this.selectedSeries.push(serieData);
+                this.mapSelectedCapteurVirtuelSelectedSerie.set(capteurVirtuelForMission, serieData);
+                this.forceUpdate();
+            }
+        );
+    }
+
     private removeChannel = (channelForMission: IChannelFromMission) => {
         let indexChannelForMission = this.selectedChannelList.findIndex(
             (channel: IChannelFromMission) =>
@@ -139,6 +200,7 @@ import { IPlan } from 'src/interfaces/IPlan';
         // Supprimer les courbes (selectedSeries)
         let indexSerieData = this.selectedSeries.findIndex(
             (serieData: ISerieData) => 
+                serieData.serieDef._objId === 'ISerieDef' && serieDataToRemove.serieDef._objId === 'ISerieDef' &&
                 serieData.serieDef.capteur.id === serieDataToRemove.serieDef.capteur.id &&
                 serieData.serieDef.channel.id === serieDataToRemove.serieDef.channel.id
         );
@@ -147,7 +209,30 @@ import { IPlan } from 'src/interfaces/IPlan';
         }
         this.forceUpdate();
     }
-    
+
+    private removeCapteurVirtuel = (capteurVirtuel: ICapteurVirtuelForMission) => {
+        let index = this.selectedCapteurVirtuelList.findIndex(
+            (c: ICapteurVirtuelForMission) =>
+                c.id === capteurVirtuel.id
+        );
+
+        if (index !== undefined) {
+            this.selectedCapteurVirtuelList.splice(index, 1);
+        }
+        let serieDataToRemove = this.mapSelectedCapteurVirtuelSelectedSerie.get(capteurVirtuel);
+
+        // Supprimer les courbes (selectedSeries)
+        let indexSerieData = this.selectedSeries.findIndex(
+            (serieData: ISerieData) => 
+                serieData.serieDef._objId === 'ISerieVirtuelleDef' && serieDataToRemove.serieDef._objId === 'ISerieVirtuelleDef' &&
+                serieData.serieDef.capteurVirtuel.id === serieDataToRemove.serieDef.capteurVirtuel.id
+        );
+        if (indexSerieData !== undefined && indexSerieData >= 0) {
+            this.selectedSeries.splice(indexSerieData, 1);
+        }
+        this.forceUpdate();
+    }
+
     protected buildConfigBar = () => {
         return (
             <div className={style(csstips.gridSpaced(10))}>
@@ -157,6 +242,13 @@ import { IPlan } from 'src/interfaces/IPlan';
                     selectedChannelList={this.selectedChannelList}
                     handleAddChannel={this.addChannel}
                     handleRemoveChannel={this.removeChannel}
+                />
+                <MultiCapteurVirtuelListSelector
+                    mission={this.props.sheet.sheetDef.mission}
+                    globalStore={this.props.globalStore}
+                    selectedCapteurVirtuelList={this.selectedCapteurVirtuelList}
+                    handleAddCapteurVirtuel={this.addCapteurVirtuel}
+                    handleRemoveCapteurVirtuel={this.removeCapteurVirtuel}
                 />
             </div>
         );

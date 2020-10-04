@@ -85,7 +85,6 @@ export class LineBaseChart extends BaseChart {
         if (time_start !== Infinity && time_end !== Infinity) {
             this.timeScaleChartDomainDefault = [new Date(time_start), new Date(time_end)];
             this.timeScaleChart.domain(this.timeScaleChartDomainDefault).range([0, this.chartWidth]);
-    
             this.timeAxisChart = d3.axisTop(this.timeScaleChart);
             this.shotAxisChart = d3.axisBottom(this.timeScaleChart);
         }
@@ -106,11 +105,14 @@ export class LineBaseChart extends BaseChart {
     }
 
     public updateSeries(newSeriesData: ISerieData[]) {
-        let seriesToAdd = newSeriesData.filter(((newSerieData: ISerieData) => !this.seriesData.includes(newSerieData)))
+        let seriesToAdd = newSeriesData.filter(
+            (newSerieData: ISerieData) => !this.seriesData.includes(newSerieData)
+        );
         this.legendNbColumn = Math.ceil(newSeriesData.length / this.legendNbItemPerCol);
 
-        let seriesToDelete = this.seriesData.filter(((value: ISerieData) => !newSeriesData.includes(value)));
-
+        let seriesToDelete = this.seriesData.filter(
+            (value: ISerieData) => !newSeriesData.includes(value)
+        );
 
         this.seriesData = [...newSeriesData];
 
@@ -190,12 +192,16 @@ export class LineBaseChart extends BaseChart {
     }
 
     private createLegendText(serieData: ISerieData): string {
-        let legendText = serieData.serieDef.capteur.capteur_reference_id +
-        '_' + serieData.serieDef.capteur.id +
-        '_plan' + serieData.serieDef.plan.id + 
-        '_' + serieData.serieDef.typeMesure.measure_type;
-        return legendText;
+        const serieDef = serieData.serieDef;
+        
+        const refId = serieDef._objId === 'ISerieDef' ? 'C_' + serieDef.capteur.capteur_reference_id : 'CV_' + serieDef.capteurVirtuel.label;
+        const id = serieDef._objId === 'ISerieDef' ? serieDef.capteur.id : serieDef.capteurVirtuel.id;
+        let legendText = refId +
+            '_' + id +
+            '_plan' + serieData.serieDef.plan.id + 
+            '_' + serieData.serieDef.typeMesure.measure_type;
 
+        return (legendText.replace(/(\s)/g, '_'));
     }
 
     private removeSeries(series: ISerieData[]) {

@@ -10,7 +10,6 @@ import { IDateInterval } from 'src/pages/Graph/GraphBoard';
 import { IChannelFromMission } from 'src/interfaces/IChannelFromMission';
 import { ICapteur } from 'src/interfaces/ICapteur';
 
-
 // import { ISerieData } from 'src/interfaces/ISerieData';
 // import { IMesure } from 'src/managers/GraphDataManager';
 // import { ISerieDef } from 'src/interfaces/ISeriesDef';
