@@ -457,21 +457,23 @@ export class GlobalStore {
     }
 
     public writeMission = (mission: IMission, password: string) => {
-        return fetch(`http://testbase.ideesalter.com/alia_writeMission.php` +
-            `?id=` + mission.id +
-            `&habitat_id=` + this.habitat.id + 
-            `&date_debut=` + encodeURIComponent(mission.date_debut) + 
-            `&date_fin=` + encodeURIComponent(mission.date_fin) + 
-            `&password=` + encodeURIComponent(password)
-        ).then((response) => {
-            if (response.status === 200) {
-                this.reloadMissionsFromHabitat(this.habitat);
+        const req = `http://testbase.ideesalter.com/alia_writeMission.php` +
+        `?id=` + mission.id +
+        `&habitat_id=` + this.habitat.id + 
+        `&date_debut=` + encodeURIComponent(mission.date_debut) + 
+        `&date_fin=` + encodeURIComponent(mission.date_fin) + 
+        `&password=` + encodeURIComponent(password);
+        return fetch(req).then(
+            (response) => {
+                if (response.status === 200) {
+                    this.reloadMissionsFromHabitat(this.habitat);
+                }
+                else {
+                    console.log(response);
+                    // TODO : impossible de sauvegarder...
+                }
             }
-            else {
-                console.log(response);
-                // TODO : impossible de sauvegarder...
-            }
-        });
+        );
     }  
 
     public deleteClient = (client: IClient, password: string) => {

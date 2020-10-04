@@ -90,6 +90,17 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
                         <div className={style(csstips.gridSpaced(10))}>
                             <Icon
                                 className={style({cursor: 'pointer'})}
+                                icon="automatic-updates"
+                                title="Mettre à jour les données environnementales"
+                                intent={Intent.PRIMARY}
+                                onClick={() => {
+                                    this.enableLineSelect = false;
+                                    const missionToUpdate: IMission = row.original;
+                                    this.props.globalStore.writeMission(missionToUpdate, '#moulin44');
+                                }}
+                            />
+                            <Icon
+                                className={style({cursor: 'pointer'})}
                                 icon="trash"
                                 title="Supprimer la mission"
                                 intent={Intent.DANGER}
