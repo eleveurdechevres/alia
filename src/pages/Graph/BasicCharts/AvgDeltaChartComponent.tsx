@@ -258,50 +258,87 @@ const zoomTransition = defaultTransition;
         if (channel1 !== undefined && channel2 !== undefined) {
             
             // http://test.ideesalter.com/alia_readDeltaJourNuit.php?date_begin=2017-12-09%2020:30:00&date_end=2017-12-26%2000:00:00&capteur_id=1&channel_id=1
-            var httpReq = 'http://test.ideesalter.com/alia_readDeltaJourNuit.php?' 
+            const httpReqChannel1 = 'http://test.ideesalter.com/alia_readDeltaJourNuit.php?' 
                 + 'date_begin=' + dateToSql(dateBegin)
                 + '&date_end=' + dateToSql(dateEnd)
                 + '&capteur_id=' + channel1.capteur_id
                 + '&channel_id=' + channel1.channel_id;
-                // + '&capteur2_id=' + channel2.capteur_id
-                // + '&channel2_id=' + channel2.channel_id;
-            // console.log(httpReq);
-            return fetch(httpReq)
-                .then((response) => response.json())
-                .then((data) => {
-                    const formatedData: IAvgDelta[] = data.map((d: any) => {
-                        return {
-                            latitude: d.latitude as number,
-                            longitude: d.longitude as number,
-                            dateBegin: new Date(d.dateBegin),
-                            dateEnd: new Date(d.dateEnd),
-                            isDay: d.isDay === '1' ? true : false,
-                            delta: d.delta as number
-                        }
-                    });
-                    this.baseChart.setData(formatedData);
-                    this.updateChartComponent(undefined, undefined);
-                    this.updateComponents();
-
-                    this.baseChart.getDeltaRectangles()
-                        // .attr('pointer-events', 'stroke')
-                        .on('mouseover', (d: IAvgDelta) => { this.deltaRectMouseOver(d); })
-                        .on('mousemove', (d: IAvgDelta) => { this.deltaRectMouseOver(d); })
-                        .on('mouseout', (d: IAvgDelta) => { this.deltaRectMouseOver(d); })
-                        .on('mousedown', () => { this.dispatchEventToGeneralBrush('mousedown'); })
-                        .on('click', () => { this.dispatchEventToGeneralBrush('click'); })
-                        .on('dblclick', () => { this.dispatchEventToGeneralBrush('dblclick'); });
-                                
-                    // this.resetZoom();
-                    // this.scaleX.domain([minChannel1,maxChannel1]);
-                    // this.scaleY.domain([minChannel2,maxChannel2]);
-
-                    // this.drawGraph();
-                    // this.drawXAxis();
-                    // this.drawYAxis();
+            const httpReqChannel2 = 'http://test.ideesalter.com/alia_readDeltaJourNuit.php?' 
+                + 'date_begin=' + dateToSql(dateBegin)
+                + '&date_end=' + dateToSql(dateEnd)
+                + '&capteur_id=' + channel2.capteur_id
+                + '&channel_id=' + channel2.channel_id;
+            const promiseChannel1 = fetch(httpReqChannel1).then((response) => response.json());
+            const promiseChannel2 = fetch(httpReqChannel2).then((response) => response.json());
+            Promise.all( [promiseChannel1, promiseChannel2]).then(([datas1, datas2]) => {
+                const formatedData1: IAvgDelta[] = datas1.map((d: any) => {
+                    return {
+                        latitude: d.latitude as number,
+                        longitude: d.longitude as number,
+                        dateBegin: new Date(d.dateBegin),
+                        dateEnd: new Date(d.dateEnd),
+                        isDay: d.isDay === '1' ? true : false,
+                        delta: d.delta as number
+                    }
                 });
+                const formatedData2: IAvgDelta[] = datas2.map((d: any) => {
+                    return {
+                        latitude: d.latitude as number,
+                        longitude: d.longitude as number,
+                        dateBegin: new Date(d.dateBegin),
+                        dateEnd: new Date(d.dateEnd),
+                        isDay: d.isDay === '1' ? true : false,
+                        delta: d.delta as number
+                    }
+                });
+                const mapping: Map<string, [number | undefined, number | undefined]> = new Map(); // dateBegin_dateEnd_isDay => [index table 1, index table 2]
+                formatedData1.forEach((data: IAvgDelta, index: number) => {
+                    const key: string = data.dateBegin.getDate() + '_' + data.dateEnd.getTime() + '_' + data.isDay;
+                    if (!mapping.has(key)) {
+                        mapping.set(key, [undefined, undefined]);
+                    }
+                    mapping.get(key)[0] = index;
+                });
+                formatedData2.forEach((data: IAvgDelta, index: number) => {
+                    const key: string = data.dateBegin.getDate() + '_' + data.dateEnd.getTime() + '_' + data.isDay;
+                    if (!mapping.has(key)) {
+                        mapping.set(key, [undefined, undefined]);
+                    }
+                    mapping.get(key)[1] = index;
+                });
+                const mappingIndexes = Array.from(mapping.values());
+                const mappingData: IAvgDelta[] = [];
+                mappingIndexes.forEach((indexes: [number, number]) => {
+                    if (indexes[0] !== undefined && indexes[1] !== undefined) {
+                        const val1: IAvgDelta = formatedData1[indexes[0]];
+                        const val2: IAvgDelta = formatedData2[indexes[1]];
+                        let delta: IAvgDelta = val1;
+                        delta.delta = val1.delta - val2.delta;
+                        mappingData.push(delta);
+                    }
+                })
+                this.baseChart.setData(mappingData);
+                this.updateChartComponent(undefined, undefined);
+                this.updateComponents();
+
+                this.baseChart.getDeltaRectangles()
+                    // .attr('pointer-events', 'stroke')
+                    .on('mouseover', (d: IAvgDelta) => { this.deltaRectMouseOver(d); })
+                    .on('mousemove', (d: IAvgDelta) => { this.deltaRectMouseOver(d); })
+                    .on('mouseout', (d: IAvgDelta) => { this.deltaRectMouseOver(d); })
+                    .on('mousedown', () => { this.dispatchEventToGeneralBrush('mousedown'); })
+                    .on('click', () => { this.dispatchEventToGeneralBrush('click'); })
+                    .on('dblclick', () => { this.dispatchEventToGeneralBrush('dblclick'); });
+                            
+                // this.resetZoom();
+                // this.scaleX.domain([minChannel1,maxChannel1]);
+                // this.scaleY.domain([minChannel2,maxChannel2]);
+
+                // this.drawGraph();
+                // this.drawXAxis();
+                // this.drawYAxis();
+            });
         }
-        return undefined;
     }
 
     public shouldComponentUpdate(props: IProps) {

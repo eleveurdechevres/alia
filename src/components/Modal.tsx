@@ -54,7 +54,7 @@ export abstract class Modal<T extends IProps> extends React.Component<T, {}> {
                     <div className={style(csstips.fillParent)}>{this.getTitle()}</div>
                     <Button icon={'cross'} onClick={this.props.onClose} minimal={true}/>
                 </div>
-                {this.renderInternalComponent()}
+                {this.props.isOpen ? this.renderInternalComponent() : <React.Fragment/>}
             </ReactModal >
         );
     }

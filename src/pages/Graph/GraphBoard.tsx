@@ -432,6 +432,7 @@ interface ICrosshair {
                         channelYType={GraphType.HUMIDITE}
                         currentHumidity={this.currentHumidity}
                         currentTemperature={this.currentTemperature}
+                        showLegend={false}
                     /> : ''
             }
             <div className={style(csstips.width(340), csstips.vertical, csstips.height(300))}>

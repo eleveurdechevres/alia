@@ -19,6 +19,7 @@ import { ModalObservation } from './ModalObservation';
 import { ICapteurVirtuel } from 'src/interfaces/ICapteurVirtuel';
 import { ILocalizable } from 'src/interfaces/ILocalizable';
 import { ModalCapteurVirtuel } from './ModalCapteurVirtuel';
+import { ModalCapteur } from './ModalCapteur';
 
 // const transitionNewCapteur = d3.transition()
 // .duration(3000)
@@ -202,14 +203,14 @@ interface IProps {
 
                     observation={this.observationDisplayed}
                 />
-                {/* {   this.isModalCapteurOpen ? 
-                    <GraphBoard
-                        capteur={this.capteurDisplayed}
-                        globalStore={this.props.globalStore}
-                        habitat={this.props.habitat}
-                        mission={this.props.mission}
-                    /> : <React.Fragment/>
-                } */}
+                <ModalCapteur
+                    isOpen={this.isModalCapteurOpen}
+                    onClose={this.closeModalCapteur}
+                    capteur={this.capteurDisplayed}
+                    globalStore={this.props.globalStore}
+                    habitat={this.props.habitat}
+                    mission={this.props.mission}
+                />                
                 <div className={style(csstips.margin(10))}>
                     <svg width={this.width} height={this.height}>
                     {/* <svg ref={(ref) => {this.svgRef = ref}} width={this.width} height={this.height}> */}
@@ -387,13 +388,18 @@ interface IProps {
 
 
     private openModalCapteur = (capteur: ICapteur) => {
-        this.capteurDisplayed = capteur;
         this.isModalCapteurOpen = true;
+        this.capteurDisplayed = capteur;
+    }
+
+    private closeModalCapteur = () => {
+        this.isModalCapteurOpen = false;
+        this.capteurDisplayed = undefined;
     }
 
     private openModalObservation = (observation: IObservation) => {
-        this.observationDisplayed = observation;
         this.isModalObservationOpen = true;
+        this.observationDisplayed = observation;
     }
 
     private closeModalObservation = () => {
@@ -402,8 +408,8 @@ interface IProps {
     }
 
     private openModalCapteurVirtuel = (capteurVirtuel: ICapteurVirtuel) => {
-        this.capteurVirtuelDisplayed = capteurVirtuel;
         this.isModalCapteurVirtuelOpen = true;
+        this.capteurVirtuelDisplayed = capteurVirtuel;
     }
 
     private closeModalCapteurVirtuel = () => {

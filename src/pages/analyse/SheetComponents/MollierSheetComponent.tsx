@@ -59,6 +59,7 @@ import { TimeContextBar } from '../Detail/TimeContextBar';
                                 channelYType={GraphType.HUMIDITE}
                                 currentHumidity={undefined}
                                 currentTemperature={undefined}
+                                showLegend={true}
                             /> : ''
                     }
                 </div>

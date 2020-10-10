@@ -23,6 +23,7 @@ interface IProps {
     channelYType: GraphType;
     currentHumidity: number;
     currentTemperature: number;
+    showLegend: boolean;
 }
 
 interface Iηx {
@@ -40,6 +41,9 @@ export enum EnumAlarm {
     confort = 'Confort',
     qualiteAir = 'Qualité de l\'air'
 }
+
+const HORIZONTAL_LEGEND_HEIGHT = 15;
+const VERTICAL_LEGEND_WIDTH = 15;
 
 @observer export class Mollier extends React.Component<IProps, {}> {
 
@@ -74,15 +78,14 @@ export enum EnumAlarm {
 
     @observable alarmSelected: EnumAlarm = EnumAlarm.confort;
 
+    @observable private chartWidth: number;
+    @observable private chartHeight: number;
+
     constructor(props: IProps) {
         super(props);
-
         // configure ScaleX
-        this.scaleX = d3.scaleLinear();
-//        this.scaleX.domain(this.channelXType.domain.slice().reverse());
-        this.scaleX.domain([0, 50]);
-        this.scaleX.range([0, this.props.chartWidth])
-    
+        this.updateXScale();
+
         // configure ScaleY
         this.scaleY = d3.scaleLinear();
         this.scaleY.domain([25, 0]);
@@ -91,9 +94,20 @@ export enum EnumAlarm {
         this.componentWillReceiveProps(this.props);
     }
 
+    private updateXScale = () => {
+        this.chartWidth = this.props.showLegend ? this.props.chartWidth - VERTICAL_LEGEND_WIDTH : this.props.chartWidth;
+        this.chartHeight = this.props.showLegend ? this.props.chartHeight - HORIZONTAL_LEGEND_HEIGHT : this.props.chartHeight;
+
+        this.scaleX = d3.scaleLinear();
+//        this.scaleX.domain(this.channelXType.domain.slice().reverse());
+        this.scaleX.domain([0, 50]);
+        this.scaleX.range([0, this.chartWidth])
+    }
+
     componentWillReceiveProps(props: IProps) {
-        var startDate = dateToSql(props.dateInterval.missionStartDate);
-        var stopDate = dateToSql(props.dateInterval.missionStopDate);
+
+        const startDate = dateToSql(props.dateInterval.missionStartDate);
+        const stopDate = dateToSql(props.dateInterval.missionStopDate);
 
         if ( startDate !== this.startDate || stopDate !== this.stopDate) {
             this.startDate = startDate;
@@ -145,7 +159,9 @@ export enum EnumAlarm {
 
                     this.drawGraph();
                     this.drawXAxis();
-                    this.drawYAxis();
+                    if (this.props.showLegend) {
+                        this.drawYAxis();
+                    }
                 });
         }
         return undefined;
@@ -224,13 +240,13 @@ export enum EnumAlarm {
     }
 
     drawReferenceCourbesTemperatureEnthalpie = () => {
-        var x2 = 0;
-        for ( var ηh = 0 ; ηh <= 60 ; ηh += 2 ) {
-            var η1 = ηh;
-            var x1 = get_x_from_η_φ(η1, 100);
-            var η2 = get_η_from_ηh_φ(ηh, 0);
+        const x2 = 0;
+        for ( let ηh = 0 ; ηh <= 60 ; ηh += 2 ) {
+            const η1 = ηh;
+            const x1 = get_x_from_η_φ(η1, 100);
+            const η2 = get_η_from_ηh_φ(ηh, 0);
 
-            var currentCourbe = d3.select(this.referenceChartsTemperatureEnthalpieRef).append('g')
+            const currentCourbe = d3.select(this.referenceChartsTemperatureEnthalpieRef).append('g')
             currentCourbe.append('line')
                 .attr('x1', this.scaleX(η1))
                 .attr('y1', this.scaleY(x1))
@@ -238,12 +254,14 @@ export enum EnumAlarm {
                 .attr('y2', this.scaleY(x2))
                 .attr('stroke', 'gray')
                 .attr('strokeWidth', 1);
-            currentCourbe.append('text')
-                .attr('x', this.scaleX(η1) - 10)
-                .attr('y', this.scaleY(x1) - 5)
-                .attr('font-size', 10)
-                .attr('fill', 'black')
-                .text(η1);
+            if (this.props.showLegend) {
+                currentCourbe.append('text')
+                    .attr('x', this.scaleX(η1) - 10)
+                    .attr('y', this.scaleY(x1) - 5)
+                    .attr('font-size', 10)
+                    .attr('fill', 'black')
+                    .text(η1 + '°C');
+            }
         }
     }
 
@@ -500,7 +518,7 @@ export enum EnumAlarm {
 
     drawXAxis = () => {
         d3.select(this.xAxisRef)
-            .call(d3.axisTop(this.scaleX).tickValues([0, 5, 10, 15, 20, 25, 30, 35, 40]))
+            .call(d3.axisTop(this.scaleX).tickValues([0, 5, 10, 15, 20, 25, 30, 35, 40]).tickFormat((value: number) => value + '°C'))
             .selectAll('text');
             // .append("text")
             // .attr("fill", "black")
@@ -572,52 +590,90 @@ export enum EnumAlarm {
     render() {
         return (
             <div>
-                <svg width={this.props.chartWidth} height={this.props.chartHeight}>
-                    <rect x="0" y="0" width={this.props.chartWidth} height={this.props.chartHeight} fill="white" stroke="black"/>
-                    <g>
-                        <g ref={(ref) => {this.referenceChartsHumidityRef = ref}}/>
-                        <g ref={(ref) => {this.referenceChartsEnthalpieRef = ref}}/>
-                        <g ref={(ref) => {this.referenceChartsTemperatureEnthalpieRef = ref}}/>
-                        <g ref={(ref) => {this.chartRef = ref}}/>
-                        <g ref={(ref) => {this.xAxisRef = ref}} transform={'translate(0,' + this.props.chartHeight + ')'}/>
-                        <g ref={(ref) => {this.yAxisRef = ref}} transform={'translate(' + this.props.chartWidth + ', 0)'}/>
-                        <g
-                            ref={(ref) => {this.currentCrosshairRef = ref}}
-                            transform="translate(-10, -10)"
-                            opacity="0"
-                        >
-                            <circle cx="0" cy="0" r="5" stroke="white" fill="steelblue"/>
-                        </g>
-                        <g ref={(ref) => {this.enveloppesConfortRef = ref}} opacity={this.alarmSelected === EnumAlarm.confort ? 1 : 0}>
-                            <g ref={(ref) => {this.A2EnveloppeRef = ref}}/>
-                            <g ref={(ref) => {this.A1EnveloppeRef = ref}}/>
-                            <g ref={(ref) => {this.A0EnveloppeRef = ref}}/>
-                        </g>
-                        <g ref={(ref) => {this.enveloppesQualiteAirRef = ref}} opacity={this.alarmSelected === EnumAlarm.qualiteAir ? 1 : 0}>
-                            <g ref={(ref) => {this.Z1BacteriesMicrochampignons = ref}}/>
-                            <g ref={(ref) => {this.Z2BacteriesMicrochampignons = ref}}/>
-                            <g ref={(ref) => {this.Z3SecheresseAcariens = ref}}/>
-                        </g>
-                        <g ref={(ref) => {this.legendsRef = ref}}/>
-                        <g ref={(ref) => {this.checkBoxes = ref}}>
-                            <g transform="translate(10,10)">
-                                <SvgCheckBox
-                                    alarm={EnumAlarm.confort}
-                                    selected={this.alarmSelected === EnumAlarm.confort}
-                                    handleSelect={() => this.selectAlarm(EnumAlarm.confort)}
-                                />
+                <div>
+                    <svg width={this.chartWidth} height={this.chartHeight}>
+                        <rect x="0" y="0" width={this.chartWidth} height={this.chartHeight} fill="white" stroke="black"/>
+                        <g>
+                            <g ref={(ref) => {this.referenceChartsHumidityRef = ref}}/>
+                            <g ref={(ref) => {this.referenceChartsEnthalpieRef = ref}}/>
+                            <g ref={(ref) => {this.referenceChartsTemperatureEnthalpieRef = ref}}/>
+                            <g ref={(ref) => {this.chartRef = ref}}/>
+                            <g ref={(ref) => {this.xAxisRef = ref}} transform={'translate(0,' + this.chartHeight + ')'}/>
+                            <g ref={(ref) => {this.yAxisRef = ref}} transform={'translate(' + this.chartWidth + ', 0)'}/>
+                            <g
+                                ref={(ref) => {this.currentCrosshairRef = ref}}
+                                transform="translate(-10, -10)"
+                                opacity="0"
+                            >
+                                <circle cx="0" cy="0" r="5" stroke="white" fill="steelblue"/>
                             </g>
-                            <g transform="translate(10,25)">
-                                <SvgCheckBox
-                                    alarm={EnumAlarm.qualiteAir}
-                                    selected={this.alarmSelected === EnumAlarm.qualiteAir}
-                                    handleSelect={() => this.selectAlarm(EnumAlarm.qualiteAir)}
-                                />
+                            <g ref={(ref) => {this.enveloppesConfortRef = ref}} opacity={this.alarmSelected === EnumAlarm.confort ? 1 : 0}>
+                                <g ref={(ref) => {this.A2EnveloppeRef = ref}}/>
+                                <g ref={(ref) => {this.A1EnveloppeRef = ref}}/>
+                                <g ref={(ref) => {this.A0EnveloppeRef = ref}}/>
+                            </g>
+                            <g ref={(ref) => {this.enveloppesQualiteAirRef = ref}} opacity={this.alarmSelected === EnumAlarm.qualiteAir ? 1 : 0}>
+                                <g ref={(ref) => {this.Z1BacteriesMicrochampignons = ref}}/>
+                                <g ref={(ref) => {this.Z2BacteriesMicrochampignons = ref}}/>
+                                <g ref={(ref) => {this.Z3SecheresseAcariens = ref}}/>
+                            </g>
+                            <g ref={(ref) => {this.legendsRef = ref}}/>
+                            <g ref={(ref) => {this.checkBoxes = ref}}>
+                                <g transform="translate(10,10)">
+                                    <SvgCheckBox
+                                        alarm={EnumAlarm.confort}
+                                        selected={this.alarmSelected === EnumAlarm.confort}
+                                        handleSelect={() => this.selectAlarm(EnumAlarm.confort)}
+                                    />
+                                </g>
+                                <g transform="translate(10,25)">
+                                    <SvgCheckBox
+                                        alarm={EnumAlarm.qualiteAir}
+                                        selected={this.alarmSelected === EnumAlarm.qualiteAir}
+                                        handleSelect={() => this.selectAlarm(EnumAlarm.qualiteAir)}
+                                    />
+                                </g>
                             </g>
                         </g>
-                    </g>
-                </svg>
-            </div>
+                    </svg>
+                    {
+                        this.props.showLegend ? 
+                            <svg width={VERTICAL_LEGEND_WIDTH} height={this.chartHeight}>
+                                <g
+                                    transform={`translate(${VERTICAL_LEGEND_WIDTH - 5},${this.props.chartHeight / 2})`}
+                                >
+                                    <text
+                                        textAnchor="middle"
+                                        transform="rotate(-90 0 0)"
+                                        fontSize="12"
+                                    >
+                                        x : Humidité absolue (kg eau/kg air sec)
+                                    </text>
+                                </g>
+                            </svg>
+                            :
+                            <React.Fragment/>
+                    }
+                </div>
+                <div>
+                {
+                    this.props.showLegend ? 
+                        <svg width={this.chartWidth} height={HORIZONTAL_LEGEND_HEIGHT}>
+                            <text
+                                x={this.chartWidth / 2}
+                                y={HORIZONTAL_LEGEND_HEIGHT - 5}
+                                textAnchor="middle"
+                                // transform="rotate(-90 0 0)"
+                                fontSize="12"
+                            >
+                                η : Température (°C)
+                            </text>
+                        </svg>
+                        :
+                        <React.Fragment/>
+                }
+                </div>
+           </div>
         )
     }
 }

@@ -4,6 +4,7 @@ import { BaseChart, ILegendItem, IMargin, svgBorderWidth } from './BaseChart';
 import { ISerieData } from 'src/interfaces/ISerieData';
 import { ScaleOrdinal } from 'd3';
 import { ISheet } from 'src/interfaces/ISheet';
+import { ITypeMesure } from 'src/interfaces/ITypeMesure';
 // import { toJS } from 'mobx';
 
 const yAxisWidth = 50;
@@ -69,13 +70,15 @@ export class LineBaseChart extends BaseChart {
     private gAxisChartX: any;
     private gAxisChartY: any;
     private gAxisGridY: any;
-
+    private gLegendY: any;
+    private textLegendY: any;
     // Utils
     // public displayedPathes: Array<IDisplayedPath>;
     public displayedPathes: Map<string, ISerieData>;
     public shotsMap = new Map<Date, number>();
 
     public crossHairTimeFormat: string;
+
 
     private updatetimeDomain() {
         const time_start = this.seriesData.reduce((start, serieData) => serieData.timeStart.getDate() < start ? serieData.timeStart : start, Number.POSITIVE_INFINITY);
@@ -116,6 +119,7 @@ export class LineBaseChart extends BaseChart {
 
         this.seriesData = [...newSeriesData];
 
+        this.updateLegendY();
         this.updatetimeDomain();
         this.updateYDomain();
 
@@ -128,7 +132,7 @@ export class LineBaseChart extends BaseChart {
         this.updatePathes();
     }
 
-    constructor(
+    public constructor(
         protected sheet: ISheet,
         width: number,
         height: number,
@@ -189,6 +193,30 @@ export class LineBaseChart extends BaseChart {
     public updateYAxis = () => {
         this.gAxisChartY.transition().call(this.customAxis, this.yAxisChart);
         this.gAxisGridY.transition().call(this.customGrid, this.yGridChart);
+    }
+
+    private updateLegendY = () => {
+        let typeMesure: ITypeMesure | undefined = undefined;
+        if (this.seriesData.length > 0) {
+            this.seriesData.forEach((serie: ISerieData) => {
+                if (typeMesure === undefined) {
+                    typeMesure = serie.serieDef.typeMesure;
+                }
+                else {
+                    if (typeMesure.id !== serie.serieDef.typeMesure.id) { // unités incompatibles => pas d'unité
+                        typeMesure = undefined;
+                        this.textLegendY.text('unités incomatibles');
+                        return;
+                    }
+                }
+            });
+            if (typeMesure) {
+                this.textLegendY.text(`${typeMesure.measure_type} (${typeMesure.unit})`);
+            }
+        }
+        else {
+            this.textLegendY.text('');
+        }
     }
 
     private createLegendText(serieData: ISerieData): string {
@@ -292,8 +320,15 @@ export class LineBaseChart extends BaseChart {
         this.gAxisChartTimePeriod = this.gAxisChartTime.append('g').attr('transform', 'translate(0,0)');
         this.gAxisChartX = this.gChart.append('g').attr('transform', 'translate(0,' + this.chartHeight + ')');
         this.gAxisChartY = this.gChart.append('g').attr('transform', 'translate(0,0)');
-
         this.gAxisGridY = this.gChart.append('g').attr('transform', 'translate(0,0)');
+        this.gLegendY = this.gChart.append('g')
+            .attr('transform',  `translate(-30, ${this.chartHeight / 2}) rotate(-90, 0, 0)`)
+        this.textLegendY = this.gLegendY.append('text')
+            .attr('font-size', 12)
+            .attr('text-anchor', 'middle')
+            // .attr('alignment-baseline', 'after-edge')
+            // .attr('fill', 'cyan')
+            .text('');
     }
 
     // public buildLegend = (serieName: string, value?: number): string => {
