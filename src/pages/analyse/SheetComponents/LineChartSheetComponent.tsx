@@ -89,6 +89,7 @@ import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMiss
         let promiseMeasureType: Promise<ITypeMesure> = this.props.globalStore.getMesureType(channelForMission.measure_id);
         let promisePlan: Promise<IPlan> = this.props.globalStore.getPlan(channelForMission.plan_id);
         let promiseMesures: Promise<IMesure[]> = this.props.globalStore.getMesures(
+            channelForMission.mission_id,
             channelForMission.capteur_id,
             channelForMission.channel_id,
             this.props.sheet.sheetDef.dateDebutMission,

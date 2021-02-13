@@ -194,14 +194,14 @@ export class GlobalStore {
             .then((results) => results);
     }
 
-    public getMesures = (capteurId: number, channelId: number, dateBegin: Date, dateEnd: Date): Promise<IMesure[]> => {
+    public getMesures = (missionId: number, capteurId: number, channelId: number, dateBegin: Date, dateEnd: Date): Promise<IMesure[]> => {
         // LOAD DATA from AEROC
         // date_begin=2017/12/09 20:13:04&date_end=2018/01/24 21:19:06
         // console.log('http://test.ideesalter.com/alia_readMesure.php?capteur_id=' + capteurId 
         // + '&channel_id=' + channelId + '&date_begin=' + dateBegin + '&date_end=' + dateEnd)
         // return fetch('http://test.ideesalter.com/alia_readMesure.php?capteur_id=' + capteurId
         // + '&channel_id=' + channelId + '&date_begin=2017/12/09 20:13:04&date_end=2017/12/11 21:19:06')
-        var request = 'http://test.ideesalter.com/alia_readMesure.php?capteur_id=' + capteurId
+        var request = 'http://test.ideesalter.com/alia_readMesure.php?mission_id=' + missionId + '&capteur_id=' + capteurId
             + '&channel_id=' + channelId + '&date_begin=' + dateToSql(dateBegin) + '&date_end=' + dateToSql(dateEnd);
         return fetch(request)
             .then((response) => response.json())
