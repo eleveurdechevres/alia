@@ -121,7 +121,6 @@ interface ICrosshair {
         super(props);
         this.capteur = this.props.capteur;
         this.loadCapteurChannels();
-        // this.getDateInterval(this.capteur.id);
         console.log('getDateIntervalMission ')
         console.log('this.capteur.id ' + this.capteur.id)
         this.getDateIntervalMission(this.capteur.id);
@@ -169,37 +168,6 @@ interface ICrosshair {
                     this.mapChannels.set(graphType.svgClass, channel);
                 })
             });
-    }
-
-    getDateInterval = (capteurId: number) => {
-        if (!capteurId) {
-            return Promise.resolve({ dateInterval: {startDate: undefined, stopDate: undefined} });
-        }
-        return fetch(`http://test.ideesalter.com/alia_searchDateIntervalMissionForCapteur.php?id=${capteurId}`)
-            .then((response) => response.json())
-            .then((data) => {
-                var minDate = new Date(data.minDate);
-                var maxDate = new Date(data.maxDate);
-
-                this.dateInterval.missionStartDate = minDate;
-                this.dateInterval.missionStopDate = maxDate;
-                this.dateInterval.minDate = minDate;
-                this.dateInterval.maxDate = maxDate;
-                
-                this.sunBehaviourManager = new SunBehaviourManager(this.props.habitat, this.dateInterval.missionStartDate, this.dateInterval.missionStopDate)
-
-                // Update time scale
-                var domain = [this.dateInterval.missionStartDate, this.dateInterval.missionStopDate];
-                var chartWidth = 1270;
-                var range = [0, chartWidth];
-                this.contextTimeScale = d3.scaleTime().domain(domain).range(range);
-                this.domainTime = domain;
-                this.timeScale = d3.scaleTime().domain(domain).range(range);
-
-                // Redraw Globlal Axis
-                this.drawDateAxis();
-            }
-        );
     }
 
     getDateIntervalMission = (capteurId: number) => {
@@ -422,6 +390,7 @@ interface ICrosshair {
             {
                 this.mapChannels.has(GraphType.TEMPERATURE.svgClass) && this.mapChannels.has(GraphType.HUMIDITE.svgClass) ? 
                     <Mollier
+                        missionId={this.props.mission.id}
                         chartWidth={340}
                         chartHeight={300}
                         dateInterval={this.dateInterval}

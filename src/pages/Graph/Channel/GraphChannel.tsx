@@ -164,9 +164,9 @@ private gChartRef: SVGGElement | null;
     
     }
 
-    private loadJsonDataFromAeroc = (capteurId: number, channelId: number, dateBegin: Date, dateEnd: Date) => {
+    private loadJsonDataFromAeroc = (missionId: number, capteurId: number, channelId: number, dateBegin: Date, dateEnd: Date) => {
         console.log('loadJsonDataFromAeroc')
-        this.props.globalStore.getMesures(capteurId, channelId, dateBegin, dateEnd)
+        this.props.globalStore.getMesures(missionId, capteurId, channelId, dateBegin, dateEnd)
             .then((data) => {
 
                 this.mapValues.clear();
@@ -557,7 +557,7 @@ private gChartRef: SVGGElement | null;
             // this.loadJsonFromAeroc(props.capteurId, props.channelData.id, '2017/12/11 00:00:00', '2017/12/11 23:59:00');
             // this.loadJsonFromAeroc(props.capteurId, props.channelData.id, '2017/12/12 00:00:00', '2017/12/12 23:59:00');
             // this.loadJsonFromAeroc(props.capteurId, props.channelData.id, '2017/12/13 00:00:00', '2017/12/13 23:59:00');
-            this.loadJsonDataFromAeroc(props.capteurId, props.channelData.id, this.startDate, this.stopDate);
+            this.loadJsonDataFromAeroc(props.missionId, props.capteurId, props.channelData.id, this.startDate, this.stopDate);
             this.loadJsonMeteoFromAeroc(props.missionId, props.channelData.id_type_mesure, this.startDate, this.stopDate);
         }
 

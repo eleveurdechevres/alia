@@ -265,12 +265,12 @@ const dialogFieldValueStyle = style(csstips.flex);
     }
 
     private handleWriteMesure = () => {
-        this.props.globalStore.writeMesureVirtuelle(this.props.capteurVirtuel, this.currentMesure, this.reloadMesures);
+        this.props.globalStore.writeMesureVirtuelle(this.props.mission.id, this.props.capteurVirtuel, this.currentMesure, this.reloadMesures);
         this.dialogCreateMesureOpened = false;
     }
 
     private handleDeleteMesure = (mesure: IMesure) => {
-        this.props.globalStore.deleteMesureVirtuelle(this.props.capteurVirtuel, mesure, this.reloadMesures);
+        this.props.globalStore.deleteMesureVirtuelle(this.props.mission.id, this.props.capteurVirtuel, mesure, this.reloadMesures);
     }
 
     private handleEventsOnMesure = (state: any, row: RowInfo, column: any, instance: any) => {

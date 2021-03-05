@@ -77,7 +77,7 @@ interface IProps {
     }
 
     public componentDidMount() {
-        this.getPlan(this.props.planId);
+        this.getImagePlan(this.props.planId);
         if (this.props.mission) {
             this.getCapteursForPlan(this.props.planId, this.props.mission.id);
             this.reloadObservations();
@@ -318,7 +318,7 @@ interface IProps {
         }
     }
 
-    private getPlan = (id: number) => {
+    private getImagePlan = (id: number) => {
         if (!id) {
             return Promise.resolve({ plans: [] });
         }

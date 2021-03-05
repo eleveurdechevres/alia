@@ -11,6 +11,7 @@ import { observable } from 'mobx';
 import { Colors } from '@blueprintjs/core';
 
 interface IProps {
+    missionId: number;
     chartWidth: number;
     chartHeight: number;
     dateInterval: IDateInterval;
@@ -112,10 +113,10 @@ const VERTICAL_LEGEND_WIDTH = 15;
         if ( startDate !== this.startDate || stopDate !== this.stopDate) {
             this.startDate = startDate;
             this.stopDate = stopDate;
-            this.loadJsonFromAeroc(startDate, stopDate, props.channelX, props.channelY);
+            this.loadJsonFromAeroc(props.missionId, startDate, stopDate, props.channelX, props.channelY);
         }
         if ( props.channelX !== this.props.channelX || props.channelY !== this.props.channelY ) {
-            this.loadJsonFromAeroc(startDate, stopDate, props.channelX, props.channelY);
+            this.loadJsonFromAeroc(props.missionId, startDate, stopDate, props.channelX, props.channelY);
         }
 
         if ( props.dateInterval.minDate !== this.props.dateInterval.minDate ||
@@ -127,13 +128,14 @@ const VERTICAL_LEGEND_WIDTH = 15;
     }
 
     // loadJsonFromAeroc = (dateBegin: string, dateEnd: string, channel1: IChannel, channel2: IChannel) => {
-    loadJsonFromAeroc = (dateBegin: string, dateEnd: string, channel1: number, channel2: number) => {
+    loadJsonFromAeroc = (missionId: number, dateBegin: string, dateEnd: string, channel1: number, channel2: number) => {
         // LOAD DATA from AEROC
         if (channel1 !== undefined && channel2 !== undefined) {
             
             // date_begin=2017/12/09 20:13:04&date_end=2018/01/24 21:19:06
             var httpReq = 'http://test.ideesalter.com/alia_searchCrossMesures.php?' 
-                + 'date_begin=' + dateBegin 
+                + 'mission_id=' + missionId
+                + '&date_begin=' + dateBegin 
                 + '&date_end=' + dateEnd 
                 + '&capteur_id=' + this.props.capteurId 
                 + '&channel1_id=' + channel1 

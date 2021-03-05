@@ -49,6 +49,7 @@ import { TimeContextBar } from '../Detail/TimeContextBar';
                     {
                         this.temperatureSensor && this.humiditySensor ?
                             <Mollier
+                                missionId={this.props.sheet.sheetDef.mission.id}
                                 chartWidth={this.windowWidth - 60}
                                 chartHeight={800}
                                 dateInterval={dateInterval}

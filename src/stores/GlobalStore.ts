@@ -380,13 +380,14 @@ export class GlobalStore {
         });
     }
 
-    public writeMesureVirtuelle = (capteurVirtuel: ICapteurVirtuel, mesure: IMesure, then: () => void) => {
+    public writeMesureVirtuelle = (missionId: number, capteurVirtuel: ICapteurVirtuel, mesure: IMesure, then: () => void) => {
         const body: string = JSON.stringify({
+            mission_id: missionId,
             capteur_virtuel_id: capteurVirtuel.id,
             date: dateToSql(mesure.date),
             valeur: mesure.valeur
         });
-        
+        console.log('writeMesureVirtuelle', body)
         fetch(`http://testbase.ideesalter.com/alia_writeMesureVirtuelle.php`, {
                 method: 'POST',
                 headers: {
@@ -405,12 +406,13 @@ export class GlobalStore {
         });
     }
 
-    public deleteMesureVirtuelle = (capteurVirtuel: ICapteurVirtuel, mesure: IMesure, then: () => void) => {
+    public deleteMesureVirtuelle = (missionId: number, capteurVirtuel: ICapteurVirtuel, mesure: IMesure, then: () => void) => {
         const body: string = JSON.stringify({
+            mission_id: missionId,
             capteur_virtuel_id: capteurVirtuel.id,
             date: dateToSql(mesure.date)
         });
-        
+        console.log(body)
         fetch(`http://test.ideesalter.com/alia_deleteMesureVirtuelle.php`, {
                 method: 'POST',
                 headers: {
