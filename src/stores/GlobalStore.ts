@@ -459,14 +459,28 @@ export class GlobalStore {
     }
 
     public writeMission = (mission: IMission, password: string) => {
-        const req = `http://testbase.ideesalter.com/alia_writeMission.php` +
-        `?id=` + mission.id +
-        `&habitat_id=` + this.habitat.id + 
-        `&date_debut=` + encodeURIComponent(mission.date_debut) + 
-        `&date_fin=` + encodeURIComponent(mission.date_fin) + 
-        `&password=` + encodeURIComponent(password);
-        return fetch(req).then(
+        const body: string = JSON.stringify({
+            id: mission.id,
+            database_id: mission.databaseId,
+            habitat_id: this.habitat.id,
+            date_debut: mission.date_debut,
+            date_fin: mission.date_fin,
+            password: password
+        });
+        
+            console.log(body);
+        fetch(
+            `http://testbase.ideesalter.com/alia_writeMission.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: body
+            }
+        ).then(
             (response) => {
+                console.log(JSON.stringify(response));
                 if (response.status === 200) {
                     this.reloadMissionsFromHabitat(this.habitat);
                 }
@@ -474,8 +488,7 @@ export class GlobalStore {
                     console.log(response);
                     // TODO : impossible de sauvegarder...
                 }
-            }
-        );
+        });
     }  
 
     public deleteClient = (client: IClient, password: string) => {
@@ -532,6 +545,14 @@ export class GlobalStore {
                 }
             }
         );
+    }
+
+    public getDataClusterList = () => {
+        return fetch(`http://test.ideesalter.com/alia_getClusters.php`)
+        .then((response) => response.json())
+        .then((results: {databaseId: string}[]) => {
+            return results;
+        });
     }
 
     public createSheet = (sheetType: ESheetType, mission: IMission, dateDebut: Date, dateFin: Date): void => {
@@ -598,4 +619,5 @@ export class GlobalStore {
             return newName;
         }
     }
+
 }

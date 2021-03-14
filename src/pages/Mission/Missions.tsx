@@ -17,6 +17,7 @@ import { IMission } from 'src/interfaces/IMission';
 import { NewElementButton } from 'src/components/NewElementButton';
 import { Dialog, Button, Intent, InputGroup, Icon } from '@blueprintjs/core';
 import { GlobalStore } from 'src/stores/GlobalStore';
+import { DataClusterSelector } from '../analyse/Detail/DataClusterSelector';
 
 interface IProps {
     globalStore: GlobalStore
@@ -34,6 +35,7 @@ const dialogFieldValueStyle = style(csstips.flex);
     private password: string = '';
     @observable private missionToCreate: IMission = {
         id: undefined,
+        databaseId: undefined,
         habitat_id: undefined,
         date_debut: moment().format('YYYY-MM-DD HH:mm:ss'),
         date_fin: moment().format('YYYY-MM-DD HH:mm:ss')
@@ -88,6 +90,8 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
                 Cell: (row: RowInfo) => {
                     return (
                         <div className={style(csstips.gridSpaced(10))}>
+                            {/* // Utilisé pour mette à jour MissionSunInterval => fini, maintenant on génère ces données à la volée
+                                // Eventuellement garder ce bout de code pour modifier la mission, en réaffichant la fenêtre de dialogue de création de mission
                             <Icon
                                 className={style({cursor: 'pointer'})}
                                 icon="automatic-updates"
@@ -98,7 +102,7 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
                                     const missionToUpdate: IMission = row.original;
                                     this.props.globalStore.writeMission(missionToUpdate, '#moulin44');
                                 }}
-                            />
+                            /> */}
                             <Icon
                                 className={style({cursor: 'pointer'})}
                                 icon="trash"
@@ -242,6 +246,18 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
                                     // maxDate={this.dateInterval.maxDate}
                                     dateFormat="dd/MM/yyyy"
                                     placeholderText="Date de fin"
+                                />
+                            </div>
+                        </div>
+                        <div className={dialogLineStyle}>
+                            <div className={dialogFieldNameStyle}>
+                                Cluster
+                            </div>
+                            <div className={dialogFieldValueStyle}>
+                                <DataClusterSelector
+                                    databaseIdSelected={this.missionToCreate.databaseId}
+                                    globalStore={this.props.globalStore}
+                                    handleSelect={(databaseIdSelected: string) => { this.missionToCreate.databaseId = databaseIdSelected; }}
                                 />
                             </div>
                         </div>
