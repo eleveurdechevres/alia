@@ -216,8 +216,9 @@ export class GlobalStore {
         );
     }
 
-    public getMesuresViruelles = (capteurVirtuelId: number, dateBegin: Date, dateEnd: Date): Promise<IMesure[]> => {
+    public getMesuresViruelles = (missionId: number, capteurVirtuelId: number, dateBegin: Date, dateEnd: Date): Promise<IMesure[]> => {
         const body: string = JSON.stringify({
+            mission_id: missionId,
             capteur_virtuel_id: capteurVirtuelId,
             date_begin: dateBegin,
             date_end: dateEnd

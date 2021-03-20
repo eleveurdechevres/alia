@@ -300,22 +300,12 @@ const dialogFieldValueStyle = style(csstips.flex);
     }
 
     private reloadMesures = () => {
-        const body: string = JSON.stringify({
-            capteur_virtuel_id: this.props.capteurVirtuel.id,
-            date_begin: this.props.mission.date_debut,
-            date_end: this.props.mission.date_fin
-        });
-        fetch(`http://test.ideesalter.com/alia_readMesureVirtuelle.php`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: body
-            }
-        )
-        .then((response) => response.json())
-        .then((results: IMesure[]) => {
+        this.props.globalStore.getMesuresViruelles(
+            this.props.mission.id,
+            this.props.capteurVirtuel.id,
+            new Date(this.props.mission.date_debut),
+            new Date(this.props.mission.date_fin)
+        ).then((results: IMesure[]) => {
             this.data = results;
             this.forceUpdate();
         });
