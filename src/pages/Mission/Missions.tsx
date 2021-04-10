@@ -74,16 +74,20 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
 
     render() {
         const columns = [
-            { Header: 'Mission id',
+            {   Header: 'Mission id',
                 accessor: 'id',
                 width: 100
             },
-            { Header: 'Date début',
+            {   Header: 'Date début',
                 accessor: 'date_debut',
                 width: 150
             },
-            { Header: 'Date fin',
+            {   Header: 'Date fin',
                 accessor: 'date_fin',
+                width: 150
+            },
+            {   Header: <><Icon intent={Intent.PRIMARY} icon="database"/>&nbsp;Cluster</>,
+                accessor: 'databaseId',
                 width: 150
             },
             {

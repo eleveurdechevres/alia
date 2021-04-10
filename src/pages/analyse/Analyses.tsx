@@ -13,6 +13,7 @@ import { MollierSheetComponent } from './SheetComponents/MollierSheetComponent';
 import { LineChartSheetComponent } from './SheetComponents/LineChartSheetComponent';
 import { TextReportSheetComponent } from './SheetComponents/TextReportSheetComponent';
 import { AvgDeltaChartSheetComponent } from './SheetComponents/AvgDeltaChartSheetComponent';
+import { DJUChartSheetComponent } from './SheetComponents/DJUChartSheetComponent';
 
 interface IProps {
     globalStore: GlobalStore
@@ -65,6 +66,14 @@ interface IProps {
                                 case ESheetType.AVG_DELTA_CHART:
                                     return (
                                         <AvgDeltaChartSheetComponent
+                                            key={'SheetComponent' + sheet.sheetName}
+                                            globalStore={this.props.globalStore}
+                                            sheet={sheet}
+                                        />
+                                    );
+                                case ESheetType.DJU_CHART:
+                                    return (
+                                        <DJUChartSheetComponent
                                             key={'SheetComponent' + sheet.sheetName}
                                             globalStore={this.props.globalStore}
                                             sheet={sheet}

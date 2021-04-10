@@ -21,6 +21,10 @@ export function dateToSql(date: Date): string {
     return moment(date).format('YYYY/MM/DD HH:mm:ss');
 }
 
+export function dateToSqlDay(date: Date): string {
+    return moment(date).format('YYYY/MM/DD');
+}
+
 export function dateTimeString(date: Date): string {
     return moment(date).format('DD/MM/YYYY HH:mm:ss');
 }

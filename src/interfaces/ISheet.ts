@@ -21,13 +21,14 @@ export enum ESheetType {
     CANDLE_CHART,
     TEXT_REPORT,
     SCATTER_PLOT,
-    RADAR_CHART
+    RADAR_CHART,
+    DJU_CHART
 }
 
 export interface ISheetTypeProperties {
     name: string,
     icon: IconName,
-    enabled?: boolean
+    disabled?: boolean
 }
 
 export const ISheetTypes: Map<ESheetType, ISheetTypeProperties> = new Map([
@@ -35,29 +36,29 @@ export const ISheetTypes: Map<ESheetType, ISheetTypeProperties> = new Map([
         ESheetType.MOLLIER_CHART,
         {
             name: 'Mollier',
-            icon: 'curved-range-chart',
-            enabled: false
+            icon: 'curved-range-chart'
         } as ISheetTypeProperties
     ],
     [
         ESheetType.TIME_CHART,
         {
             name: 'y=f(t)',
-            icon: 'timeline-line-chart',
+            icon: 'timeline-line-chart'
         } as ISheetTypeProperties
     ],
     [
         ESheetType.AVG_DELTA_CHART,
         {
             name: 'M(Δ)=f(t, ☼)',
-            icon: 'step-chart',
+            icon: 'step-chart'
         } as ISheetTypeProperties
     ],
     [   ESheetType.CANDLE_CHART,
         {
             name: 'Candles',
             icon: 'alignment-horizontal-center',
-        } as ISheetTypeProperties
+            disabled: true
+    } as ISheetTypeProperties
     ],
     [
         ESheetType.TEXT_REPORT,
@@ -71,6 +72,7 @@ export const ISheetTypes: Map<ESheetType, ISheetTypeProperties> = new Map([
         {
             name: 'y=f(x)',
             icon: 'scatter-plot',
+            disabled: true
         } as ISheetTypeProperties
     ],
     [
@@ -78,6 +80,14 @@ export const ISheetTypes: Map<ESheetType, ISheetTypeProperties> = new Map([
         {
             name: 'Radar',
             icon: 'layout-auto',
+            disabled: true
+        } as ISheetTypeProperties
+    ],
+    [
+        ESheetType.DJU_CHART,
+        {
+            name: 'DJU',
+            icon: 'timeline-bar-chart'
         } as ISheetTypeProperties
     ]
 ]);

@@ -63,6 +63,7 @@ interface IProps {
                             {this.buildButton(ESheetType.SCATTER_PLOT)}
                         </div>
                         <div className={style(csstips.margin(10), csstips.horizontal, csstips.flex, csstips.height(200))}>
+                            {this.buildButton(ESheetType.DJU_CHART)}
                             {this.buildButton(ESheetType.RADAR_CHART)}
                         </div>
                     </div>
@@ -88,7 +89,7 @@ interface IProps {
                 large={true}
                 alignText={Alignment.CENTER}
                 onClick={() => this.createSheet(sheetType)}
-                disabled={sheetDescription.enabled}
+                disabled={sheetDescription.disabled}
             />
         );
     }

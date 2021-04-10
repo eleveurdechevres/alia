@@ -14,17 +14,16 @@ import { ILineChartCrosshairState } from './LineCrosshair';
 import { LineCrosshair } from './LineCrosshair';
 // import { ILegendItem } from './BaseChart';
 import { IDateInterval } from '../GraphBoard';
-import { AvgDeltaBaseChart, IAvgDelta } from './AvgDeltaBaseChart';
+import { DJUBaseChart, IDJUData } from './DJUBaseChart';
 import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMission';
-import { dateToSql } from 'src/utils/DateUtils';
+import { dateToSqlDay } from 'src/utils/DateUtils';
 
 interface IProps {
     sheet: ISheet;
     chartWidth: number;
     chartHeight: number;
     dateInterval: IDateInterval;
-    firstChannel: IChannelOfTypeFromMission;
-    secondChannel: IChannelOfTypeFromMission;
+    extTempChannel: IChannelOfTypeFromMission;
 }
 
 // interface IProps extends IPropsGenericChartComponent {
@@ -90,7 +89,7 @@ const defaultTransition = d3.transition()
 .ease(d3.easeExp);
 const zoomTransition = defaultTransition;
 
-@observer export class AvgDeltaChartComponent extends GenericChartComponent<IProps> {
+@observer export class DJUChartComponent extends GenericChartComponent<IProps> {
 
     // Mesures
     private totalWidth: number;
@@ -102,7 +101,7 @@ const zoomTransition = defaultTransition;
     private marginVerticalContext: IMargin;
 
     // Chart js object
-    private baseChart: AvgDeltaBaseChart;
+    private baseChart: DJUBaseChart;
 
     // References of SVG graphic components
     private refGChart: SVGGElement;
@@ -197,7 +196,7 @@ const zoomTransition = defaultTransition;
         this.totalWidth = this.props.chartWidth;
         this.chartHeight = this.totalHeight - this.marginChart.bottom - this.marginChart.top;
 
-        this.baseChart = new AvgDeltaBaseChart(
+        this.baseChart = new DJUBaseChart(
             this.props.sheet,
             this.totalWidth,
             this.totalHeight,
@@ -240,98 +239,53 @@ const zoomTransition = defaultTransition;
     }
 
     public componentWillReceiveProps(props: IProps) {
-        if (
-            props.firstChannel !== this.props.firstChannel ||
-            props.secondChannel !== this.props.secondChannel
-        ) {
+        if (props.extTempChannel !== this.props.extTempChannel) {
             this.loadJsonFromAeroc(
                 props.dateInterval.missionStartDate,
                 props.dateInterval.missionStopDate,
-                props.firstChannel,
-                props.secondChannel
+                props.extTempChannel
             );
         }
     }
 
-    private loadJsonFromAeroc = (dateBegin: Date, dateEnd: Date, channel1: IChannelOfTypeFromMission, channel2: IChannelOfTypeFromMission) => {
+    private loadJsonFromAeroc = (dateBegin: Date, dateEnd: Date, extTempChannel: IChannelOfTypeFromMission) => {
         // LOAD DATA from AEROC
-        if (channel1 !== undefined && channel2 !== undefined) {
+        if (extTempChannel !== undefined) {
             
-            // http://test.ideesalter.com/alia_readDeltaJourNuit.php?date_begin=2017-12-09%2020:30:00&date_end=2017-12-26%2000:00:00&capteur_id=1&channel_id=1
-            const httpReqChannel1 = 'http://test.ideesalter.com/alia_readDeltaJourNuit.php?' 
-                + 'habitat_id=' + this.props.sheet.sheetDef.habitat.id
-                + '&mission_id=' + this.props.sheet.sheetDef.mission.id
-                + '&date_begin=' + dateToSql(dateBegin)
-                + '&date_end=' + dateToSql(dateEnd)
-                + '&capteur_id=' + channel1.capteur_id
-                + '&channel_id=' + channel1.channel_id;
-            const httpReqChannel2 = 'http://test.ideesalter.com/alia_readDeltaJourNuit.php?' 
-                + 'habitat_id=' + this.props.sheet.sheetDef.habitat.id
-                + '&mission_id=' + this.props.sheet.sheetDef.mission.id
-                + '&date_begin=' + dateToSql(dateBegin)
-                + '&date_end=' + dateToSql(dateEnd)
-                + '&capteur_id=' + channel2.capteur_id
-                + '&channel_id=' + channel2.channel_id;
-            console.log(httpReqChannel1);
-            console.log(httpReqChannel2);
-            const promiseChannel1 = fetch(httpReqChannel1).then((response) => response.json());
-            const promiseChannel2 = fetch(httpReqChannel2).then((response) => response.json());
-            Promise.all( [promiseChannel1, promiseChannel2]).then(([datas1, datas2]) => {
-                const formatedData1: IAvgDelta[] = datas1.map((d: any) => {
+            // http://test.ideesalter.com/alia_readDJU.php?mission_id=1&date_begin=2017/12/09&date_end=2017/12/26&capteur_id=5&channel_id=6
+            const httpReq = 'http://test.ideesalter.com/alia_readDJU.php?' 
+                + 'mission_id=' + this.props.sheet.sheetDef.mission.id
+                + '&date_begin=' + dateToSqlDay(dateBegin)
+                + '&date_end=' + dateToSqlDay(dateEnd)
+                + '&capteur_id=' + extTempChannel.capteur_id
+                + '&channel_id=' + extTempChannel.channel_id;
+            console.log(httpReq);
+            const promise = fetch(httpReq).then((response) => response.json());
+            promise.then((datas) => {
+                const formatedData: IDJUData[] = datas.map((d: any) => {
+                    let jourCourant: string = d.JourCourant as string;
+                    let dateBeginJour: Date = new Date(jourCourant + ' 00:00:00')
+                    let dateEndJour: Date = new Date(jourCourant + ' 23:59:59')
                     return {
-                        latitude: d.latitude as number,
-                        longitude: d.longitude as number,
-                        dateBegin: new Date(d.dateBegin),
-                        dateEnd: new Date(d.dateEnd),
-                        isDay: d.isDay === '1' ? true : false,
-                        delta: d.delta as number
+                        Tmin: parseInt(d.Tmin, 10),
+                        Tmax: parseInt(d.Tmax, 10),
+                        count: parseInt(d.count, 10),
+                        dateBegin: dateBeginJour,
+                        dateEnd: dateEndJour,
+                        DJU: parseInt(d.DJU, 10)
                     }
                 });
-                const formatedData2: IAvgDelta[] = datas2.map((d: any) => {
-                    return {
-                        latitude: d.latitude as number,
-                        longitude: d.longitude as number,
-                        dateBegin: new Date(d.dateBegin),
-                        dateEnd: new Date(d.dateEnd),
-                        isDay: d.isDay === '1' ? true : false,
-                        delta: d.delta as number
-                    }
-                });
-                const mapping: Map<string, [number | undefined, number | undefined]> = new Map(); // dateBegin_dateEnd_isDay => [index table 1, index table 2]
-                formatedData1.forEach((data: IAvgDelta, index: number) => {
-                    const key: string = data.dateBegin.getDate() + '_' + data.dateEnd.getTime() + '_' + data.isDay;
-                    if (!mapping.has(key)) {
-                        mapping.set(key, [undefined, undefined]);
-                    }
-                    mapping.get(key)[0] = index;
-                });
-                formatedData2.forEach((data: IAvgDelta, index: number) => {
-                    const key: string = data.dateBegin.getDate() + '_' + data.dateEnd.getTime() + '_' + data.isDay;
-                    if (!mapping.has(key)) {
-                        mapping.set(key, [undefined, undefined]);
-                    }
-                    mapping.get(key)[1] = index;
-                });
-                const mappingIndexes = Array.from(mapping.values());
-                const mappingData: IAvgDelta[] = [];
-                mappingIndexes.forEach((indexes: [number, number]) => {
-                    if (indexes[0] !== undefined && indexes[1] !== undefined) {
-                        const val1: IAvgDelta = formatedData1[indexes[0]];
-                        const val2: IAvgDelta = formatedData2[indexes[1]];
-                        let delta: IAvgDelta = val1;
-                        delta.delta = val1.delta - val2.delta;
-                        mappingData.push(delta);
-                    }
-                })
-                this.baseChart.setData(mappingData);
+                this.baseChart.setData(formatedData);
                 this.updateChartComponent(undefined, undefined);
                 this.updateComponents();
 
-                this.baseChart.getDeltaRectangles()
-                    // .attr('pointer-events', 'stroke')
-                    .on('mouseover', (d: IAvgDelta) => { this.deltaRectMouseOver(d); })
-                    .on('mousemove', (d: IAvgDelta) => { this.deltaRectMouseOver(d); })
-                    .on('mouseout', (d: IAvgDelta) => { this.deltaRectMouseOver(d); })
+                
+                this.baseChart.getDJURectangles()
+                // this.baseChart.gChart.selectAll('.dju_rect')
+                    .attr('pointer-events', 'visible')
+                    .on('mouseover', this.deltaRectMouseOver)
+                    .on('mousemove', this.deltaRectMouseOver)
+                    .on('mouseout', this.deltaRectMouseOver)
                     .on('mousedown', () => { this.dispatchEventToGeneralBrush('mousedown'); })
                     .on('click', () => { this.dispatchEventToGeneralBrush('click'); })
                     .on('dblclick', () => { this.dispatchEventToGeneralBrush('dblclick'); });
@@ -376,7 +330,6 @@ const zoomTransition = defaultTransition;
                         transform={'translate(' + (- yAxisWidth) + ',0)'}
                     />
                 </g>
-                <g ref={(ref) => { if (ref) { this.refGChart = ref; } }}/>
                 <g transform={'translate(' + this.marginChart.left + ',' + this.marginChart.top + ')'}>
                     <g id="generalBrush" ref={(ref) => {if (ref) { this.refGBrush = ref; } }}>
                             <rect
@@ -386,6 +339,7 @@ const zoomTransition = defaultTransition;
                             />
                     </g>
                 </g>
+                <g ref={(ref) => { if (ref) { this.refGChart = ref; } }}/>
                 <g transform={'translate(' + this.marginChart.left + ',' + this.marginChart.top + ')'}>
                     <LineCrosshair
                         crosshairWidth={this.chartWidth}
@@ -886,7 +840,8 @@ const zoomTransition = defaultTransition;
                 .call(this.verticalBrushDetail);
         }
     }
-    private deltaRectMouseOver = (data: IAvgDelta) => {
+    private deltaRectMouseOver = (data: IDJUData) => {
+        console.log('TOTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO');
         console.log(JSON.stringify(data));
         // let path: any = d3.select(d3.event.srcElement);
         
