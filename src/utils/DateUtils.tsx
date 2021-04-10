@@ -30,6 +30,7 @@ export function dateTimeString(date: Date): string {
 }
 
 export function dateFormat(date: Date, format: string): string {
+    // moment.locale('fr-ca');
     return moment(date).format(format);
 }
 

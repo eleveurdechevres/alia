@@ -16,7 +16,7 @@ import { LineCrosshair } from './LineCrosshair';
 import { IDateInterval } from '../GraphBoard';
 import { DJUBaseChart, IDJUData } from './DJUBaseChart';
 import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMission';
-import { dateToSqlDay } from 'src/utils/DateUtils';
+import { dateFormat, dateToSqlDay } from 'src/utils/DateUtils';
 
 interface IProps {
     sheet: ISheet;
@@ -841,7 +841,6 @@ const zoomTransition = defaultTransition;
         }
     }
     private deltaRectMouseOver = (data: IDJUData) => {
-        console.log('TOTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO');
         console.log(JSON.stringify(data));
         // let path: any = d3.select(d3.event.srcElement);
         
@@ -850,7 +849,7 @@ const zoomTransition = defaultTransition;
             case 'mousemove':
                 // path.attr('stroke-width', 2);
                 // this.legendStrokeHighlight(displayedPath);
-                this.crosshairState.textDisplayed = 'serie name TODO'; // TODO : CREATE SERIE NAME displayedPath.serieData.serie_name;
+                this.crosshairState.textDisplayed = dateFormat(data.dateBegin, 'dddd DD MMMM YYYY') + ', ' + data.DJU + ' DJ'; // TODO : CREATE SERIE NAME displayedPath.serieData.serie_name;
                 this.displayCrosshair();
                 break;
             case 'mouseout':
