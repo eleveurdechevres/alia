@@ -9,6 +9,7 @@ import { IMission } from 'src/interfaces/IMission';
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { highlightText } from 'src/utils/FormatUtils';
 import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMission';
+import * as TextRenderers from 'src/utils/TextRenderers';
 
 interface IProps {
     mission: IMission;
@@ -22,7 +23,7 @@ const SENSOR_MULTI_SELECT = MultiSelect.ofType<ICapteurVirtuelForMission>();
 
 @observer export class MultiCapteurVirtuelListSelector extends React.Component<IProps, {}> {
 
-    @observable capteurVirtuelListForMission: ICapteurVirtuelForMission[] = [];
+    @observable private capteurVirtuelListForMission: ICapteurVirtuelForMission[] = [];
 
     public constructor(props: IProps) {
         super(props);
@@ -53,7 +54,7 @@ const SENSOR_MULTI_SELECT = MultiSelect.ofType<ICapteurVirtuelForMission>();
                 className={style(csstips.fillParent)}
                 itemPredicate={this.filterLine}
                 itemRenderer={this.itemRenderer}
-                tagRenderer={this.nameRenderer}
+                tagRenderer={TextRenderers.capteurVirtuelNameRenderer}
                 tagInputProps={this.tagInputProps}
                 items={this.capteurVirtuelListForMission}
                 selectedItems={this.props.selectedCapteurVirtuelList}
@@ -69,18 +70,18 @@ const SENSOR_MULTI_SELECT = MultiSelect.ofType<ICapteurVirtuelForMission>();
         return this.props.selectedCapteurVirtuelList.includes(capteurVirtuel);
     }
 
-    private selectLine = (channel: ICapteurVirtuelForMission): void => {
+    private selectLine = (capteurVirtuel: ICapteurVirtuelForMission): void => {
         // if exists, remove line
-        if (this.isLineSelected(channel)) {
-            this.props.handleRemoveCapteurVirtuel(channel);
+        if (this.isLineSelected(capteurVirtuel)) {
+            this.props.handleRemoveCapteurVirtuel(capteurVirtuel);
         }
         else { // add line
-            this.props.handleAddCapteurVirtuel(channel);
+            this.props.handleAddCapteurVirtuel(capteurVirtuel);
         }
     }
 
-    private filterLine: ItemPredicate<ICapteurVirtuelForMission> = (query, channel) => {
-        if ( this.nameRenderer(channel).indexOf(query.toLowerCase()) >= 0 ) {
+    private filterLine: ItemPredicate<ICapteurVirtuelForMission> = (query, capteurVirtuel) => {
+        if ( TextRenderers.capteurVirtuelNameRenderer(capteurVirtuel).indexOf(query.toLowerCase()) >= 0 ) {
             return true;
         }
         // else if ( line.line_name.indexOf(query.toLowerCase()) >= 0 ) return true;
@@ -88,10 +89,6 @@ const SENSOR_MULTI_SELECT = MultiSelect.ofType<ICapteurVirtuelForMission>();
         // else if ( formatUtils.date(new Date(line.end_time)).indexOf(query.toLowerCase()) >= 0 ) return true;
         return false;
     };
-
-    private nameRenderer = (capteurVirtuel: ICapteurVirtuelForMission): string => {
-        return 'Plan[' + capteurVirtuel.plan_id + '] - Capteur[' + capteurVirtuel.label + ']' + ' (' + capteurVirtuel.unit + ')';
-    }
 
     private itemRenderer: ItemRenderer<ICapteurVirtuelForMission> = (capteurVirtuel: ICapteurVirtuelForMission, itemProps: IItemRendererProps): JSX.Element | null => {
         let modifiers: IItemModifiers = itemProps.modifiers;
@@ -114,7 +111,7 @@ const SENSOR_MULTI_SELECT = MultiSelect.ofType<ICapteurVirtuelForMission>();
                 label={label}
                 key={'CapteurVirtuel' + capteurVirtuel.id + '_'  + capteurVirtuel.label}
                 onClick={handleClick}
-                text={highlightText(this.nameRenderer(capteurVirtuel), query)}
+                text={highlightText(TextRenderers.capteurVirtuelNameRenderer(capteurVirtuel), query)}
             />
         );
     };

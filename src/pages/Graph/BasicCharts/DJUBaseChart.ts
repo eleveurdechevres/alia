@@ -155,7 +155,12 @@ export class DJUBaseChart extends BaseChart {
         .attr('height', (d: IDJUData) => this.chartHeight - this.yChart(d.DJU))
     }
 
+    public removeDJURectangles = () => {
+        this.gChart.selectAll('.dju_rect').remove();
+    }
+
     public updateRectangles = () => {
+        this.removeDJURectangles();
         const rectangles = this.gChart.selectAll('.dju_rect')
             .data(this.datum);
         rectangles.exit().remove();

@@ -154,8 +154,13 @@ export class AvgDeltaBaseChart extends BaseChart {
         .attr('height', (d: IAvgDelta) => this.chartHeight - this.yChart(d.delta))
     }
 
+    public removeDeltaRectangles = () => {
+        this.gChart.selectAll('.delta_rect').remove();
+    }
+
     public updateRectangles = () => {
-        const rectangles = this.gChart.selectAll('delta_rect')
+        this.removeDeltaRectangles();
+        const rectangles = this.gChart.selectAll('.delta_rect')
             .data(this.datum);
         rectangles.exit().remove();
         rectangles.enter()

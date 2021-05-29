@@ -9,6 +9,7 @@ import { IMission } from 'src/interfaces/IMission';
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { IChannelFromMission } from 'src/interfaces/IChannelFromMission';
 import { highlightText } from 'src/utils/FormatUtils';
+import * as TextRenderers from 'src/utils/TextRenderers';
 
 interface IProps {
     mission: IMission;
@@ -53,7 +54,7 @@ const SENSOR_MULTI_SELECT = MultiSelect.ofType<IChannelFromMission>();
                 className={style(csstips.fillParent)}
                 itemPredicate={this.filterLine}
                 itemRenderer={this.channelItemRenderer}
-                tagRenderer={this.channelNameRenderer}
+                tagRenderer={TextRenderers.channelNameRenderer}
                 tagInputProps={this.tagInputProps}
                 items={this.channelListForMission}
                 selectedItems={this.props.selectedChannelList}
@@ -80,7 +81,7 @@ const SENSOR_MULTI_SELECT = MultiSelect.ofType<IChannelFromMission>();
     }
 
     private filterLine: ItemPredicate<IChannelFromMission> = (query, channel) => {
-        if ( this.channelNameRenderer(channel).indexOf(query.toLowerCase()) >= 0 ) {
+        if ( TextRenderers.channelNameRenderer(channel).indexOf(query.toLowerCase()) >= 0 ) {
             return true;
         }
         // else if ( line.line_name.indexOf(query.toLowerCase()) >= 0 ) return true;
@@ -88,10 +89,6 @@ const SENSOR_MULTI_SELECT = MultiSelect.ofType<IChannelFromMission>();
         // else if ( formatUtils.date(new Date(line.end_time)).indexOf(query.toLowerCase()) >= 0 ) return true;
         return false;
     };
-
-    private channelNameRenderer = (channel: IChannelFromMission): string => {
-        return 'Plan[' + channel.plan_id + '] - Capteur[' + channel.capteur_reference_id + ']' + ' (' + channel.measure_type + ')';
-    }
 
     private channelItemRenderer: ItemRenderer<IChannelFromMission> = (channel: IChannelFromMission, itemProps: IItemRendererProps): JSX.Element | null => {
         let modifiers: IItemModifiers = itemProps.modifiers;
@@ -114,7 +111,7 @@ const SENSOR_MULTI_SELECT = MultiSelect.ofType<IChannelFromMission>();
                 label={label}
                 key={channel.capteur_id + '_'  + channel.channel_id}
                 onClick={handleClick}
-                text={highlightText(this.channelNameRenderer(channel), query)}
+                text={highlightText(TextRenderers.channelNameRenderer(channel), query)}
             />
         );
     };

@@ -5,6 +5,8 @@ import { ISerieData } from 'src/interfaces/ISerieData';
 import { ScaleOrdinal } from 'd3';
 import { ISheet } from 'src/interfaces/ISheet';
 import { ITypeMesure } from 'src/interfaces/ITypeMesure';
+import * as TextRenderers from 'src/utils/TextRenderers';
+
 // import { toJS } from 'mobx';
 
 const yAxisWidth = 50;
@@ -219,22 +221,9 @@ export class LineBaseChart extends BaseChart {
         }
     }
 
-    private createLegendText(serieData: ISerieData): string {
-        const serieDef = serieData.serieDef;
-        
-        const refId = serieDef._objId === 'ISerieDef' ? 'C_' + serieDef.capteur.capteur_reference_id : 'CV_' + serieDef.capteurVirtuel.label;
-        const id = serieDef._objId === 'ISerieDef' ? serieDef.capteur.id : serieDef.capteurVirtuel.id;
-        let legendText = refId +
-            '_' + id +
-            '_plan' + serieData.serieDef.plan.id + 
-            '_' + serieData.serieDef.typeMesure.measure_type;
-
-        return (legendText.replace(/(\s)/g, '_'));
-    }
-
     private removeSeries(series: ISerieData[]) {
         series.forEach( (serieData) => {
-            let legendText: string = this.createLegendText(serieData);
+            let legendText: string = TextRenderers.createSerieDataUniqueId(serieData);
             this.displayedPathes.delete(legendText);
             d3.select('.' + legendText).remove();
         });
@@ -248,7 +237,7 @@ export class LineBaseChart extends BaseChart {
             //     return;
             // }
             // console.log(serieData)
-            let legendText: string = this.createLegendText(serieData);
+            let legendText: string = TextRenderers.createSerieDataUniqueId(serieData);
             let strokeColor = this.zColors(legendText);
             // let path = 
             this.gChart.append('path')
