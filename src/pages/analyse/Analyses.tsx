@@ -14,6 +14,7 @@ import { LineChartSheetComponent } from './SheetComponents/LineChartSheetCompone
 import { TextReportSheetComponent } from './SheetComponents/TextReportSheetComponent';
 import { AvgDeltaChartSheetComponent } from './SheetComponents/AvgDeltaChartSheetComponent';
 import { DJUChartSheetComponent } from './SheetComponents/DJUChartSheetComponent';
+import { TemperatureEnergyChartSheetComponent } from './SheetComponents/TemperatureEnergyChartSheetComponent';
 
 interface IProps {
     globalStore: GlobalStore
@@ -82,6 +83,14 @@ interface IProps {
                                 case ESheetType.TEXT_REPORT:
                                     return (
                                         <TextReportSheetComponent
+                                            key={'SheetComponent' + sheet.sheetName}
+                                            globalStore={this.props.globalStore}
+                                            sheet={sheet}
+                                        />
+                                    );
+                                case ESheetType.TEMPERATURE_ENERGY_CHART:
+                                    return (
+                                        <TemperatureEnergyChartSheetComponent
                                             key={'SheetComponent' + sheet.sheetName}
                                             globalStore={this.props.globalStore}
                                             sheet={sheet}

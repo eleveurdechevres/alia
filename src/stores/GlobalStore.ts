@@ -143,13 +143,19 @@ export class GlobalStore {
           .then((missions) => missions);
     }
 
+    //   ______________________
+    // _/ Channels for mission \___________________________________________________________
     public getAllChannelsOfTypeFromMission = (type: TMesure, missionId: number): Promise<IChannelOfTypeFromMission[]> => {
         if (!type || !missionId) {
           return Promise.resolve([]);
         }
         return fetch(`http://test.ideesalter.com/alia_searchAllChannelsOfTypeFromMission.php?type=${type}&mission_id=${missionId}`)
-          .then((response) => response.json())
-          .then((results) => results);
+            .then((response) => response.json())
+            .then((results) => results.map((res: IChannelOfTypeFromMission) => {
+                let ext = res;  
+                ext._objId = 'IChannelOfTypeFromMission';
+                return ext;
+            }));
     }
 
     public getAllChannelsFromMission = (missionId: number): Promise<IChannelFromMission[]> => {
@@ -157,17 +163,40 @@ export class GlobalStore {
           return Promise.resolve([]);
         }
         return fetch(`http://test.ideesalter.com/alia_searchAllChannelsFromMission.php?mission_id=${missionId}`)
-          .then((response) => response.json())
-          .then((results) => results);
+            .then((response) => response.json())
+            .then((results) => results.map((res: IChannelFromMission) => {
+                let ext = res;  
+                ext._objId = 'IChannelFromMission';
+                return ext;
+            }));
     }
+
+    //   _______________________________
+    // _/ Capteurs Virtuels for mission \__________________________________________________
+    public getAllCapteursVirtuelsOfTypeFromMission = (type: TMesure, missionId: number): Promise<ICapteurVirtuelForMission[]> => {
+        if (!missionId) {
+          return Promise.resolve([]);
+        }
+        return fetch(`http://test.ideesalter.com/alia_searchCapteursVirtuelsOfTypeForMission.php?type=${type}&mission_id=${missionId}`)
+            .then((response) => response.json())
+            .then((results) => results.map((res: ICapteurVirtuelForMission) => {
+                let ext = res;  
+                ext._objId = 'ICapteurVirtuelForMission';
+                return ext;
+            }));
+        }
 
     public getAllCapteursVirtuelsFromMission = (missionId: number): Promise<ICapteurVirtuelForMission[]> => {
         if (!missionId) {
           return Promise.resolve([]);
         }
         return fetch(`http://test.ideesalter.com/alia_searchCapteursVirtuelsForMission.php?mission_id=${missionId}`)
-          .then((response) => response.json())
-          .then((results) => results);
+            .then((response) => response.json())
+            .then((results) => results.map((res: ICapteurVirtuelForMission) => {
+                let ext = res;  
+                ext._objId = 'ICapteurVirtuelForMission';
+                return ext;
+            }));
     }
 
     public getCapteur(capteurId: number, missionId: number): Promise<ICapteur> {

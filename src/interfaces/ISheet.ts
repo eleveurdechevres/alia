@@ -22,7 +22,8 @@ export enum ESheetType {
     TEXT_REPORT,
     SCATTER_PLOT,
     RADAR_CHART,
-    DJU_CHART
+    DJU_CHART,
+    TEMPERATURE_ENERGY_CHART
 }
 
 export interface ISheetTypeProperties {
@@ -87,6 +88,13 @@ export const ISheetTypes: Map<ESheetType, ISheetTypeProperties> = new Map([
         ESheetType.DJU_CHART,
         {
             name: 'DJU',
+            icon: 'timeline-bar-chart'
+        } as ISheetTypeProperties
+    ],
+    [
+        ESheetType.TEMPERATURE_ENERGY_CHART,
+        {
+            name: 'Wh°C¯¹ par m² et par jour',
             icon: 'timeline-bar-chart'
         } as ISheetTypeProperties
     ]

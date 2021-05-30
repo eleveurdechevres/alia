@@ -7,22 +7,21 @@ import * as csstips from 'csstips';
 import { TMesure } from '../../../interfaces/Types'
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { IMission } from 'src/interfaces/IMission';
-import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMission';
-import { IChannelFromMission } from 'src/interfaces/IChannelFromMission';
+import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMission';
 
 interface IProps {
     legend?: string;
     type?: TMesure;
     mission: IMission;
     globalStore: GlobalStore;
-    sensorSelected: IChannelOfTypeFromMission;
-    handleSelect: (sensor: IChannelOfTypeFromMission) => void;
-    filter: (sensor: IChannelOfTypeFromMission) => boolean;
+    sensorSelected: ICapteurVirtuelForMission;
+    handleSelect: (sensor: ICapteurVirtuelForMission) => void;
+    filter: (sensor: ICapteurVirtuelForMission) => boolean;
 }
 
-@observer export class MultiSensorSelector extends React.Component<IProps, {}> {
+@observer export class MultiCapteurVirtuelSelector extends React.Component<IProps, {}> {
 
-    @observable listSensors: IChannelOfTypeFromMission[] = [];
+    @observable listSensors: ICapteurVirtuelForMission[] = [];
 
     public constructor(props: IProps) {
         super(props);
@@ -30,25 +29,16 @@ interface IProps {
         autorun(() => {
             this.listSensors = [];
             if (this.props.type) {
-                this.props.globalStore.getAllChannelsOfTypeFromMission(this.props.type, this.props.mission.id).then(
-                    (listSensors: IChannelOfTypeFromMission[]) => {
+                this.props.globalStore.getAllCapteursVirtuelsOfTypeFromMission(this.props.type, this.props.mission.id).then(
+                    (listSensors: ICapteurVirtuelForMission[]) => {
                         this.listSensors.push(...listSensors);
                     }
                 )
             }
             else {
-                this.props.globalStore.getAllChannelsFromMission(this.props.mission.id).then(
-                    (listSensors: IChannelFromMission[]) => {
-                        listSensors.forEach((sensor: IChannelFromMission) => {
-                            this.listSensors.push({
-                                _objId: 'IChannelOfTypeFromMission',
-                                capteur_id: sensor.capteur_id,
-                                capteur_reference_id: sensor.capteur_reference_id,
-                                channel_id: sensor.channel_id,
-                                mission_id: sensor.mission_id,
-                                plan_id: sensor.plan_id
-                            });
-                        })
+                this.props.globalStore.getAllCapteursVirtuelsFromMission(this.props.mission.id).then(
+                    (listSensors: ICapteurVirtuelForMission[]) => {
+                        this.listSensors.push(...listSensors);
                     }
                 )
             }
@@ -76,7 +66,7 @@ interface IProps {
     private buildSensorList = () => {
         return (
             <Menu>
-                {this.listSensors.filter(this.props.filter).map((sensor: IChannelOfTypeFromMission) =>
+                {this.listSensors.filter(this.props.filter).map((sensor: ICapteurVirtuelForMission) =>
                     <MenuItem
                         key={this.buildKey(sensor)}
                         text={this.buildLegend(sensor)}
@@ -89,13 +79,13 @@ interface IProps {
         );
     }
 
-    private buildKey = (sensor: IChannelOfTypeFromMission): string => {
-        return sensor.capteur_id + sensor.capteur_reference_id + sensor.channel_id + sensor.mission_id + sensor.plan_id;
+    private buildKey = (capteurVirtuel: ICapteurVirtuelForMission): string => {
+        return 'Virtual_' + capteurVirtuel.id + capteurVirtuel.mission_id + capteurVirtuel.plan_id;
     }
 
-    private buildLegend = (sensor: IChannelOfTypeFromMission): string => {
-        return sensor ?
-            sensor.capteur_reference_id + ' [plan ' + sensor.plan_id + '][channel ' + sensor.channel_id + ']'
+    private buildLegend = (capteurVirtuel: ICapteurVirtuelForMission): string => {
+        return capteurVirtuel ?
+            '[' + capteurVirtuel.label + ']' + ' [plan ' + capteurVirtuel.plan_id + '][unit ' + capteurVirtuel.unit + ']'
             : this.props.legend ? this.props.legend + ' (' + this.props.type + ')...' : this.props.type + '...';
     }
 }
