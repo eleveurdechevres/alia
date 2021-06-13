@@ -55,6 +55,7 @@ const marginToLegend = 2;
         let rectStroke = 'gray';
         let textFill = 'white';
         let timeFormat = d3.timeFormat(this.props.crosshairState.crossHairTimeFormat);
+        const nbOfLines = this.props.crosshairState.textDisplayed ? this.props.crosshairState.textDisplayed.split('\n').length : 0;
         return (
             <g pointerEvents="none">
                 <g opacity={this.displayX()}>
@@ -191,7 +192,7 @@ const marginToLegend = 2;
                         rx={3}
                         ry={3}
                         width={crosshairParams.serieLegendWidth}
-                        height={crosshairParams.height}
+                        height={crosshairParams.height * nbOfLines}
                         fill={rectFill}
                         stroke={rectStroke}
                         shapeRendering="geometricPrecision"
@@ -199,13 +200,18 @@ const marginToLegend = 2;
 
                     <text
                         x={+ 20 + crosshairParams.serieLegendWidth / 2}
-                        y={- 21 - crosshairParams.height / 2}
+                        y={- 29 - crosshairParams.height / 2}
                         fontSize={crosshairParams.fontSize}
                         fill={textFill}
                         textAnchor="middle"
                         alignmentBaseline="central"
                     >
-                        {this.props.crosshairState.textDisplayed}
+                        {
+                            this.props.crosshairState.textDisplayed ?
+                            this.props.crosshairState.textDisplayed.split('\n').map((line: string, index: number) => 
+                                <tspan key={'crosshairTextLegend' + index} x={+ 20 + crosshairParams.serieLegendWidth / 2} dy="1.2em">{line}</tspan>
+                            ) : <React.Fragment/>
+                        }
                     </text>
                 </g>
             </g>

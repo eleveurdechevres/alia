@@ -2,6 +2,8 @@ import * as d3 from 'd3';
 import { BaseChart, IMargin, svgBorderWidth } from './BaseChart';
 import { ISerieData } from 'src/interfaces/ISerieData';
 import { ISheet } from 'src/interfaces/ISheet';
+import { IAvgMesure } from 'src/managers/GraphDataManager';
+import { TPeriod } from 'src/stores/GlobalStore';
 // import { toJS } from 'mobx';
 
 const yAxisWidth = 50;
@@ -15,11 +17,13 @@ const defautMarginChart: IMargin = {
 };
 
 export interface ITemperatureEnergyData {
-    Tmin: number,
-    Tmax: number,
     dateBegin: Date,
     dateEnd: Date,
-    DJU: number
+    indicateurTemperatureEnergie: number,
+    intTemp?: IAvgMesure,
+    extTemp?: IAvgMesure,
+    conso?: IAvgMesure,
+    period: TPeriod
 }
 
 // This class is used both on server and client side
@@ -66,7 +70,9 @@ export class TemperatureEnergyBaseChart extends BaseChart {
     private gAxisChartX: any;
     private gAxisChartY: any;
     private gAxisGridY: any;
-
+    private gLegendY: any;
+    // private textLegendY: any;
+    
     // Utils
     // public displayedPathes: Array<IDisplayedPath>;
     public displayedPathes: Map<string, ISerieData>;
@@ -91,7 +97,7 @@ export class TemperatureEnergyBaseChart extends BaseChart {
 
         this.yMin = 0;
         // this.yMax = 10;
-        this.yMax = d3.max(this.datum, (d: ITemperatureEnergyData, i: number) => d.DJU);
+        this.yMax = d3.max(this.datum, (d: ITemperatureEnergyData, i: number) => d.indicateurTemperatureEnergie);
         this.yMax = this.yMax + (this.yMax - this.yMin) / 10;
         this.yChartDomainDefault = [this.yMax, this.yMin];
         this.yChart.domain(this.yChartDomainDefault).range([0, this.chartHeight]);
@@ -141,7 +147,7 @@ export class TemperatureEnergyBaseChart extends BaseChart {
         this.updateChart();
     }
 
-    public getDJURectangles = () => {
+    public getRectangles = () => {
         return this.gChart.selectAll('.dju_rect');
     }
     public updateRectanglesZoom = () => {
@@ -151,16 +157,16 @@ export class TemperatureEnergyBaseChart extends BaseChart {
         .attr('width', (data: ITemperatureEnergyData) => {
             return this.timeScaleChart(data.dateEnd) - this.timeScaleChart(data.dateBegin)
         })
-        .attr('y', (d: ITemperatureEnergyData) => this.yChart(d.DJU))
-        .attr('height', (d: ITemperatureEnergyData) => this.chartHeight - this.yChart(d.DJU))
+        .attr('y', (d: ITemperatureEnergyData) => this.yChart(d.indicateurTemperatureEnergie))
+        .attr('height', (d: ITemperatureEnergyData) => this.chartHeight - this.yChart(d.indicateurTemperatureEnergie))
     }
 
-    public removeDJURectangles = () => {
+    public removeRectangles = () => {
         this.gChart.selectAll('.dju_rect').remove();
     }
 
     public updateRectangles = () => {
-        this.removeDJURectangles();
+        this.removeRectangles();
         const rectangles = this.gChart.selectAll('.dju_rect')
             .data(this.datum);
         rectangles.exit().remove();
@@ -179,8 +185,8 @@ export class TemperatureEnergyBaseChart extends BaseChart {
             .attr('y', this.chartHeight)
             .attr('height', 0)
             .transition()
-            .attr('y', (d: ITemperatureEnergyData) => this.yChart(d.DJU))
-            .attr('height', (d: ITemperatureEnergyData) => this.chartHeight - this.yChart(d.DJU))
+            .attr('y', (d: ITemperatureEnergyData) => this.yChart(d.indicateurTemperatureEnergie))
+            .attr('height', (d: ITemperatureEnergyData) => this.chartHeight - this.yChart(d.indicateurTemperatureEnergie))
     }
 
     public updateXAxis = () => {
@@ -220,5 +226,13 @@ export class TemperatureEnergyBaseChart extends BaseChart {
         this.gAxisChartY = this.gChart.append('g').attr('transform', 'translate(0,0)');
 
         this.gAxisGridY = this.gChart.append('g').attr('transform', 'translate(0,0)');
+        this.gLegendY = this.gChart.append('g')
+            .attr('transform',  `translate(-30, ${this.chartHeight / 2}) rotate(-90, 0, 0)`)
+        /*this.textLegendY = */this.gLegendY.append('text')
+            .attr('font-size', 12)
+            .attr('text-anchor', 'middle')
+            // .attr('alignment-baseline', 'after-edge')
+            // .attr('fill', 'cyan')
+            .text('kWh/Δ°C/m²');
     }
 }

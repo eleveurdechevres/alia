@@ -15,18 +15,16 @@ import { LineCrosshair } from './LineCrosshair';
 // import { ILegendItem } from './BaseChart';
 import { IDateInterval } from '../GraphBoard';
 import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMission';
-// import { dateFormat, dateToSqlDay } from 'src/utils/DateUtils';
+// import { dateToSqlDay } from 'src/utils/DateUtils';
+import { dateFormat } from 'src/utils/DateUtils';
 // import { ITemperatureEnergyData, TemperatureEnergyBaseChart } from './TemperatureEnergyBaseChart';
-import { TemperatureEnergyBaseChart } from './TemperatureEnergyBaseChart';
+import { ITemperatureEnergyData, TemperatureEnergyBaseChart } from './TemperatureEnergyBaseChart';
 import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMission';
-
-export interface ITemperatureEnergyChannels {
-    extTempChannel: IChannelOfTypeFromMission;
-    intTempChannel: IChannelOfTypeFromMission;
-    consommationEnergie: ICapteurVirtuelForMission | IChannelOfTypeFromMission;
-}
+import { TPeriod, GlobalStore } from 'src/stores/GlobalStore';
+import { IAvgMesure } from 'src/managers/GraphDataManager';
 
 interface IProps {
+    globalStore: GlobalStore;
     sheet: ISheet;
     chartWidth: number;
     chartHeight: number;
@@ -34,14 +32,13 @@ interface IProps {
     channels: ITemperatureEnergyChannels;
 }
 
-// interface IProps extends IPropsGenericChartComponent {
-//     sheet: ISheet;
-//     iPartition: number;
-//     handleGlobalMarkersManager: IhandleGlobalMarkersManager;
-//     handleSheetMarkersManager: IhandleSheetMarkersManager;
-//     verticalMarkers: Date[];
-//     horizontalMarkers: number[];
-// }
+export interface ITemperatureEnergyChannels {
+    extTempChannel: IChannelOfTypeFromMission;
+    intTempChannel: IChannelOfTypeFromMission;
+    consommationEnergie: ICapteurVirtuelForMission | IChannelOfTypeFromMission;
+    period: TPeriod;
+    surfaceM2: number;
+}
 
 interface IHorizontalContextDatum {
     x: Date;
@@ -248,67 +245,131 @@ const zoomTransition = defaultTransition;
 
     public componentWillReceiveProps(props: IProps) {
         if (props.channels !== this.props.channels) {
-            console.log('componentWillReceiveProps channels', JSON.stringify(props))
-            // this.loadJsonFromAeroc(
-            //     props.dateInterval.missionStartDate,
-            //     props.dateInterval.missionStopDate,
-            //     props.extTempChannel
-            // );
+            this.loadJsonFromAeroc(
+                props.dateInterval.missionStartDate,
+                props.dateInterval.missionStopDate,
+                props.channels
+            );
         }
     }
 
-    // private loadJsonFromAeroc = (dateBegin: Date, dateEnd: Date, extTempChannel: IChannelOfTypeFromMission) => {
-    //     // LOAD DATA from AEROC
-    //     if (extTempChannel !== undefined) {
+    private loadJsonFromAeroc = (dateBegin: Date, dateEnd: Date, channels: ITemperatureEnergyChannels) => {
+        // console.log('loadJsonFromAeroc', JSON.stringify(channels), dateBegin, dateEnd)
+
+        let promiseIntTemp: Promise<IAvgMesure[]> = this.props.globalStore.getAvgMesures(
+            channels.intTempChannel.mission_id,
+            channels.intTempChannel.capteur_id,
+            channels.intTempChannel.channel_id,
+            dateBegin,
+            dateEnd,
+            channels.period
+        );
+        let promiseExtTemp: Promise<IAvgMesure[]> = this.props.globalStore.getAvgMesures(
+            channels.extTempChannel.mission_id,
+            channels.extTempChannel.capteur_id,
+            channels.extTempChannel.channel_id,
+            dateBegin,
+            dateEnd,
+            channels.period
+        );
+        let promiseConsommation: Promise<IAvgMesure[]>;
+        if (channels.consommationEnergie._objId === 'IChannelOfTypeFromMission') {
+            promiseConsommation = this.props.globalStore.getAvgMesures(
+                channels.consommationEnergie.mission_id,
+                channels.consommationEnergie.capteur_id,
+                channels.consommationEnergie.channel_id,
+                dateBegin,
+                dateEnd,
+                channels.period
+            );
+        }
+        else {
+            promiseConsommation = this.props.globalStore.getAvgMesuresViruelles(
+                channels.consommationEnergie.mission_id,
+                channels.consommationEnergie.id,
+                dateBegin,
+                dateEnd,
+                channels.period
+            );
+        }
+        Promise.all([
+            promiseIntTemp,
+            promiseExtTemp,
+            promiseConsommation
+        ]).then(([intTempAvgs, extTempAvgs, consommationAvgs]: [IAvgMesure[], IAvgMesure[], IAvgMesure[]]) => {
             
-    //         // http://test.ideesalter.com/alia_readDJU.php?mission_id=1&date_begin=2017/12/09&date_end=2017/12/26&capteur_id=5&channel_id=6
-    //         const httpReq = 'http://test.ideesalter.com/alia_readDJU.php?' 
-    //             + 'mission_id=' + this.props.sheet.sheetDef.mission.id
-    //             + '&date_begin=' + dateToSqlDay(dateBegin)
-    //             + '&date_end=' + dateToSqlDay(dateEnd)
-    //             + '&capteur_id=' + extTempChannel.capteur_id
-    //             + '&channel_id=' + extTempChannel.channel_id;
-    //         console.log(httpReq);
-    //         const promise = fetch(httpReq).then((response) => response.json());
-    //         promise.then((datas) => {
-    //             const formatedData: ITemperatureEnergyData[] = datas.map((d: any) => {
-    //                 let jourCourant: string = d.JourCourant as string;
-    //                 let dateBeginJour: Date = new Date(jourCourant + ' 00:00:00')
-    //                 let dateEndJour: Date = new Date(jourCourant + ' 23:59:59')
-    //                 return {
-    //                     Tmin: parseInt(d.Tmin, 10),
-    //                     Tmax: parseInt(d.Tmax, 10),
-    //                     count: parseInt(d.count, 10),
-    //                     dateBegin: dateBeginJour,
-    //                     dateEnd: dateEndJour,
-    //                     DJU: parseInt(d.DJU, 10)
-    //                 }
-    //             });
-    //             this.baseChart.setData(formatedData);
-    //             this.updateChartComponent(undefined, undefined);
-    //             this.updateComponents();
+            let dateSet: Set<number> = new Set();
+            let intTempMap: Map<number, IAvgMesure> = new Map();
+            let extTempMap: Map<number, IAvgMesure> = new Map();
+            let consoMap: Map<number, IAvgMesure> = new Map();
 
-                
-    //             this.baseChart.getDJURectangles()
-    //             // this.baseChart.gChart.selectAll('.dju_rect')
-    //                 .attr('pointer-events', 'visible')
-    //                 .on('mouseover', this.deltaRectMouseOver)
-    //                 .on('mousemove', this.deltaRectMouseOver)
-    //                 .on('mouseout', this.deltaRectMouseOver)
-    //                 .on('mousedown', () => { this.dispatchEventToGeneralBrush('mousedown'); })
-    //                 .on('click', () => { this.dispatchEventToGeneralBrush('click'); })
-    //                 .on('dblclick', () => { this.dispatchEventToGeneralBrush('dblclick'); });
-                            
-    //             // this.resetZoom();
-    //             // this.scaleX.domain([minChannel1,maxChannel1]);
-    //             // this.scaleY.domain([minChannel2,maxChannel2]);
+            intTempAvgs.forEach((mesure: IAvgMesure) => {
+                if (!intTempMap.has(mesure.date.getTime())) {
+                    intTempMap.set(mesure.date.getTime(), mesure);
+                }
+                dateSet.add(mesure.date.getTime());
+            });
+            extTempAvgs.forEach((mesure: IAvgMesure) => {
+                if (!extTempMap.has(mesure.date.getTime())) {
+                    extTempMap.set(mesure.date.getTime(), mesure);
+                }
+                dateSet.add(mesure.date.getTime());
+            });
+            consommationAvgs.forEach((mesure: IAvgMesure) => {
+                if (!consoMap.has(mesure.date.getTime())) {
+                    consoMap.set(mesure.date.getTime(), mesure);
+                }
+                dateSet.add(mesure.date.getTime());
+            });
+            let sortedDates: number[] = Array.from(dateSet).sort((a: number, b: number) => a - b);
+            const formatedData: ITemperatureEnergyData[] = sortedDates.map((time: number) => {
+                let dateBeginJour: Date = new Date(time);
+                dateBeginJour.setHours(0);
+                dateBeginJour.setMinutes(0);
+                dateBeginJour.setSeconds(0);
+                let dateEndJour: Date = new Date(time);
+                dateEndJour.setHours(23);
+                dateEndJour.setMinutes(59);
+                dateEndJour.setSeconds(59);
+    
+                if (intTempMap.has(time) && extTempMap.has(time) && consoMap.has(time)) {
+                    const intTemp: IAvgMesure = intTempMap.get(time);
+                    const extTemp: IAvgMesure = extTempMap.get(time);
+                    const conso: IAvgMesure = consoMap.get(time);
+                    const diffTemp = intTemp.moy - extTemp.moy;
+                    const calcul = diffTemp === 0 ? 0 : (conso.moy / diffTemp) / this.props.channels.surfaceM2;
+                    return {
+                        dateBegin: dateBeginJour,
+                        dateEnd: dateEndJour,
+                        indicateurTemperatureEnergie: calcul,
+                        intTemp: intTemp,
+                        extTemp: extTemp,
+                        conso: conso,
+                        period: this.props.channels.period
+                    }
+                }
+                return {
+                    dateBegin: dateBeginJour,
+                    dateEnd: dateEndJour,
+                    indicateurTemperatureEnergie: 0,
+                    period: this.props.channels.period
+                }
+            });
+            this.baseChart.setData(formatedData);
+            this.updateChartComponent(undefined, undefined);
+            this.updateComponents();
 
-    //             // this.drawGraph();
-    //             // this.drawXAxis();
-    //             // this.drawYAxis();
-    //         });
-    //     }
-    // }
+            this.baseChart.getRectangles()
+                .attr('pointer-events', 'visible')
+                .on('mouseover', this.deltaRectMouseOver)
+                .on('mousemove', this.deltaRectMouseOver)
+                .on('mouseout', this.deltaRectMouseOver)
+                .on('mousedown', () => { this.dispatchEventToGeneralBrush('mousedown'); })
+                .on('click', () => { this.dispatchEventToGeneralBrush('click'); })
+                .on('dblclick', () => { this.dispatchEventToGeneralBrush('dblclick'); });
+        }
+    );
+    }
 
     public shouldComponentUpdate(props: IProps) {
         return false;
@@ -849,48 +910,62 @@ const zoomTransition = defaultTransition;
                 .call(this.verticalBrushDetail);
         }
     }
-    // private deltaRectMouseOver = (data: ITemperatureEnergyData) => {
-    //     console.log(JSON.stringify(data));
-    //     // let path: any = d3.select(d3.event.srcElement);
+    private formatAvgMesure = (titre: string, avgMesure: IAvgMesure, unit: string): string => {
+        return titre + '=' + avgMesure.moy.toFixed(2) + unit + ' (' + avgMesure.count + ' mesures)'
+    }
+
+    private deltaRectMouseOver = (data: ITemperatureEnergyData) => {
+        // let path: any = d3.select(d3.event.srcElement);
         
-    //     switch ( d3.event.type ) {
-    //         case 'mouseover':
-    //         case 'mousemove':
-    //             // path.attr('stroke-width', 2);
-    //             // this.legendStrokeHighlight(displayedPath);
-    //             this.crosshairState.textDisplayed = dateFormat(data.dateBegin, 'dddd DD MMMM YYYY') + ', ' + data.DJU + ' DJ'; // TODO : CREATE SERIE NAME displayedPath.serieData.serie_name;
-    //             this.displayCrosshair();
-    //             break;
-    //         case 'mouseout':
-    //             // path.attr('stroke-width', 1.2);
-    //             // this.legendStrokeHighlight();
-    //             this.crosshairState.textDisplayed = null;
-    //             this.displayCrosshair();
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    // }
 
-    // private dispatchEventToGeneralBrush = (event: string): void => {
-    //     // voir cette adresse pour pouvoir cliquer sur les path pour lancer le brush
-    //     // https://bl.ocks.org/mthh/99dc420cd7e276ecafe4ef4bf12c6927
-    //     const brushOverlayElement: Element = d3.select('#generalBrush > .overlay').node() as Element;
-    //     const brushSelectionElement: Element = d3.select('#generalBrush > .selection').node() as Element;
+        switch ( d3.event.type ) {
+            case 'mouseover':
+            case 'mousemove':
+                // path.attr('stroke-width', 2);
+                // this.legendStrokeHighlight(displayedPath);
+                let textArray: string[] = [];
+                textArray.push(dateFormat(data.dateBegin, 'dddd DD MMMM YYYY'));
+                textArray.push(data.indicateurTemperatureEnergie + ' kWh/Δ°C/m²');
+                if (data.intTemp && data.intTemp && data.conso) {
+                    textArray.push(this.formatAvgMesure('T° ext', data.intTemp, '°C'));
+                    textArray.push(this.formatAvgMesure('T° int', data.extTemp, '°C'));
+                    textArray.push('ΔT°=' + (data.intTemp.moy - data.extTemp.moy).toFixed(2) + '°C');
+                    textArray.push(this.formatAvgMesure('Conso', data.intTemp, 'Wh'));
+                }
+                this.crosshairState.textDisplayed = textArray.join('\n');
+                // TODO : CREATE SERIE NAME displayedPath.serieData.serie_name;
+                this.displayCrosshair();
+                break;
+            case 'mouseout':
+                // path.attr('stroke-width', 1.2);
+                // this.legendStrokeHighlight();
+                this.crosshairState.textDisplayed = null;
+                this.displayCrosshair();
+                break;
+            default:
+                break;
+        }
+    }
 
-    //     if ( brushSelectionElement ) {
-    //         const newClickEvent = new MouseEvent(event, {
-    //             clientX: d3.event.clientX,
-    //             clientY: d3.event.clientY,
-    //             bubbles: true,
-    //             cancelable: true,
-    //             view: window
-    //         });
-    //         if ( brushOverlayElement ) {
-    //             brushOverlayElement.dispatchEvent(newClickEvent);
-    //         }
-    //     }
-    // }
+    private dispatchEventToGeneralBrush = (event: string): void => {
+        // voir cette adresse pour pouvoir cliquer sur les path pour lancer le brush
+        // https://bl.ocks.org/mthh/99dc420cd7e276ecafe4ef4bf12c6927
+        const brushOverlayElement: Element = d3.select('#generalBrush > .overlay').node() as Element;
+        const brushSelectionElement: Element = d3.select('#generalBrush > .selection').node() as Element;
+
+        if ( brushSelectionElement ) {
+            const newClickEvent = new MouseEvent(event, {
+                clientX: d3.event.clientX,
+                clientY: d3.event.clientY,
+                bubbles: true,
+                cancelable: true,
+                view: window
+            });
+            if ( brushOverlayElement ) {
+                brushOverlayElement.dispatchEvent(newClickEvent);
+            }
+        }
+    }
 
     // private legendMouseHandle = (legendItem: ILegendItem): void => {
     //     switch ( d3.event.type ) {

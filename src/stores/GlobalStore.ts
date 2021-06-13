@@ -10,7 +10,7 @@ import { ISerieDef } from 'src/interfaces/ISeriesDef';
 import { TMesure } from 'src/interfaces/Types';
 import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMission';
 import { IChannelFromMission } from 'src/interfaces/IChannelFromMission';
-import { IMesure } from 'src/managers/GraphDataManager';
+import { IMesure, IAvgMesure } from 'src/managers/GraphDataManager';
 import { dateToSql } from 'src/utils/DateUtils';
 import { ICapteur } from 'src/interfaces/ICapteur';
 import { IChannel } from 'src/interfaces/IChannel';
@@ -18,6 +18,8 @@ import { ITypeMesure } from 'src/interfaces/ITypeMesure';
 import { ICapteurVirtuel } from 'src/interfaces/ICapteurVirtuel';
 import { IObservation } from 'src/interfaces/IObservation';
 import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMission';
+
+export type TPeriod = 'YEAR' | 'MONTH' | 'DAY';
 
 export class GlobalStore {
 
@@ -245,6 +247,39 @@ export class GlobalStore {
         );
     }
 
+    public getAvgMesures = (missionId: number, capteurId: number, channelId: number, dateBegin: Date, dateEnd: Date, period: TPeriod): Promise<IAvgMesure[]> => {
+        const body: string = JSON.stringify({
+            mission_id: missionId,
+            capteur_id: capteurId,
+            channel_id: channelId,
+            date_begin: dateBegin,
+            date_end: dateEnd,
+            period: period
+        });
+        return fetch(`http://test.ideesalter.com/alia_readAvgMesure.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: body
+            }
+        )
+        .then((response) => response.json())
+        .then((results: {JourCourant: string, moy: string, count: string}[]) => {
+            let resultsTyped: IAvgMesure[] = results.map(
+                (r: {JourCourant: string, moy: string, count: string}) => {
+                    return {
+                        date: new Date(r.JourCourant),
+                        moy: parseInt(r.moy, 10),
+                        count: parseInt(r.count, 10)
+                    };
+                }
+            )
+            return resultsTyped;
+        });
+    }
+
     public getMesuresViruelles = (missionId: number, capteurVirtuelId: number, dateBegin: Date, dateEnd: Date): Promise<IMesure[]> => {
         const body: string = JSON.stringify({
             mission_id: missionId,
@@ -266,6 +301,38 @@ export class GlobalStore {
             let resultsTyped: IMesure[] = results.map(
                 (r: {date: string, valeur: number}) => {
                     return {date: new Date(r.date), valeur: r.valeur};
+                }
+            )
+            return resultsTyped;
+        });
+    }
+
+    public getAvgMesuresViruelles = (missionId: number, capteurVirtuelId: number, dateBegin: Date, dateEnd: Date, period: TPeriod): Promise<IAvgMesure[]> => {
+        const body: string = JSON.stringify({
+            mission_id: missionId,
+            capteur_virtuel_id: capteurVirtuelId,
+            date_begin: dateBegin,
+            date_end: dateEnd,
+            period: period
+        });
+        return fetch(`http://test.ideesalter.com/alia_readAvgMesureVirtuelle.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: body
+            }
+        )
+        .then((response) => response.json())
+        .then((results: {JourCourant: string, moy: string, count: string}[]) => {
+            let resultsTyped: IAvgMesure[] = results.map(
+                (r: {JourCourant: string, moy: string, count: string}) => {
+                    return {
+                        date: new Date(r.JourCourant),
+                        moy: parseInt(r.moy, 10),
+                        count: parseInt(r.count, 10)
+                    };
                 }
             )
             return resultsTyped;

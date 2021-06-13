@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { style } from 'typestyle';
 import * as csstips from 'csstips';
-import { Checkbox, Menu, MenuItem } from '@blueprintjs/core';
+import { Checkbox, NumericInput, Radio, RadioGroup } from '@blueprintjs/core';
+// import { Checkbox, Menu, MenuItem, RadioGroup } from '@blueprintjs/core';
 import { observer } from 'mobx-react';
 import { observable, autorun } from 'mobx';
 import { GenericSheetComponent, IGenericSheetComponentProps } from './GenericSheetComponent';
@@ -11,6 +12,7 @@ import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMiss
 import { ITemperatureEnergyChannels, TemperatureEnergyChartComponent } from 'src/pages/Graph/BasicCharts/TemperatureEnergyChartComponent';
 import { MultiCapteurVirtuelSelector } from '../Detail/MultiCapteurVirtuelSelector';
 import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMission';
+import { TPeriod } from 'src/stores/GlobalStore';
 
 @observer export class TemperatureEnergyChartSheetComponent<P extends IGenericSheetComponentProps> extends GenericSheetComponent {
 
@@ -22,26 +24,26 @@ import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMiss
     @observable private isConsommationVirtual = false;
         
     @observable private channels: ITemperatureEnergyChannels;
+    @observable private period: TPeriod = 'DAY';
+    @observable private surfaceM2: number = undefined;
 
     public constructor(props: P) {
         super(props);
 
         autorun(() => {
-            console.log('autorun1')
             if (this.sensorConsommationEnergie || this.virtualCapteurConsommationEnergie) {
                 this.consommationEnergie = this.isConsommationVirtual ? this.virtualCapteurConsommationEnergie : this.sensorConsommationEnergie;
-                console.log('autorun1', this.sensorConsommationEnergie, this.virtualCapteurConsommationEnergie, this.consommationEnergie)
             }
         })
         autorun(() => {
-            console.log('autorun2')
-            if (this.extTempChannel && this.intTempChannel && this.consommationEnergie) {
+            if (this.extTempChannel && this.intTempChannel && this.consommationEnergie && this.period && this.surfaceM2) {
                 this.channels = {
                     extTempChannel: this.extTempChannel,
                     intTempChannel: this.intTempChannel,
-                    consommationEnergie: this.consommationEnergie
+                    consommationEnergie: this.consommationEnergie,
+                    period: this.period,
+                    surfaceM2: this.surfaceM2
                 };
-                console.log('autorun ', JSON.stringify(this.channels));
             }
         })
     }
@@ -58,6 +60,7 @@ import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMiss
             <div>
                 <div>
                     <TemperatureEnergyChartComponent
+                        globalStore={this.props.globalStore}
                         sheet={this.props.sheet}
                         chartWidth={this.windowWidth - 60}
                         chartHeight={500}
@@ -128,18 +131,39 @@ import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMiss
                                 filter={() => true}
                             />
                     }
+                    <RadioGroup
+                        // label="Period"
+                        onChange={this.handlePeriodChange}
+                        selectedValue={this.period}
+                    >
+                        <Radio label="Day" value="DAY" />
+                        <Radio label="Month" value="MONTH" />
+                        <Radio label="Year" value="YEAR" />
+                    </RadioGroup>
+                    <NumericInput
+                        onValueChange={this.handleSurfaceChange}
+                        value={this.surfaceM2}
+                        
+                    />
                 </div>
             </div>
         );
     }
-
-    protected buildSettingsMenu = () => {
-        return (
-            <Menu>
-                <MenuItem text="item1"/>
-                <MenuItem text="item2"/>
-            </Menu>
-        );
+    private handlePeriodChange = (event: React.FormEvent<HTMLElement>) => {
+        this.period = (event.target as HTMLInputElement).value as TPeriod;
     }
+
+    private handleSurfaceChange = (value: number) => {
+        this.surfaceM2 = value;
+    }
+
+    // protected buildSettingsMenu = () => {
+    //     return (
+    //         <Menu>
+    //             <MenuItem text="item1"/>
+    //             <MenuItem text="item2"/>
+    //         </Menu>
+    //     );
+    // }
 
 }

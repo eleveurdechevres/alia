@@ -12,6 +12,12 @@ export interface IMesure {
     valeur: number
 }
 
+export interface IAvgMesure {
+    date: Date,
+    moy: number,
+    count: number
+}
+
 // Mouvement
 // Température
 // Humidité
