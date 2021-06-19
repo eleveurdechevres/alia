@@ -175,7 +175,7 @@ export class TemperatureEnergyBaseChart extends BaseChart {
         rectangles.enter()
             .append('rect')
             .attr('class', 'energy_rect')
-            .attr('fill', (d: ITemperatureEnergyData) => d.dateBegin.getDay() === 0 ? 'Steelblue' : 'LightGoldenRodYellow')
+            .attr('fill', (d: ITemperatureEnergyData) => (d.period === 'DAY' && d.dateBegin.getDay() === 0) ? 'Steelblue' : 'LightGoldenRodYellow')
             .attr('stroke', 'gray')
             .attr('clip-path', 'url(#clip)')
             .attr('cursor', 'crosshair')

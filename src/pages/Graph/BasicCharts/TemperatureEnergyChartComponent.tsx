@@ -22,6 +22,7 @@ import { ITemperatureEnergyData, TemperatureEnergyBaseChart } from './Temperatur
 import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMission';
 import { TPeriod, GlobalStore } from 'src/stores/GlobalStore';
 import { IAvgMesure } from 'src/managers/GraphDataManager';
+import * as moment from 'moment';
 
 interface IProps {
     globalStore: GlobalStore;
@@ -322,14 +323,22 @@ const zoomTransition = defaultTransition;
             });
             let sortedDates: number[] = Array.from(dateSet).sort((a: number, b: number) => a - b);
             const formatedData: ITemperatureEnergyData[] = sortedDates.map((time: number) => {
-                let dateBeginJour: Date = new Date(time);
-                dateBeginJour.setHours(0);
-                dateBeginJour.setMinutes(0);
-                dateBeginJour.setSeconds(0);
-                let dateEndJour: Date = new Date(time);
-                dateEndJour.setHours(23);
-                dateEndJour.setMinutes(59);
-                dateEndJour.setSeconds(59);
+                let momentBeginPeriod: moment.Moment = moment(new Date(time));
+                momentBeginPeriod.hours(0);
+                momentBeginPeriod.minutes(0);
+                momentBeginPeriod.seconds(0);
+                let momentEndPeriod: moment.Moment = moment(new Date(time));
+                momentEndPeriod.hours(23);
+                momentEndPeriod.minutes(59);
+                momentEndPeriod.seconds(59);
+                if (this.props.channels.period === 'MONTH') {
+                    momentEndPeriod.add(1, 'month')
+                    momentEndPeriod.add(-1, 'day')
+                }
+                else if ((this.props.channels.period === 'YEAR')) {
+                    momentEndPeriod.add(1, 'year')
+                    momentEndPeriod.add(-1, 'day')
+                }
     
                 if (intTempMap.has(time) && extTempMap.has(time) && consoMap.has(time)) {
                     const intTemp: IAvgMesure = intTempMap.get(time);
@@ -339,8 +348,8 @@ const zoomTransition = defaultTransition;
                     const indicateurTemperatureEnergie = diffTemp === 0 ? 0 : (conso.moy / diffTemp) / this.props.sheet.sheetDef.habitat.surfaceM2;
                     const indicateurEnergie = (conso.moy) / this.props.sheet.sheetDef.habitat.surfaceM2;
                     return {
-                        dateBegin: dateBeginJour,
-                        dateEnd: dateEndJour,
+                        dateBegin: momentBeginPeriod.toDate(),
+                        dateEnd: momentEndPeriod.toDate(),
                         indicateurTemperatureEnergie: indicateurTemperatureEnergie * 100,
                         uniteIndicateurTemperatureEnergie: 'Wh/°C/m²',
                         indicateurEnergie: indicateurEnergie * 100,
@@ -352,8 +361,8 @@ const zoomTransition = defaultTransition;
                     }
                 }
                 return {
-                    dateBegin: dateBeginJour,
-                    dateEnd: dateEndJour,
+                    dateBegin: momentBeginPeriod.toDate(),
+                    dateEnd: momentEndPeriod.toDate(),
                     indicateurTemperatureEnergie: 0,
                     uniteIndicateurTemperatureEnergie: '',
                     indicateurEnergie: 0,
