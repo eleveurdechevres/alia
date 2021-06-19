@@ -76,6 +76,7 @@ interface ICapteurDescription {
                     <li>longitude : {this.props.sheet.sheetDef.habitat.gps_longitude}</li>
                     <li>latitude : {this.props.sheet.sheetDef.habitat.gps_latitude}</li>
                     <li>elevation : {this.props.sheet.sheetDef.habitat.gps_elevation}</li>
+                    <li>surface : {this.props.sheet.sheetDef.habitat.surfaceM2} m²</li>
                 </ul>
                 {/* <Map center={position} zoom={13}>
                     <TileLayer

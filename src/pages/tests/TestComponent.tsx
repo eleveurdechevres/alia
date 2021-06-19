@@ -34,6 +34,7 @@ interface IProps {
             gps_elevation: 17,
             gps_latitude: 47.2938326,
             gps_longitude: -1.3897073,
+            surfaceM2: 70,
         }
         let startDate =  new Date('2017-12-20');
         let stopDate =  new Date('2017-12-24');

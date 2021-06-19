@@ -38,7 +38,8 @@ const dialogFieldValueStyle = style(csstips.flex);
         adresse: undefined,
         gps_latitude: undefined,
         gps_longitude: undefined,
-        gps_elevation: undefined
+        gps_elevation: undefined,
+        surfaceM2: undefined
     };
 
     private planToCreate: IPlan = {
@@ -103,6 +104,11 @@ const dialogFieldValueStyle = style(csstips.flex);
                 accessor: 'gps_elevation',
                 width: 150
             },
+            {
+                Header: 'Surface (m²)',
+                accessor: 'surfaceM2',
+                width: 150
+            },
             // { Cell: (row: RowInfo) => {
             //         let habitat: IHabitat = row.original;
                     
@@ -165,7 +171,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                             </div>
                         );
                     }}
-                />                />
+                />
                 <NewElementButton
                     name="Create new Habitat"
                     onClick={() => { 
@@ -276,6 +282,18 @@ const dialogFieldValueStyle = style(csstips.flex);
                                     leftIcon="map-marker"
                                     placeholder="Altitude"
                                     onChange={(event: any) => { this.habitatToCreate.gps_elevation = event.target.value }}
+                                />
+                            </div>
+                        </div>
+                        <div className={dialogLineStyle}>
+                            <div className={dialogFieldNameStyle}>
+                                Surface (m²)
+                            </div>
+                            <div className={dialogFieldValueStyle}>
+                                <InputGroup
+                                    leftIcon="map-marker"
+                                    placeholder="Surface (m2)"
+                                    onChange={(event: any) => { this.habitatToCreate.surfaceM2 = event.target.value }}
                                 />
                             </div>
                         </div>

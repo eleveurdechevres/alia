@@ -37,7 +37,6 @@ export interface ITemperatureEnergyChannels {
     intTempChannel: IChannelOfTypeFromMission;
     consommationEnergie: ICapteurVirtuelForMission | IChannelOfTypeFromMission;
     period: TPeriod;
-    surfaceM2: number;
 }
 
 interface IHorizontalContextDatum {
@@ -337,11 +336,15 @@ const zoomTransition = defaultTransition;
                     const extTemp: IAvgMesure = extTempMap.get(time);
                     const conso: IAvgMesure = consoMap.get(time);
                     const diffTemp = intTemp.moy - extTemp.moy;
-                    const calcul = diffTemp === 0 ? 0 : (conso.moy / diffTemp) / this.props.channels.surfaceM2;
+                    const indicateurTemperatureEnergie = diffTemp === 0 ? 0 : (conso.moy / diffTemp) / this.props.sheet.sheetDef.habitat.surfaceM2;
+                    const indicateurEnergie = (conso.moy) / this.props.sheet.sheetDef.habitat.surfaceM2;
                     return {
                         dateBegin: dateBeginJour,
                         dateEnd: dateEndJour,
-                        indicateurTemperatureEnergie: calcul,
+                        indicateurTemperatureEnergie: indicateurTemperatureEnergie * 100,
+                        uniteIndicateurTemperatureEnergie: 'Wh/°C/m²',
+                        indicateurEnergie: indicateurEnergie * 100,
+                        uniteIndicateurEnergie: 'Wh/m²',
                         intTemp: intTemp,
                         extTemp: extTemp,
                         conso: conso,
@@ -352,7 +355,10 @@ const zoomTransition = defaultTransition;
                     dateBegin: dateBeginJour,
                     dateEnd: dateEndJour,
                     indicateurTemperatureEnergie: 0,
-                    period: this.props.channels.period
+                    uniteIndicateurTemperatureEnergie: '',
+                    indicateurEnergie: 0,
+                    uniteIndicateurEnergie: '',
+                    period: this.props.channels.period,
                 }
             });
             this.baseChart.setData(formatedData);
@@ -925,12 +931,18 @@ const zoomTransition = defaultTransition;
                 // this.legendStrokeHighlight(displayedPath);
                 let textArray: string[] = [];
                 textArray.push(dateFormat(data.dateBegin, 'dddd DD MMMM YYYY'));
-                textArray.push(data.indicateurTemperatureEnergie + ' kWh/Δ°C/m²');
-                if (data.intTemp && data.intTemp && data.conso) {
-                    textArray.push(this.formatAvgMesure('T° ext', data.intTemp, '°C'));
-                    textArray.push(this.formatAvgMesure('T° int', data.extTemp, '°C'));
+                textArray.push(data.indicateurTemperatureEnergie.toFixed(2) + ' ' + data.uniteIndicateurTemperatureEnergie);
+                if (data.extTemp) {
+                    textArray.push(this.formatAvgMesure('T° ext', data.extTemp, '°C'));
+                }
+                if (data.intTemp) {
+                    textArray.push(this.formatAvgMesure('T° int', data.intTemp, '°C'));
+                }
+                if (data.intTemp && data.extTemp) {
                     textArray.push('ΔT°=' + (data.intTemp.moy - data.extTemp.moy).toFixed(2) + '°C');
-                    textArray.push(this.formatAvgMesure('Conso', data.intTemp, 'Wh'));
+                }
+                if (data.conso) {
+                    textArray.push(this.formatAvgMesure('Conso', data.conso, 'kWh'));
                 }
                 this.crosshairState.textDisplayed = textArray.join('\n');
                 // TODO : CREATE SERIE NAME displayedPath.serieData.serie_name;

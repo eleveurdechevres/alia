@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { style } from 'typestyle';
 import * as csstips from 'csstips';
-import { Checkbox, NumericInput, Radio, RadioGroup } from '@blueprintjs/core';
-// import { Checkbox, Menu, MenuItem, RadioGroup } from '@blueprintjs/core';
+import { Checkbox, Radio, RadioGroup } from '@blueprintjs/core';
 import { observer } from 'mobx-react';
 import { observable, autorun } from 'mobx';
 import { GenericSheetComponent, IGenericSheetComponentProps } from './GenericSheetComponent';
@@ -25,7 +24,6 @@ import { TPeriod } from 'src/stores/GlobalStore';
         
     @observable private channels: ITemperatureEnergyChannels;
     @observable private period: TPeriod = 'DAY';
-    @observable private surfaceM2: number = undefined;
 
     public constructor(props: P) {
         super(props);
@@ -36,13 +34,12 @@ import { TPeriod } from 'src/stores/GlobalStore';
             }
         })
         autorun(() => {
-            if (this.extTempChannel && this.intTempChannel && this.consommationEnergie && this.period && this.surfaceM2) {
+            if (this.extTempChannel && this.intTempChannel && this.consommationEnergie && this.period) {
                 this.channels = {
                     extTempChannel: this.extTempChannel,
                     intTempChannel: this.intTempChannel,
                     consommationEnergie: this.consommationEnergie,
                     period: this.period,
-                    surfaceM2: this.surfaceM2
                 };
             }
         })
@@ -140,21 +137,12 @@ import { TPeriod } from 'src/stores/GlobalStore';
                         <Radio label="Month" value="MONTH" />
                         <Radio label="Year" value="YEAR" />
                     </RadioGroup>
-                    <NumericInput
-                        onValueChange={this.handleSurfaceChange}
-                        value={this.surfaceM2}
-                        
-                    />
                 </div>
             </div>
         );
     }
     private handlePeriodChange = (event: React.FormEvent<HTMLElement>) => {
         this.period = (event.target as HTMLInputElement).value as TPeriod;
-    }
-
-    private handleSurfaceChange = (value: number) => {
-        this.surfaceM2 = value;
     }
 
     // protected buildSettingsMenu = () => {

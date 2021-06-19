@@ -401,6 +401,7 @@ export class GlobalStore {
             `&latitude=` + habitat.gps_latitude + 
             `&longitude=` + habitat.gps_longitude + 
             `&elevation=` + habitat.gps_elevation + 
+            `&surfaceM2=` + habitat.surfaceM2 + 
             `&password=` + encodeURIComponent(password)
         ).then((response) => {
             if (response.status === 200) {

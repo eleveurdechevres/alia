@@ -20,6 +20,9 @@ export interface ITemperatureEnergyData {
     dateBegin: Date,
     dateEnd: Date,
     indicateurTemperatureEnergie: number,
+    uniteIndicateurTemperatureEnergie: string,
+    indicateurEnergie: number,
+    uniteIndicateurEnergie: string,
     intTemp?: IAvgMesure,
     extTemp?: IAvgMesure,
     conso?: IAvgMesure,
@@ -93,7 +96,6 @@ export class TemperatureEnergyBaseChart extends BaseChart {
     }
 
     private updateYDomain() {
-        // const values: number[] = this.datum.map((data: IDJUData) => data.DJU);
 
         this.yMin = 0;
         // this.yMax = 10;
@@ -148,10 +150,10 @@ export class TemperatureEnergyBaseChart extends BaseChart {
     }
 
     public getRectangles = () => {
-        return this.gChart.selectAll('.dju_rect');
+        return this.gChart.selectAll('.energy_rect');
     }
     public updateRectanglesZoom = () => {
-        this.gChart.selectAll('.dju_rect')
+        this.gChart.selectAll('.energy_rect')
         .transition()
         .attr('x', (d: ITemperatureEnergyData) => this.timeScaleChart(d.dateBegin))
         .attr('width', (data: ITemperatureEnergyData) => {
@@ -162,17 +164,17 @@ export class TemperatureEnergyBaseChart extends BaseChart {
     }
 
     public removeRectangles = () => {
-        this.gChart.selectAll('.dju_rect').remove();
+        this.gChart.selectAll('.energy_rect').remove();
     }
 
     public updateRectangles = () => {
         this.removeRectangles();
-        const rectangles = this.gChart.selectAll('.dju_rect')
+        const rectangles = this.gChart.selectAll('.energy_rect')
             .data(this.datum);
         rectangles.exit().remove();
         rectangles.enter()
             .append('rect')
-            .attr('class', 'dju_rect')
+            .attr('class', 'energy_rect')
             .attr('fill', (d: ITemperatureEnergyData) => d.dateBegin.getDay() === 0 ? 'Steelblue' : 'LightGoldenRodYellow')
             .attr('stroke', 'gray')
             .attr('clip-path', 'url(#clip)')
