@@ -17,6 +17,7 @@ interface IProps {
     selectedCapteurVirtuelList: ICapteurVirtuelForMission[];
     handleAddCapteurVirtuel: (capteurVirtuel: ICapteurVirtuelForMission) => void;
     handleRemoveCapteurVirtuel: (capteurVirtuel: ICapteurVirtuelForMission) => void;
+    legendColorgenerator: (legend: string) => string;
 }
 
 const SENSOR_MULTI_SELECT = MultiSelect.ofType<ICapteurVirtuelForMission>();
@@ -41,8 +42,9 @@ const SENSOR_MULTI_SELECT = MultiSelect.ofType<ICapteurVirtuelForMission>();
         },
         tagProps: (value: string, index: number): ITagProps => {
             return {
-                intent: Intent.SUCCESS,
-                minimal: true
+                intent: Intent.NONE,
+                minimal: true,
+                className: style(csstips.border('2px solid ' + this.props.legendColorgenerator(value)))
             };
         },
         placeholder: 'Add virtual sensors(s)...'

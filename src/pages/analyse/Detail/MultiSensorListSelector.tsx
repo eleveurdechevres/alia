@@ -1,4 +1,4 @@
-import { ITagProps, MenuItem, Intent } from '@blueprintjs/core';
+import { Intent, ITagProps, MenuItem } from '@blueprintjs/core';
 import { MultiSelect, ItemPredicate, ItemRenderer, IItemRendererProps, IItemModifiers } from '@blueprintjs/select';
 import * as csstips from 'csstips';
 import { observable } from 'mobx';
@@ -17,6 +17,7 @@ interface IProps {
     selectedChannelList: IChannelFromMission[];
     handleAddChannel: (channel: IChannelFromMission) => void;
     handleRemoveChannel: (channel: IChannelFromMission) => void;
+    legendColorgenerator: (legend: string) => string;
 }
 
 const SENSOR_MULTI_SELECT = MultiSelect.ofType<IChannelFromMission>();
@@ -41,8 +42,9 @@ const SENSOR_MULTI_SELECT = MultiSelect.ofType<IChannelFromMission>();
         },
         tagProps: (value: string, index: number): ITagProps => {
             return {
-                intent: Intent.SUCCESS,
-                minimal: true
+                intent: Intent.NONE,
+                minimal: true,
+                className: style(csstips.border('2px solid ' + this.props.legendColorgenerator(value)))
             };
         },
         placeholder: 'Add sensor(s)...'

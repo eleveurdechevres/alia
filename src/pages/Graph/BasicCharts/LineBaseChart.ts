@@ -138,7 +138,7 @@ export class LineBaseChart extends BaseChart {
         protected sheet: ISheet,
         width: number,
         height: number,
-        margin: IMargin = defautMarginChart
+        margin: IMargin = defautMarginChart,
     ) {
         super(sheet, width, height);
         this.displayedPathes = new Map();

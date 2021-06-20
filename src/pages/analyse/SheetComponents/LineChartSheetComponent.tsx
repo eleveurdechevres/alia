@@ -19,15 +19,17 @@ import { ITypeMesure } from 'src/interfaces/ITypeMesure';
 import { IPlan } from 'src/interfaces/IPlan';
 import { MultiCapteurVirtuelListSelector } from '../Detail/MultiCapteurVirtuelListSelector';
 import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMission';
+import * as d3 from 'd3';
+import { ScaleOrdinal } from 'd3';
 
 @observer export class LineChartSheetComponent<P extends IGenericSheetComponentProps> extends GenericSheetComponent {
 
     @observable private selectedChannelList: IChannelFromMission[] = [];
     @observable private selectedCapteurVirtuelList: ICapteurVirtuelForMission[] = [];
-    
+    private zColors: ScaleOrdinal<string, string> = d3.scaleOrdinal(d3.schemeCategory10);
     private mapSelectedChannelSelectedSerie: Map<IChannelFromMission, ISerieData> = new Map();
     private mapSelectedCapteurVirtuelSelectedSerie: Map<ICapteurVirtuelForMission, ISerieData> = new Map();
-    
+
     public constructor(props: P) {
         super(props);
 
@@ -51,10 +53,10 @@ import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMiss
                 <div>
                     <LineChartComponent
                         sheet={this.props.sheet}
-                        chartWidth={this.windowWidth - 60}
                         chartHeight={500}
                         dateInterval={dateInterval}
                         series={this.selectedSeries}
+                        chartWidth={this.windowWidth - 60}
                     />
                 </div>
             </div>
@@ -62,6 +64,10 @@ import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMiss
     }
     
     @observable private selectedSeries: ISerieData[] = [];
+
+    private legendColorGenerator = (legend: string) => {
+        return this.zColors(legend)
+    }
 
     private addChannel = (channelForMission: IChannelFromMission) => {
 
@@ -244,6 +250,7 @@ import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMiss
                     selectedChannelList={this.selectedChannelList}
                     handleAddChannel={this.addChannel}
                     handleRemoveChannel={this.removeChannel}
+                    legendColorgenerator={this.legendColorGenerator}
                 />
                 <MultiCapteurVirtuelListSelector
                     mission={this.props.sheet.sheetDef.mission}
@@ -251,6 +258,7 @@ import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMiss
                     selectedCapteurVirtuelList={this.selectedCapteurVirtuelList}
                     handleAddCapteurVirtuel={this.addCapteurVirtuel}
                     handleRemoveCapteurVirtuel={this.removeCapteurVirtuel}
+                    legendColorgenerator={this.legendColorGenerator}
                 />
             </div>
         );

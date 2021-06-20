@@ -211,8 +211,8 @@ interface IProps {
                     habitat={this.props.habitat}
                     mission={this.props.mission}
                 />                
-                <div className={style(csstips.margin(10))}>
-                    <svg width={this.width} height={this.height}>
+                <div className={style(csstips.margin(10), {cursor: 'default'})}>
+                    <svg width={this.width} height={this.height} className={style({cursor: 'crosshair'})}>
                     {/* <svg ref={(ref) => {this.svgRef = ref}} width={this.width} height={this.height}> */}
                         <image ref={(ref) => {this.imageRef = ref}} />
                         {

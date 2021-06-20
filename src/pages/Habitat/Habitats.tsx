@@ -151,6 +151,13 @@ const dialogFieldValueStyle = style(csstips.flex);
                     showPagination={true}
                     showPageJump={true}
                     sortable={true}
+                    getTrGroupProps={() => {
+                        return {
+                            style: {
+                                cursor: 'pointer'
+                            }
+                           }
+                    }}
                     SubComponent={ row => {
                         return (
                             <div className={style(csstips.gridSpaced(5), csstips.margin(10))}>

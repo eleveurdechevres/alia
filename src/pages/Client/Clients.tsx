@@ -114,6 +114,13 @@ const dialogFieldValueStyle = style(csstips.flex);
                     showPagination={true}
                     showPageJump={true}
                     sortable={true}
+                    getTrGroupProps={() => {
+                        return {
+                            style: {
+                                cursor: 'pointer'
+                            }
+                           }
+                    }}
                     // SubComponent={ row => {
                     //     return (<HabitatsTable client={row.original} />);
                     // }}

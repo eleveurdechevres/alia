@@ -143,6 +143,13 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
                     defaultPageSize={10}
                     className="-striped -highlight"
                     getTrProps={this.handleEventsOnMission}
+                    getTrGroupProps={() => {
+                        return {
+                            style: {
+                                cursor: 'pointer'
+                            }
+                           }
+                    }}
                     SubComponent={ row => {
                         return (
                             <div className={style(csstips.gridSpaced(5), csstips.margin(10))}>
