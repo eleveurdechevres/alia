@@ -101,7 +101,7 @@ export class GlobalStore {
     }
 
     private getClients = (): Promise<IClient[]> => {
-        return fetch(`http://test.ideesalter.com/alia_searchClient.php`)
+        return fetch(`https://api.alia-france.com/alia_searchClient.php`)
         .then((response) => response.json())
         .then((clients) => clients);
     }
@@ -112,7 +112,7 @@ export class GlobalStore {
             return Promise.resolve([]);
         }
         
-        return fetch(`http://test.ideesalter.com/alia_searchClient.php?nom=${nom}`)
+        return fetch(`https://api.alia-france.com/alia_searchClient.php?nom=${nom}`)
             .then((response) => response.json())
             .then((clients) => clients);
     }
@@ -122,7 +122,7 @@ export class GlobalStore {
         if (!client) {
             return Promise.resolve([]);
         }
-        return fetch(`http://test.ideesalter.com/alia_searchHabitat.php?client_id=${client.id}`)
+        return fetch(`https://api.alia-france.com/alia_searchHabitat.php?client_id=${client.id}`)
             .then((response) => response.json())
             .then((habitats) => habitats);
     }
@@ -131,7 +131,7 @@ export class GlobalStore {
         if (!habitatId) {
             return Promise.resolve([]);
         }
-        return fetch(`http://test.ideesalter.com/alia_searchPlan.php?habitat_id=${habitatId}`)
+        return fetch(`https://api.alia-france.com/alia_searchPlan.php?habitat_id=${habitatId}`)
             .then((response) => response.json())
             .then((plans) => plans);
     }
@@ -140,7 +140,7 @@ export class GlobalStore {
         if (!habitat) {
           return Promise.resolve([]);
         }
-        return fetch(`http://test.ideesalter.com/alia_searchMission.php?habitat_id=${habitat.id}`)
+        return fetch(`https://api.alia-france.com/alia_searchMission.php?habitat_id=${habitat.id}`)
           .then((response) => response.json())
           .then((missions) => missions);
     }
@@ -151,7 +151,7 @@ export class GlobalStore {
         if (!type || !missionId) {
           return Promise.resolve([]);
         }
-        return fetch(`http://test.ideesalter.com/alia_searchAllChannelsOfTypeFromMission.php?type=${type}&mission_id=${missionId}`)
+        return fetch(`https://api.alia-france.com/alia_searchAllChannelsOfTypeFromMission.php?type=${type}&mission_id=${missionId}`)
             .then((response) => response.json())
             .then((results) => results.map((res: IChannelOfTypeFromMission) => {
                 let ext = res;  
@@ -164,7 +164,7 @@ export class GlobalStore {
         if (!missionId) {
           return Promise.resolve([]);
         }
-        return fetch(`http://test.ideesalter.com/alia_searchAllChannelsFromMission.php?mission_id=${missionId}`)
+        return fetch(`https://api.alia-france.com/alia_searchAllChannelsFromMission.php?mission_id=${missionId}`)
             .then((response) => response.json())
             .then((results) => results.map((res: IChannelFromMission) => {
                 let ext = res;  
@@ -179,7 +179,7 @@ export class GlobalStore {
         if (!missionId) {
           return Promise.resolve([]);
         }
-        return fetch(`http://test.ideesalter.com/alia_searchCapteursVirtuelsOfTypeForMission.php?type=${type}&mission_id=${missionId}`)
+        return fetch(`https://api.alia-france.com/alia_searchCapteursVirtuelsOfTypeForMission.php?type=${type}&mission_id=${missionId}`)
             .then((response) => response.json())
             .then((results) => results.map((res: ICapteurVirtuelForMission) => {
                 let ext = res;  
@@ -192,7 +192,7 @@ export class GlobalStore {
         if (!missionId) {
           return Promise.resolve([]);
         }
-        return fetch(`http://test.ideesalter.com/alia_searchCapteursVirtuelsForMission.php?mission_id=${missionId}`)
+        return fetch(`https://api.alia-france.com/alia_searchCapteursVirtuelsForMission.php?mission_id=${missionId}`)
             .then((response) => response.json())
             .then((results) => results.map((res: ICapteurVirtuelForMission) => {
                 let ext = res;  
@@ -202,25 +202,25 @@ export class GlobalStore {
     }
 
     public getCapteur(capteurId: number, missionId: number): Promise<ICapteur> {
-        return fetch(`http://test.ideesalter.com/alia_getCapteur.php?capteur_id=${capteurId}&mission_id=${missionId}`)
+        return fetch(`https://api.alia-france.com/alia_getCapteur.php?capteur_id=${capteurId}&mission_id=${missionId}`)
             .then((response) => response.json())
             .then((results) => results[0]);
     }
 
     public getChannel(channelId: number, capteurReferenceId: string): Promise<IChannel> {
-        return fetch(`http://test.ideesalter.com/alia_getChannel.php?channel_id=${channelId}&capteur_reference_id=${capteurReferenceId}`)
+        return fetch(`https://api.alia-france.com/alia_getChannel.php?channel_id=${channelId}&capteur_reference_id=${capteurReferenceId}`)
             .then((response) => response.json())
             .then((results) => results);
     }
 
     public getMesureType(measureTypeId: number): Promise<ITypeMesure> {
-        return fetch(`http://test.ideesalter.com/alia_getTypeMesure.php?id=${measureTypeId}`)
+        return fetch(`https://api.alia-france.com/alia_getTypeMesure.php?id=${measureTypeId}`)
             .then((response) => response.json())
             .then((results) => results);
     }
 
     public getPlan(planId: number): Promise<IPlan> {
-        return fetch(`http://test.ideesalter.com/alia_getPlan.php?id=${planId}`)
+        return fetch(`https://api.alia-france.com/alia_getPlan.php?id=${planId}`)
             .then((response) => response.json())
             .then((results) => results);
     }
@@ -228,11 +228,11 @@ export class GlobalStore {
     public getMesures = (missionId: number, capteurId: number, channelId: number, dateBegin: Date, dateEnd: Date): Promise<IMesure[]> => {
         // LOAD DATA from AEROC
         // date_begin=2017/12/09 20:13:04&date_end=2018/01/24 21:19:06
-        // console.log('http://test.ideesalter.com/alia_readMesure.php?capteur_id=' + capteurId 
+        // console.log('https://api.alia-france.com/alia_readMesure.php?capteur_id=' + capteurId 
         // + '&channel_id=' + channelId + '&date_begin=' + dateBegin + '&date_end=' + dateEnd)
-        // return fetch('http://test.ideesalter.com/alia_readMesure.php?capteur_id=' + capteurId
+        // return fetch('https://api.alia-france.com/alia_readMesure.php?capteur_id=' + capteurId
         // + '&channel_id=' + channelId + '&date_begin=2017/12/09 20:13:04&date_end=2017/12/11 21:19:06')
-        var request = 'http://test.ideesalter.com/alia_readMesure.php?mission_id=' + missionId + '&capteur_id=' + capteurId
+        var request = 'https://api.alia-france.com/alia_readMesure.php?mission_id=' + missionId + '&capteur_id=' + capteurId
             + '&channel_id=' + channelId + '&date_begin=' + dateToSql(dateBegin) + '&date_end=' + dateToSql(dateEnd);
         return fetch(request)
             .then((response) => response.json())
@@ -256,7 +256,7 @@ export class GlobalStore {
             date_end: dateEnd,
             period: period
         });
-        return fetch(`http://test.ideesalter.com/alia_readAvgMesure.php`, {
+        return fetch(`https://api.alia-france.com/alia_readAvgMesure.php`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -287,7 +287,7 @@ export class GlobalStore {
             date_begin: dateBegin,
             date_end: dateEnd
         });
-        return fetch(`http://test.ideesalter.com/alia_readMesureVirtuelle.php`, {
+        return fetch(`https://api.alia-france.com/alia_readMesureVirtuelle.php`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -315,7 +315,7 @@ export class GlobalStore {
             date_end: dateEnd,
             period: period
         });
-        return fetch(`http://test.ideesalter.com/alia_readAvgMesureVirtuelle.php`, {
+        return fetch(`https://api.alia-france.com/alia_readAvgMesureVirtuelle.php`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -340,7 +340,7 @@ export class GlobalStore {
     }
 
     public getMeteo = (missionId: number, typeMesureId: number, dateBegin: Date, dateEnd: Date): Promise<IMesure[]> => {
-        var request = 'http://test.ideesalter.com/alia_readMeteo.php?mission_id=' + missionId
+        var request = 'https://api.alia-france.com/alia_readMeteo.php?mission_id=' + missionId
             + '&type_mesure_id=' + typeMesureId + '&date_begin=' + dateToSql(dateBegin) + '&date_end=' + dateToSql(dateEnd);
             
         console.log('getMeteo ' + request);
@@ -360,7 +360,7 @@ export class GlobalStore {
         if (!channelId || !missionId) {
             return Promise.resolve(undefined);
         }
-        var request = 'http://test.ideesalter.com/alia_getCountMesuresForChannelMission.php?mission_id=' + missionId + '&capteur_id=' + capteurId + '&channel_id=' + channelId;
+        var request = 'https://api.alia-france.com/alia_getCountMesuresForChannelMission.php?mission_id=' + missionId + '&capteur_id=' + capteurId + '&channel_id=' + channelId;
         return fetch(request)
             .then((response) => response.json())
             .then((results: { count: number }[]) => {
@@ -375,7 +375,7 @@ export class GlobalStore {
 
 
     public writeClient = (client: IClient, password: string) => {
-        return fetch(`http://testbase.ideesalter.com/alia_writeClient.php` +
+        return fetch(`https://api.alia-france.com/alia_writeClient.php` +
             `?id=` + client.id +
             `&nom=` + client.nom + 
             `&adresse=` + client.adresse + 
@@ -394,7 +394,7 @@ export class GlobalStore {
     }
 
     public writeHabitat = (habitat: IHabitat, password: string) => {
-        return fetch(`http://testbase.ideesalter.com/alia_writeHabitat.php` +
+        return fetch(`https://api.alia-france.com/alia_writeHabitat.php` +
             `?id=` + habitat.id +
             `&client_id=` + this.client.id + 
             `&adresse=` + habitat.adresse + 
@@ -425,7 +425,7 @@ export class GlobalStore {
             description: capteurVirtuel.description,
             type_mesure: capteurVirtuel.type_mesure
         });
-        fetch(`http://testbase.ideesalter.com/alia_writeCapteurVirtuel.php`, {
+        fetch(`https://api.alia-france.com/alia_writeCapteurVirtuel.php`, {
                 method: 'POST',
                 headers: {
                     // 'Access-Control-Allow-Origin:': '*',
@@ -458,7 +458,7 @@ export class GlobalStore {
             image: observation.image
         });
         
-        fetch(`http://testbase.ideesalter.com/alia_writeObservation.php`, {
+        fetch(`https://api.alia-france.com/alia_writeObservation.php`, {
                 method: 'POST',
                 headers: {
                 //     'Access-Control-Allow-Origin:': '*',
@@ -486,7 +486,7 @@ export class GlobalStore {
             valeur: mesure.valeur
         });
         console.log('writeMesureVirtuelle', body)
-        fetch(`http://testbase.ideesalter.com/alia_writeMesureVirtuelle.php`, {
+        fetch(`https://api.alia-france.com/alia_writeMesureVirtuelle.php`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -511,7 +511,7 @@ export class GlobalStore {
             date: dateToSql(mesure.date)
         });
         console.log(body)
-        fetch(`http://test.ideesalter.com/alia_deleteMesureVirtuelle.php`, {
+        fetch(`https://api.alia-france.com/alia_deleteMesureVirtuelle.php`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -530,7 +530,7 @@ export class GlobalStore {
     }
 
     public writePlan = (plan: IPlan, password: string) => {
-        return fetch(`http://testbase.ideesalter.com/alia_writePlan.php`, {
+        return fetch(`https://api.alia-france.com/alia_writePlan.php`, {
                 method: 'post',
                 headers: {
                     'Content-Type': 'application/json',
@@ -568,7 +568,7 @@ export class GlobalStore {
         
             console.log(body);
         fetch(
-            `http://testbase.ideesalter.com/alia_writeMission.php`, {
+            `https://api.alia-france.com/alia_writeMission.php`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -590,7 +590,7 @@ export class GlobalStore {
     }  
 
     public deleteClient = (client: IClient, password: string) => {
-        return fetch(`http://testbase.ideesalter.com/alia_deleteClient.php?id=` + client.id + `&password=` + encodeURIComponent(password))
+        return fetch(`https://api.alia-france.com/alia_deleteClient.php?id=` + client.id + `&password=` + encodeURIComponent(password))
             .then((response) => {
                 if (response.status === 200) {
                     this.reloadClients();
@@ -604,7 +604,7 @@ export class GlobalStore {
     }
 
     public deleteHabitat = (habitat: IHabitat, password: string) => {
-        return fetch(`http://testbase.ideesalter.com/alia_deleteHabitat.php?id=` + habitat.id + `&password=` + encodeURIComponent(password))
+        return fetch(`https://api.alia-france.com/alia_deleteHabitat.php?id=` + habitat.id + `&password=` + encodeURIComponent(password))
             .then((response) => {
                 if (response.status === 200) {
                     this.reloadHabitatsFromClient(this.client)
@@ -618,7 +618,7 @@ export class GlobalStore {
     }
 
     public deletePlan = (plan: IPlan, password: string) => {
-        return fetch(`http://testbase.ideesalter.com/alia_deletePlan.php?id=` + plan.id + `&password=` + encodeURIComponent(password))
+        return fetch(`https://api.alia-france.com/alia_deletePlan.php?id=` + plan.id + `&password=` + encodeURIComponent(password))
             .then((response) => {
                 if (response.status === 200) {
                     this.reloadPlansForHabitat(plan.habitatId)
@@ -632,7 +632,7 @@ export class GlobalStore {
     }
 
     public deleteMission = (mission: IMission, password: string) => {
-        fetch(`http://testbase.ideesalter.com/alia_deleteMission.php?id=` + mission.id + `&password=` + encodeURIComponent(password))
+        fetch(`https://api.alia-france.com/alia_deleteMission.php?id=` + mission.id + `&password=` + encodeURIComponent(password))
             .then((response) => {
                 if (response.status === 200) {
                     this.reloadMissionsFromHabitat(this.habitat);
@@ -646,7 +646,7 @@ export class GlobalStore {
     }
 
     public getDataClusterList = () => {
-        return fetch(`http://test.ideesalter.com/alia_getClusters.php`)
+        return fetch(`https://api.alia-france.com/alia_getClusters.php`)
         .then((response) => response.json())
         .then((results: {databaseId: string}[]) => {
             return results;

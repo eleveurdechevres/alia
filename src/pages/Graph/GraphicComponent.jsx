@@ -226,8 +226,8 @@ export class GraphicComponent extends Component {
 
   loadJsonFromAeroc(dateBegin, dateEnd, callback = null) {
       // LOAD DATA from AEROC
-    $.getJSON('http://test.ideesalter.com/alia_readMesure.php?date_begin=' + dateBegin + '&date_end=' + dateEnd, function(data) {
-      //console.log('http://test.ideesalter.com/alia_readMesure.php?date_begin=' + dateBegin + '&date_end=' + dateEnd);
+    $.getJSON('https://api.alia-france.com/alia_readMesure.php?date_begin=' + dateBegin + '&date_end=' + dateEnd, function(data) {
+      //console.log('https://api.alia-france.com/alia_readMesure.php?date_begin=' + dateBegin + '&date_end=' + dateEnd);
       let mapCapteurs = this.state.mapJsonData;
       data.forEach((item, index) => {
         item.date = new Date(item.date).setSeconds(0, 0);

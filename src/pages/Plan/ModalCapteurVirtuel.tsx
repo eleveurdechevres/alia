@@ -58,7 +58,7 @@ const dialogFieldValueStyle = style(csstips.flex);
 // GET MESURES VIRTUELLES !!!
         // autorun(() => {
         //     if (this.props.capteurVirtuel) {
-        //         var request = `http://test.ideesalter.com/alia_readMesureVirtuelle.php`;
+        //         var request = `https://api.alia-france.com/alia_readMesureVirtuelle.php`;
         //         fetch(request)
         //         .then((response) => response.text())
         //         .then((responseData) => {

@@ -33,7 +33,7 @@ interface IProps extends Modal.IProps {
 
     protected onAfterOpen = () => {
         if (this.props.observation) {
-            var request = `http://test.ideesalter.com/alia_afficheImageObservation.php?mission_id=${this.props.observation.mission_id}&observation_id=${this.props.observation.id}`;
+            var request = `https://api.alia-france.com/alia_afficheImageObservation.php?mission_id=${this.props.observation.mission_id}&observation_id=${this.props.observation.id}`;
             fetch(request)
             .then((response) => response.text())
             .then((responseData) => {

@@ -43,7 +43,7 @@ export class GraphDataManager {
     }
 
     private loadTypeMesuresFromAeroc = () => {
-        var request = 'http://test.ideesalter.com/alia_getTypeMesures.php';
+        var request = 'https://api.alia-france.com/alia_getTypeMesures.php';
         return fetch(request)
             .then((response) => response.json())
             .then((data) => {
@@ -63,7 +63,7 @@ export class GraphDataManager {
         mesuresToStore: IMesure[], 
         callback: (mesures: IMesure[]) => void
     ) => {
-        var request = 'http://test.ideesalter.com/alia_readMeteo.php?habitat_id=' + habitatId
+        var request = 'https://api.alia-france.com/alia_readMeteo.php?habitat_id=' + habitatId
             + '&channel_id=' + channelId + '&date_begin=' + dateToSql(dateBegin) + '&date_end=' + dateToSql(dateEnd);
 
         return fetch(request)
@@ -92,10 +92,10 @@ export class GraphDataManager {
         return ( index !== -1 ? genericMesures[index].valeur : undefined );
     }
 
-    // http://test.ideesalter.com/alia_readMeteoForChannelType.php?date_begin=2018/03/18%2000:00:00&date_end=2018/03/22%2019:00:00&habitat_id=2&channel_type=Direction%20vent
+    // https://api.alia-france.com/alia_readMeteoForChannelType.php?date_begin=2018/03/18%2000:00:00&date_end=2018/03/22%2019:00:00&habitat_id=2&channel_type=Direction%20vent
     private loadMeteoDataFromAerocForChannelType = (missionId: number, channelType: string, dateBegin: Date, dateEnd: Date, mesuresToStore: IMesure[], callback: (mesures: IMesure[]) => void) => {
         
-        var request = 'http://test.ideesalter.com/alia_readMeteoForChannelType.php?mission_id=' + missionId
+        var request = 'https://api.alia-france.com/alia_readMeteoForChannelType.php?mission_id=' + missionId
             + '&channel_type=' + channelType + '&date_begin=' + dateToSql(dateBegin) + '&date_end=' + dateToSql(dateEnd);
         console.log(request);
         return fetch(request)

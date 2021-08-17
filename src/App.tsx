@@ -12,6 +12,7 @@ import { Habitats } from 'src/pages/Habitat/Habitats';
 import { Missions } from 'src/pages/Mission/Missions';
 import { Analyses } from 'src/pages/analyse/Analyses';
 import { GlobalStore } from 'src/stores/GlobalStore';
+import { Auth0Context } from '@auth0/auth0-react';
 
 interface IProps {
     globalStore: GlobalStore
@@ -27,12 +28,12 @@ export const enum NavBarTabEnum {
 
 @observer export default class App extends React.Component<IProps> {
 
+    static contextType = Auth0Context;
     public constructor(props: IProps) {
         super(props);
     }
   
     public render() {
-
         let mainContent = undefined;
 
         switch ( this.props.globalStore.selectedTab ) {
@@ -62,14 +63,15 @@ export const enum NavBarTabEnum {
             default:
                 break;
         }
-        let mainBoard = <div id="content" className={style(csstips.fillParent, csstips.padding(50, 0, 0, 0))}>{mainContent}</div>
-    
+        let mainBoard = <div id="content" className={style(csstips.fillParent, csstips.padding(50, 0, 0, 0))}>{mainContent}</div>;
+        const { isAuthenticated } = this.context;
+
         return (
             <div>
                 <AliaNavBar
                     globalStore={this.props.globalStore}
                 />
-                {mainBoard}
+                {isAuthenticated && mainBoard}
             </div>
         );
     }

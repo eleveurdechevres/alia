@@ -46,10 +46,10 @@ export class SunBehaviourManager {
 
     private loadJsonSunPositionsFromApiSunriseSunset = (date: Date, latitude: number, longitude: number) => {
         // https://api.sunrise-sunset.org/json?lat=47.1458614&lng=-1.3093876&date=2018-03-23&formatted=0
-        // http://testbase.ideesalter.com/alia_getSunsetSunRise.php?lat=47.2938326&lng=-1.3897073&date=2017-12-09
+        // https://api.alia-france.com/alia_getSunsetSunRise.php?lat=47.2938326&lng=-1.3897073&date=2017-12-09
 
 //        var request = 'https://api.sunrise-sunset.org/json?lat=' + latitude + '&lng=' + longitude + '&date=' + dateFormat(date, 'YYYY-MM-DD') + '&formatted=0';
-        var request = 'http://testbase.ideesalter.com/alia_getSunsetSunRise.php?lat=' + latitude + '&lng=' + longitude + '&date=' + dateFormat(date, 'YYYY-MM-DD');
+        var request = 'https://api.alia-france.com/alia_getSunsetSunRise.php?lat=' + latitude + '&lng=' + longitude + '&date=' + dateFormat(date, 'YYYY-MM-DD');
         console.log(request);
         return fetch(request)
             .then((response) => response.json())

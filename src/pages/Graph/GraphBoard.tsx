@@ -160,7 +160,7 @@ interface ICrosshair {
     loadCapteurChannels = () => {
 
         $.getJSON(
-            'http://test.ideesalter.com/alia_searchChannelsFromCapteur.php?capteur_reference_id=' + this.capteur.capteur_reference_id,
+            'https://api.alia-france.com/alia_searchChannelsFromCapteur.php?capteur_reference_id=' + this.capteur.capteur_reference_id,
             (data: IChannel[]) => {
                 this.channels = data;
                 data.forEach((channel) => {

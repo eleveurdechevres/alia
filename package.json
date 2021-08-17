@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@auth0/auth0-react": "^1.6.0",
     "@blueprintjs/core": "^3.21.0",
     "@blueprintjs/select": "^3.11.2",
     "@types/d3": "^5.7.2",

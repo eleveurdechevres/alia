@@ -27,7 +27,7 @@ export class ClientSearchComponent extends React.Component {
 			return Promise.resolve({ options: [] });
 		}
 
-        return fetch(`http://test.ideesalter.com/alia_searchClient.php?nom=${nom}`)
+        return fetch(`https://api.alia-france.com/alia_searchClient.php?nom=${nom}`)
 		.then((response) => response.json())
 		.then((clients) => {
 			return { options: clients };

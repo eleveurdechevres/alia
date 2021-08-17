@@ -3,10 +3,11 @@ import { style } from 'typestyle/lib';
 import * as csstips from 'csstips';
 import '@blueprintjs/core/lib/css/blueprint.css';
 import { observer } from 'mobx-react';
-import { Alignment, Navbar, NavbarHeading, NavbarDivider, NavbarGroup } from '@blueprintjs/core';
+import { Alignment, Navbar, NavbarHeading, NavbarDivider, NavbarGroup, Popover, Button, Position, Menu, MenuItem } from '@blueprintjs/core';
 import { NavBarButton } from 'src/NavBarButtons';
 import { NavBarTabEnum } from 'src/App';
 import { GlobalStore } from 'src/stores/GlobalStore';
+import { Auth0Context } from '@auth0/auth0-react';
 
 interface IProps {
     globalStore: GlobalStore
@@ -14,11 +15,13 @@ interface IProps {
 
 @observer export class AliaNavBar extends React.Component<IProps> {
 
+    static contextType = Auth0Context;
     public constructor(props: IProps) {
         super(props);
     }
 
     public render() {
+        const { isAuthenticated, user } = this.context;
         return (
             <Navbar 
                 className={style(csstips.margin(0, 0, 10, 0), { boxShadow: '1px 1px 10px #888' })}
@@ -82,8 +85,46 @@ interface IProps {
                         onClick={this.handleGotoDebug}
                         disabled={false}
                     />
+                    <Popover
+                        // className={style(csstips.fillParent, csstips.width('100%'))}
+                        canEscapeKeyClose={true}
+                        minimal={true}
+                        position={Position.BOTTOM_LEFT}
+                        content={this.buildUserMenu()}
+                    >
+                        <Button
+                            className={style(csstips.width('100%'))}
+                            icon="person"
+                            text={isAuthenticated ? user.name : ''}
+                        />
+                    </Popover>
+
                 </NavbarGroup>
             </Navbar>
+        );
+    }
+
+    private buildUserMenu = (): JSX.Element => {
+        const { isAuthenticated, loginWithRedirect, logout } = this.context;
+        const keyBase = Math.random();
+        return (
+            <Menu>
+                {!isAuthenticated ?
+                    <MenuItem
+                        key={keyBase}
+                        icon="log-in"
+                        text={'Login'}
+                        onClick={() => loginWithRedirect()}
+                    />
+                    :
+                    <MenuItem
+                        key={keyBase}
+                        icon="log-out"
+                        text={'Logout'}
+                        onClick={() => logout()}
+                    />
+                }
+            </Menu>
         );
     }
 

@@ -257,15 +257,15 @@ const zoomTransition = defaultTransition;
         // LOAD DATA from AEROC
         if (channel1 !== undefined && channel2 !== undefined) {
             
-            // http://test.ideesalter.com/alia_readDeltaJourNuit.php?date_begin=2017-12-09%2020:30:00&date_end=2017-12-26%2000:00:00&capteur_id=1&channel_id=1
-            const httpReqChannel1 = 'http://test.ideesalter.com/alia_readDeltaJourNuit.php?' 
+            // https://api.alia-france.com/alia_readDeltaJourNuit.php?date_begin=2017-12-09%2020:30:00&date_end=2017-12-26%2000:00:00&capteur_id=1&channel_id=1
+            const httpReqChannel1 = 'https://api.alia-france.com/alia_readDeltaJourNuit.php?' 
                 + 'habitat_id=' + this.props.sheet.sheetDef.habitat.id
                 + '&mission_id=' + this.props.sheet.sheetDef.mission.id
                 + '&date_begin=' + dateToSql(dateBegin)
                 + '&date_end=' + dateToSql(dateEnd)
                 + '&capteur_id=' + channel1.capteur_id
                 + '&channel_id=' + channel1.channel_id;
-            const httpReqChannel2 = 'http://test.ideesalter.com/alia_readDeltaJourNuit.php?' 
+            const httpReqChannel2 = 'https://api.alia-france.com/alia_readDeltaJourNuit.php?' 
                 + 'habitat_id=' + this.props.sheet.sheetDef.habitat.id
                 + '&mission_id=' + this.props.sheet.sheetDef.mission.id
                 + '&date_begin=' + dateToSql(dateBegin)

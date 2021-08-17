@@ -83,7 +83,7 @@ interface IProps {
     }
 
     private getTypeMesures = () => {
-        var request = `http://test.ideesalter.com/alia_getTypeMesures.php`;
+        var request = `https://api.alia-france.com/alia_getTypeMesures.php`;
         return fetch(request)
             .then((response) => {
                 return( response.json() );

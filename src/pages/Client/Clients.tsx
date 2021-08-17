@@ -268,8 +268,7 @@ const dialogFieldValueStyle = style(csstips.flex);
             </div>
         );
     }
-    // http://testbase.ideesalter.com/alia_writeClient.php?id=8&nom=mon%20nom12&adresse=69%20rue%20du%20quai2&email=monNom@rueduquai2.fr&telephone=+3369696970
-    // http://testbase.ideesalter.com/alia_deleteClient.php?id=8
+
     private handleDeleteClient = () => {
         this.props.globalStore.deleteClient(this.clientToDelete, this.password);
         this.clientToDelete = undefined;

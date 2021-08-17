@@ -322,7 +322,7 @@ interface IProps {
         if (!id) {
             return Promise.resolve({ plans: [] });
         }
-        var request = `http://test.ideesalter.com/alia_afficheImagePlan.php?id=${this.props.planId}`;
+        var request = `https://api.alia-france.com/alia_afficheImagePlan.php?id=${this.props.planId}`;
         return fetch(request)
             .then((response) => {
                 return( response.text() );
@@ -338,7 +338,7 @@ interface IProps {
             return Promise.resolve({ capteurs: [] });
         }
     
-        return fetch(`http://test.ideesalter.com/alia_searchCapteursForPlan.php?plan_id=${planId}&mission_id=${missionId}`)
+        return fetch(`https://api.alia-france.com/alia_searchCapteursForPlan.php?plan_id=${planId}&mission_id=${missionId}`)
             .then((response) => response.json())
             .then((capteurs) => {
                 this.capteurs = capteurs;
@@ -351,7 +351,7 @@ interface IProps {
             return Promise.resolve({ capteurs: [] });
         }
     
-        let request = `http://test.ideesalter.com/alia_searchCapteursVirtuelsForPlan.php?plan_id=${planId}&mission_id=${missionId}`;
+        let request = `https://api.alia-france.com/alia_searchCapteursVirtuelsForPlan.php?plan_id=${planId}&mission_id=${missionId}`;
         return fetch(request)
             .then((response) => response.json())
             .then((capteursVirtuels) => {
@@ -365,7 +365,7 @@ interface IProps {
             return Promise.resolve({ observations: [] });
         }
     
-        const req = `http://test.ideesalter.com/alia_searchObservationsForPlan.php?plan_id=${planId}&mission_id=${missionId}`;
+        const req = `https://api.alia-france.com/alia_searchObservationsForPlan.php?plan_id=${planId}&mission_id=${missionId}`;
         return fetch(req)
             .then((response) => response.json())
             .then((observations) => {

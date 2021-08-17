@@ -252,8 +252,8 @@ const zoomTransition = defaultTransition;
         // LOAD DATA from AEROC
         if (extTempChannel !== undefined) {
             
-            // http://test.ideesalter.com/alia_readDJU.php?mission_id=1&date_begin=2017/12/09&date_end=2017/12/26&capteur_id=5&channel_id=6
-            const httpReq = 'http://test.ideesalter.com/alia_readDJU.php?' 
+            // https://api.alia-france.com/alia_readDJU.php?mission_id=1&date_begin=2017/12/09&date_end=2017/12/26&capteur_id=5&channel_id=6
+            const httpReq = 'https://api.alia-france.com/alia_readDJU.php?' 
                 + 'mission_id=' + this.props.sheet.sheetDef.mission.id
                 + '&date_begin=' + dateToSqlDay(dateBegin)
                 + '&date_end=' + dateToSqlDay(dateEnd)

@@ -133,7 +133,7 @@ const VERTICAL_LEGEND_WIDTH = 15;
         if (channel1 !== undefined && channel2 !== undefined) {
             
             // date_begin=2017/12/09 20:13:04&date_end=2018/01/24 21:19:06
-            var httpReq = 'http://test.ideesalter.com/alia_searchCrossMesures.php?' 
+            var httpReq = 'https://api.alia-france.com/alia_searchCrossMesures.php?' 
                 + 'mission_id=' + missionId
                 + '&date_begin=' + dateBegin 
                 + '&date_end=' + dateEnd 
