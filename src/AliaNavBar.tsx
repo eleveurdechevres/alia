@@ -16,12 +16,47 @@ interface IProps {
 @observer export class AliaNavBar extends React.Component<IProps> {
 
     static contextType = Auth0Context;
+
     public constructor(props: IProps) {
         super(props);
+
     }
 
+    private getRoles = (): string[] => {
+        const { user } = this.context;
+        let roles: string[] = user ? user['http://demozero.net/roles'] : [];
+        return roles;
+    }
+
+    private isAuthenticated = (): boolean => {
+        const { isAuthenticated } = this.context;
+        return isAuthenticated;
+    }
+
+    private getUser = () => {
+        const { user } = this.context;
+        return user;
+    }
+
+    private isRoleAdmin = (): boolean => {
+        return this.isRole('admin');
+    }
+
+    // private isRoleClient = (): boolean => {
+    //     return this.isRole('client');
+    // }
+
+    private isRole = (role: string) => {
+        let roles: string[] = this.getRoles();
+
+        return roles.find((currentRole) => currentRole === role) !== undefined;
+    }
+
+
     public render() {
-        const { isAuthenticated, user } = this.context;
+
+        
+
         return (
             <Navbar 
                 className={style(csstips.margin(0, 0, 10, 0), { boxShadow: '1px 1px 10px #888' })}
@@ -50,13 +85,16 @@ interface IProps {
                             </div>
                         : ''
                     }
-                    <NavBarButton
-                        icon="person"
-                        tabEnum={NavBarTabEnum.CLIENT}
-                        selectedTab={this.props.globalStore.selectedTab}
-                        onClick={this.handleGotoClients}
-                        disabled={false}
-                    />
+                    {
+                        this.isRoleAdmin() &&
+                        <NavBarButton
+                            icon="person"
+                            tabEnum={NavBarTabEnum.CLIENT}
+                            selectedTab={this.props.globalStore.selectedTab}
+                            onClick={this.handleGotoClients}
+                            disabled={false}
+                        />
+                    }
                     <NavBarButton
                         icon="home"
                         tabEnum={NavBarTabEnum.HABITATS}
@@ -78,13 +116,16 @@ interface IProps {
                         onClick={this.handleGotoAnalyses}
                         disabled={!this.props.globalStore.habitat}
                     />
-                    <NavBarButton
-                        icon="lightbulb"
-                        tabEnum={NavBarTabEnum.DEBUG}
-                        selectedTab={this.props.globalStore.selectedTab}
-                        onClick={this.handleGotoDebug}
-                        disabled={false}
-                    />
+                    {
+                        this.isRoleAdmin() &&
+                        <NavBarButton
+                            icon="lightbulb"
+                            tabEnum={NavBarTabEnum.DEBUG}
+                            selectedTab={this.props.globalStore.selectedTab}
+                            onClick={this.handleGotoDebug}
+                            disabled={false}
+                        />
+                    }
                     <Popover
                         // className={style(csstips.fillParent, csstips.width('100%'))}
                         canEscapeKeyClose={true}
@@ -95,7 +136,7 @@ interface IProps {
                         <Button
                             className={style(csstips.width('100%'))}
                             icon="person"
-                            text={isAuthenticated ? user.name : ''}
+                            text={this.isAuthenticated() ? this.getUser().name : ''}
                         />
                     </Popover>
 
@@ -122,6 +163,9 @@ interface IProps {
                         icon="log-out"
                         text={'Logout'}
                         onClick={() => logout()}
+                        // onClick={() => logout({
+                        //     returnTo: window.location.origin
+                        // })}
                     />
                 }
             </Menu>
