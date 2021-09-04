@@ -18,6 +18,7 @@ import { ITypeMesure } from 'src/interfaces/ITypeMesure';
 import { ICapteurVirtuel } from 'src/interfaces/ICapteurVirtuel';
 import { IObservation } from 'src/interfaces/IObservation';
 import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMission';
+import { Auth0ContextInterface, User } from '@auth0/auth0-react';
 
 export type TPeriod = 'YEAR' | 'MONTH' | 'DAY';
 
@@ -52,6 +53,35 @@ export class GlobalStore {
         });
     }
 
+    public isAuthenticated(context: Auth0ContextInterface<User>): boolean {
+        const { isAuthenticated } = context;
+        return isAuthenticated;
+    }
+
+    public getUser(context: Auth0ContextInterface<User>): User {
+        const { user } = context;
+        return user;
+    }
+
+    public isRoleAdmin(context: Auth0ContextInterface<User>): boolean {
+        return this.isRole(context, 'admin');
+    }
+
+    public isRoleClient(context: Auth0ContextInterface<User>): boolean {
+        return this.isRole(context, 'client');
+    }
+
+    private readUserRoles(context: Auth0ContextInterface<User>): string[] {
+        const { user } = context;
+        let roles: string[] = user ? user['http://demozero.net/roles'] : [];
+        return roles;
+    }
+
+    public isRole(context: Auth0ContextInterface<User>, role: string): boolean {
+        let roles: string[] = this.readUserRoles(context)
+        return roles.find((currentRole) => currentRole === role) !== undefined;
+    }
+    
     public get clients(): IClient[] {
         return this._clients;
     }

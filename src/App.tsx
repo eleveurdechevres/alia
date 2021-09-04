@@ -12,7 +12,7 @@ import { Habitats } from 'src/pages/Habitat/Habitats';
 import { Missions } from 'src/pages/Mission/Missions';
 import { Analyses } from 'src/pages/analyse/Analyses';
 import { GlobalStore } from 'src/stores/GlobalStore';
-import { Auth0Context } from '@auth0/auth0-react';
+import { Auth0Context, Auth0ContextInterface, User } from '@auth0/auth0-react';
 
 interface IProps {
     globalStore: GlobalStore
@@ -23,16 +23,16 @@ export const enum NavBarTabEnum {
     HABITATS = 'Habitats',
     MISSIONS = 'Missions',
     ANALYSES = 'Analyses',
-    DEBUG = 'Debug',
+    DEBUG = 'Debug'
 }
 
 @observer export default class App extends React.Component<IProps> {
 
-    static contextType = Auth0Context;
+    static contextType: React.Context<Auth0ContextInterface<User>> = Auth0Context;
     public constructor(props: IProps) {
         super(props);
     }
-  
+
     public render() {
         let mainContent = undefined;
 

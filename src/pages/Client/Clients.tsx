@@ -12,6 +12,8 @@ import { toJS, observable } from 'mobx';
 import { Icon, Dialog, Button, Intent, InputGroup } from '@blueprintjs/core';
 import { NewElementButton } from 'src/components/NewElementButton';
 import { GlobalStore } from 'src/stores/GlobalStore';
+import { Auth0Context, Auth0ContextInterface, User } from '@auth0/auth0-react';
+import { NavBarTabEnum } from 'src/App';
 
 interface IProps {
     globalStore: GlobalStore;
@@ -22,6 +24,8 @@ const dialogFieldNameStyle = style(csstips.width(80), csstips.margin(5, 5));
 const dialogFieldValueStyle = style(csstips.flex);
 
 @observer export class Clients extends React.Component<IProps, {}> {
+
+    static contextType: React.Context<Auth0ContextInterface<User>> = Auth0Context;
 
     @observable private clientToDelete: IClient | undefined = undefined;
     @observable private dialogCreateClientOpened: boolean = false;
@@ -40,6 +44,25 @@ const dialogFieldValueStyle = style(csstips.flex);
         super(props);
     }
 
+    public componentDidMount() {
+        this.selectClientForUser();
+    }
+
+    public componentDidUpdate() {
+        this.selectClientForUser();
+    }
+
+    private selectClientForUser = () => {
+        if (!this.props.globalStore.isRoleAdmin(this.context)) {
+            const user: User = this.props.globalStore.getUser(this.context);
+            const client = this.props.globalStore.clients.find((cl: IClient) => cl.email === user.email)
+            if (client) {
+                this.props.globalStore.client = client;
+                this.props.globalStore.selectedTab = NavBarTabEnum.HABITATS;
+            }
+        }
+    }
+    
     // id
     // nom
     // adresse
@@ -102,11 +125,22 @@ const dialogFieldValueStyle = style(csstips.flex);
 
         ];
 
+        const filterVisibleClient = (client: IClient): boolean => {
+            if (this.props.globalStore.isRoleAdmin(this.context)) {
+                return true;
+            }
+            else {
+                if (client.email === this.props.globalStore.getUser(this.context).email) {
+                    return true;
+                }
+            }
+            return false;
+        }
         return (
 
             <div className={style(csstips.margin(10), { boxShadow: '1px 1px 10px #888' })}>
                 <ReactTable
-                    data={toJS(this.props.globalStore.clients.slice())}
+                    data={toJS(this.props.globalStore.clients.filter(filterVisibleClient).slice())}
                     columns={columns}
                     defaultPageSize={10}
                     className="-striped -highlight"

@@ -2,6 +2,7 @@ import * as React from 'react';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { Icon } from '@blueprintjs/core';
+// import { Position, Tooltip } from '@blueprintjs/core';
 import { style } from 'typestyle';
 
 interface IProps {
@@ -30,22 +31,24 @@ const fixedButton: string = style(
 
     public render() {
         return (
-            <Icon
-                className={fixedButton}
-                icon="add"
-                iconSize={this.buttonNewSheetSize}
-                color={this.buttonNewSheetColor}
-                title={this.props.name}
-                onMouseOver={() => {
-                    this.buttonNewSheetSize = 65 ;
-                    this.buttonNewSheetColor = 'purple';
-                }}
-                onMouseLeave={() => {
-                    this.buttonNewSheetSize = 60 ;
-                    this.buttonNewSheetColor = 'blue';
-                }}
-                onClick={this.props.onClick}
-            />
+            // <Tooltip content={this.props.name} position={Position.LEFT}>
+                <Icon
+                    className={fixedButton}
+                    icon="add"
+                    iconSize={this.buttonNewSheetSize}
+                    color={this.buttonNewSheetColor}
+                    title={this.props.name}
+                    onMouseOver={() => {
+                        this.buttonNewSheetSize = 65 ;
+                        this.buttonNewSheetColor = 'purple';
+                    }}
+                    onMouseLeave={() => {
+                        this.buttonNewSheetSize = 60 ;
+                        this.buttonNewSheetColor = 'blue';
+                    }}
+                    onClick={this.props.onClick}
+                />
+            // </Tooltip>
         );
     }
 }

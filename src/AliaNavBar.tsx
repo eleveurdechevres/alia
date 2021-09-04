@@ -7,7 +7,7 @@ import { Alignment, Navbar, NavbarHeading, NavbarDivider, NavbarGroup, Popover, 
 import { NavBarButton } from 'src/NavBarButtons';
 import { NavBarTabEnum } from 'src/App';
 import { GlobalStore } from 'src/stores/GlobalStore';
-import { Auth0Context } from '@auth0/auth0-react';
+import { Auth0Context, Auth0ContextInterface, User } from '@auth0/auth0-react';
 
 interface IProps {
     globalStore: GlobalStore
@@ -15,47 +15,14 @@ interface IProps {
 
 @observer export class AliaNavBar extends React.Component<IProps> {
 
-    static contextType = Auth0Context;
+    static contextType: React.Context<Auth0ContextInterface<User>> = Auth0Context;
 
     public constructor(props: IProps) {
         super(props);
 
     }
 
-    private getRoles = (): string[] => {
-        const { user } = this.context;
-        let roles: string[] = user ? user['http://demozero.net/roles'] : [];
-        return roles;
-    }
-
-    private isAuthenticated = (): boolean => {
-        const { isAuthenticated } = this.context;
-        return isAuthenticated;
-    }
-
-    private getUser = () => {
-        const { user } = this.context;
-        return user;
-    }
-
-    private isRoleAdmin = (): boolean => {
-        return this.isRole('admin');
-    }
-
-    // private isRoleClient = (): boolean => {
-    //     return this.isRole('client');
-    // }
-
-    private isRole = (role: string) => {
-        let roles: string[] = this.getRoles();
-
-        return roles.find((currentRole) => currentRole === role) !== undefined;
-    }
-
-
     public render() {
-
-        
 
         return (
             <Navbar 
@@ -86,7 +53,7 @@ interface IProps {
                         : ''
                     }
                     {
-                        this.isRoleAdmin() &&
+                        this.props.globalStore.isRoleAdmin(this.context) &&
                         <NavBarButton
                             icon="person"
                             tabEnum={NavBarTabEnum.CLIENT}
@@ -117,7 +84,7 @@ interface IProps {
                         disabled={!this.props.globalStore.habitat}
                     />
                     {
-                        this.isRoleAdmin() &&
+                        this.props.globalStore.isRoleAdmin(this.context) &&
                         <NavBarButton
                             icon="lightbulb"
                             tabEnum={NavBarTabEnum.DEBUG}
@@ -136,7 +103,7 @@ interface IProps {
                         <Button
                             className={style(csstips.width('100%'))}
                             icon="person"
-                            text={this.isAuthenticated() ? this.getUser().name : ''}
+                            text={this.props.globalStore.isAuthenticated(this.context) ? this.props.globalStore.getUser(this.context).name : ''}
                         />
                     </Popover>
 
@@ -155,7 +122,10 @@ interface IProps {
                         key={keyBase}
                         icon="log-in"
                         text={'Login'}
-                        onClick={() => loginWithRedirect()}
+                        onClick={() => {
+                            loginWithRedirect();
+                            this.props.globalStore.selectedTab
+                        }}
                     />
                     :
                     <MenuItem
