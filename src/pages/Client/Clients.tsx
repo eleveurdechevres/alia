@@ -10,10 +10,10 @@ import { IClient } from 'src/interfaces/IClient';
 import { observer } from 'mobx-react';
 import { toJS, observable } from 'mobx';
 import { Icon, Dialog, Button, Intent, InputGroup } from '@blueprintjs/core';
-import { NewElementButton } from 'src/components/NewElementButton';
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { Auth0Context, Auth0ContextInterface, User } from '@auth0/auth0-react';
 import { NavBarTabEnum } from 'src/App';
+import { ActionElementBar, IPropsActionElement } from 'src/components/ActionBar';
 
 interface IProps {
     globalStore: GlobalStore;
@@ -136,6 +136,16 @@ const dialogFieldValueStyle = style(csstips.flex);
             }
             return false;
         }
+
+        let createClientButton: IPropsActionElement = {
+            id: 'createNewAnalysisButton',
+            iconName: 'add',
+            name: 'Créer un nouveau client',
+            onClick: () => { 
+                this.dialogCreateClientOpened = true;
+            }
+        };
+
         return (
 
             <div className={style(csstips.margin(10), { boxShadow: '1px 1px 10px #888' })}>
@@ -159,20 +169,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                     //     return (<HabitatsTable client={row.original} />);
                     // }}
                 />
-                <NewElementButton
-                    name="Create new Client"
-                    onClick={() => { 
-                        this.dialogCreateClientOpened = true;
-                        // let client: IClient = {
-                        //     id: undefined,
-                        //     nom: 'essai',
-                        //     adresse: 'adresse essai',
-                        //     telephone: 'tel essai',
-                        //     email: 'a@a.a'
-                        // };
-                        // this.handleWriteClient(client);
-                    }}
-                />
+                <ActionElementBar elements={[createClientButton]} />
                 <Dialog
                     autoFocus={true}
                     enforceFocus={true}

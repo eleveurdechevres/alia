@@ -5,7 +5,6 @@ import 'react-table/react-table.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
-import { NewElementButton } from 'src/components/NewElementButton';
 import { AnalysesWizzard } from 'src/pages/analyse/AnalysesWizzard';
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { ISheet, ESheetType } from 'src/interfaces/ISheet';
@@ -15,6 +14,8 @@ import { TextReportSheetComponent } from './SheetComponents/TextReportSheetCompo
 import { AvgDeltaChartSheetComponent } from './SheetComponents/AvgDeltaChartSheetComponent';
 import { DJUChartSheetComponent } from './SheetComponents/DJUChartSheetComponent';
 import { TemperatureEnergyChartSheetComponent } from './SheetComponents/TemperatureEnergyChartSheetComponent';
+import { ActionElementBar, IPropsActionElement } from 'src/components/ActionBar';
+import { ScatterPlotSheetComponent } from './SheetComponents/ScatterPlotSheetComponent';
 
 interface IProps {
     globalStore: GlobalStore
@@ -30,6 +31,14 @@ interface IProps {
     }
 
     public render() {
+        let createAnalyseButton: IPropsActionElement = {
+            id: 'createNewAnalysisButton',
+            iconName: 'add',
+            name: 'Créer une nouvelle analyse',
+            onClick: () => { 
+                this.analysesWizzardShown = true;
+            }
+        };
         return (
             <div>
                 <AnalysesWizzard
@@ -38,12 +47,7 @@ interface IProps {
                     handleCloseDialog={() => { this.analysesWizzardShown = false; }}
                     handleCancel={() => { this.analysesWizzardShown = false }}
                 />
-                <NewElementButton
-                    name="Créer une nouvelle analyse"
-                    onClick={() => { 
-                        this.analysesWizzardShown = true;
-                    }}
-                />
+                <ActionElementBar elements={[createAnalyseButton]} />
                 {
                     this.props.globalStore.sheets.map(
                         (sheet: ISheet, index: number) => {
@@ -91,6 +95,14 @@ interface IProps {
                                 case ESheetType.TEMPERATURE_ENERGY_CHART:
                                     return (
                                         <TemperatureEnergyChartSheetComponent
+                                            key={'SheetComponent' + sheet.sheetName}
+                                            globalStore={this.props.globalStore}
+                                            sheet={sheet}
+                                        />
+                                    );
+                                case ESheetType.SCATTER_PLOT:
+                                    return (
+                                        <ScatterPlotSheetComponent
                                             key={'SheetComponent' + sheet.sheetName}
                                             globalStore={this.props.globalStore}
                                             sheet={sheet}

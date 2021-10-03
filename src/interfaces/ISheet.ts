@@ -73,7 +73,7 @@ export const ISheetTypes: Map<ESheetType, ISheetTypeProperties> = new Map([
         {
             name: 'y=f(x)',
             icon: 'scatter-plot',
-            disabled: true
+            disabled: false
         } as ISheetTypeProperties
     ],
     [

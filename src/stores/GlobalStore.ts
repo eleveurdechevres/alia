@@ -19,6 +19,7 @@ import { ICapteurVirtuel } from 'src/interfaces/ICapteurVirtuel';
 import { IObservation } from 'src/interfaces/IObservation';
 import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMission';
 import { Auth0ContextInterface, User } from '@auth0/auth0-react';
+import { ICrossValue } from 'src/interfaces/ICrossValue';
 
 export type TPeriod = 'YEAR' | 'MONTH' | 'DAY';
 
@@ -367,6 +368,29 @@ export class GlobalStore {
             )
             return resultsTyped;
         });
+    }
+
+    public getCrossMesures = (
+        missionId: number,
+        dateBegin: Date,
+        dateEnd: Date,
+        capteurX: IChannelOfTypeFromMission,
+        capteurY: IChannelOfTypeFromMission
+    ): Promise<ICrossValue[]> => {
+        // date_begin=2017/12/09 20:13:04&date_end=2018/01/24 21:19:06
+        let httpReq = 'https://api.alia-france.com/alia_searchCrossMesures.php?' 
+            + 'mission_id=' + missionId
+            + '&date_begin=' + dateToSql(dateBegin) 
+            + '&date_end=' + dateToSql(dateEnd)
+            + '&capteur1_id=' + capteurX.capteur_id
+            + '&channel1_id=' + capteurX.channel_id
+            + '&capteur2_id=' + capteurY.capteur_id
+            + '&channel2_id=' + capteurY.channel_id;
+        return fetch(httpReq)
+            .then((response) => response.json())
+            .then((data: ICrossValue[]) => {
+                return data
+            });
     }
 
     public getMeteo = (missionId: number, typeMesureId: number, dateBegin: Date, dateEnd: Date): Promise<IMesure[]> => {

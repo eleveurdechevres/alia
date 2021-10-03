@@ -14,10 +14,10 @@ import { PlansTable } from '../Plan/PlansTable';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { IMission } from 'src/interfaces/IMission';
-import { NewElementButton } from 'src/components/NewElementButton';
 import { Dialog, Button, Intent, InputGroup, Icon } from '@blueprintjs/core';
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { DataClusterSelector } from '../analyse/Detail/DataClusterSelector';
+import { ActionElementBar, IPropsActionElement } from 'src/components/ActionBar';
 
 interface IProps {
     globalStore: GlobalStore
@@ -133,6 +133,14 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
                 <div/>
             );
         }
+        let createMissionButton: IPropsActionElement = {
+            id: 'createNewMissionButton',
+            iconName: 'add',
+            name: 'Créer une nouvelle mission',
+            onClick: () => { 
+                this.dialogCreateMissionOpened = true;
+            }
+        };
 
         return (
             <div className={style(csstips.margin(10), { boxShadow: '1px 1px 10px #888' })}>
@@ -163,12 +171,7 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
                         );
                     }}
                 />
-                <NewElementButton
-                    name="Create new Habitat"
-                    onClick={() => { 
-                        this.dialogCreateMissionOpened = true;
-                    }}
-                />
+                <ActionElementBar elements={[createMissionButton]} />
                 <Dialog
                     autoFocus={true}
                     enforceFocus={true}

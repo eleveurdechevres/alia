@@ -10,10 +10,10 @@ import { IHabitat } from 'src/interfaces/IHabitat';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { Dialog, Button, Intent, InputGroup, Icon, FileInput } from '@blueprintjs/core';
-import { NewElementButton } from 'src/components/NewElementButton';
 import { PlansTable } from 'src/pages/Plan/PlansTable';
 import { IPlan } from 'src/interfaces/IPlan';
 import { GlobalStore } from 'src/stores/GlobalStore';
+import { ActionElementBar, IPropsActionElement } from 'src/components/ActionBar';
 
 interface IProps {
     globalStore: GlobalStore;
@@ -139,6 +139,15 @@ const dialogFieldValueStyle = style(csstips.flex);
             }
         ];
 
+        let createHabitatButton: IPropsActionElement = {
+            id: 'createNewAnalysisButton',
+            iconName: 'add',
+            name: 'Créer une nouvelle analyse',
+            onClick: () => { 
+                this.dialogCreateHabitatOpened = true;
+            }
+        };
+        
         return (
             <div className={style(csstips.margin(10), { boxShadow: '1px 1px 10px #888' })}>
                 <ReactTable
@@ -156,7 +165,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                             style: {
                                 cursor: 'pointer'
                             }
-                           }
+                        }
                     }}
                     SubComponent={ row => {
                         return (
@@ -179,20 +188,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                         );
                     }}
                 />
-                <NewElementButton
-                    name="Create new Habitat"
-                    onClick={() => { 
-                        this.dialogCreateHabitatOpened = true;
-                        // let client: IClient = {
-                        //     id: undefined,
-                        //     nom: 'essai',
-                        //     adresse: 'adresse essai',
-                        //     telephone: 'tel essai',
-                        //     email: 'a@a.a'
-                        // };
-                        // this.handleWriteClient(client);
-                    }}
-                />
+                <ActionElementBar elements={[createHabitatButton]} />
                 <Dialog
                     autoFocus={true}
                     enforceFocus={true}

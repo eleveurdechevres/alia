@@ -137,8 +137,9 @@ const VERTICAL_LEGEND_WIDTH = 15;
                 + 'mission_id=' + missionId
                 + '&date_begin=' + dateBegin 
                 + '&date_end=' + dateEnd 
-                + '&capteur_id=' + this.props.capteurId 
+                + '&capteur1_id=' + this.props.capteurId 
                 + '&channel1_id=' + channel1 
+                + '&capteur2_id=' + this.props.capteurId 
                 + '&channel2_id=' + channel2;
             // console.log(httpReq);
             return fetch(httpReq)
