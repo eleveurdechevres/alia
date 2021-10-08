@@ -9,6 +9,7 @@ import { GlobalStore } from 'src/stores/GlobalStore';
 import { IMission } from 'src/interfaces/IMission';
 import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMission';
 import { IChannelFromMission } from 'src/interfaces/IChannelFromMission';
+import { IChannel } from 'src/interfaces/IChannel';
 
 interface IProps {
     legend?: string;
@@ -16,13 +17,14 @@ interface IProps {
     mission: IMission;
     globalStore: GlobalStore;
     sensorSelected: IChannelOfTypeFromMission;
-    handleSelect: (sensor: IChannelOfTypeFromMission) => void;
+    handleSelect: (sensor: IChannelOfTypeFromMission, channel: IChannel) => void;
     filter: (sensor: IChannelOfTypeFromMission) => boolean;
 }
 
 @observer export class MultiSensorSelector extends React.Component<IProps, {}> {
 
     @observable listSensors: IChannelOfTypeFromMission[] = [];
+    @observable mapSensorTypes: Map<IChannelOfTypeFromMission, IChannel> = new Map();
 
     public constructor(props: IProps) {
         super(props);
@@ -34,7 +36,8 @@ interface IProps {
                     (listSensors: IChannelOfTypeFromMission[]) => {
                         this.listSensors.push(...listSensors);
                     }
-                )
+                );
+                // this.updateMapTypeMesures();
             }
             else {
                 this.props.globalStore.getAllChannelsFromMission(this.props.mission.id).then(
@@ -48,9 +51,10 @@ interface IProps {
                                 mission_id: sensor.mission_id,
                                 plan_id: sensor.plan_id
                             });
-                        })
+                        });
+                        this.updateMapTypeMesures();
                     }
-                )
+                );
             }
         });
     }
@@ -73,6 +77,16 @@ interface IProps {
         );
     }
 
+    private updateMapTypeMesures = () => {
+        this.listSensors.forEach((sensor: IChannelOfTypeFromMission, index: number) => {
+            this.props.globalStore.getChannel(sensor.channel_id, sensor.capteur_reference_id).then(
+                (channel: IChannel) => {
+                    this.mapSensorTypes.set(sensor, channel);
+                }
+            );
+        });
+    }
+
     private buildSensorList = () => {
         return (
             <Menu>
@@ -81,7 +95,7 @@ interface IProps {
                         key={this.buildKey(sensor)}
                         text={this.buildLegend(sensor)}
                         onClick={() => {
-                            this.props.handleSelect(sensor);
+                            this.props.handleSelect(sensor, this.mapSensorTypes.get(sensor));
                         }}
                     />
                 )}
@@ -94,8 +108,13 @@ interface IProps {
     }
 
     private buildLegend = (sensor: IChannelOfTypeFromMission): string => {
-        return sensor ?
-            sensor.capteur_reference_id + ' [plan ' + sensor.plan_id + '][channel ' + sensor.channel_id + ']'
-            : this.props.legend ? this.props.legend + ' (' + this.props.type + ')...' : this.props.type + '...';
+        if (sensor) {
+            let channel: IChannel = this.mapSensorTypes.get(sensor);
+                // console.log(JSON.stringify(channel))
+            let channelDescription = channel ? `(${channel.measure_type})` : '';
+            // console.log(channel ? channel.measure_type : '-');
+            return sensor.capteur_reference_id + ' [plan ' + sensor.plan_id + '][channel ' + sensor.channel_id + '] ' + channelDescription;
+        }
+        return this.props.legend ? this.props.legend + ' (' + this.props.type + ')...' : this.props.type + '...';
     }
 }

@@ -7,6 +7,7 @@ import { ScaleLinear } from 'd3';
 import { observer } from 'mobx-react';
 import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMission';
 import { GlobalStore } from 'src/stores/GlobalStore';
+import { IChannel } from 'src/interfaces/IChannel';
 
 interface IProps {
     globalStore: GlobalStore;
@@ -16,6 +17,8 @@ interface IProps {
     dateInterval: IDateInterval;
     capteurX: IChannelOfTypeFromMission;
     capteurY: IChannelOfTypeFromMission;
+    channelX: IChannel;
+    channelY: IChannel;
     crosshairX: number;
     crosshairY: number;
 }
@@ -116,18 +119,13 @@ const defaultTransition = d3.transition()
             this.scaleY.domain([s[1][1], s[0][1]].map(this.scaleY.invert, this.scaleY));
             d3.select(this.refGBrush).call(this.brush.move, null);
         }
-        // zoom();
+        // Zoom
         this.drawXAxis();
         this.drawYAxis();
         d3.select(this.chartRef).selectAll('.classDots')
             .transition(defaultTransition)
             .attr('cx', (d: Ixy) => this.scaleX(d.x))
             .attr('cy', (d: Ixy) => this.scaleY(d.y));
-            // .attr('r', 1)
-            // .attr('fill', 'none')
-            // .attr('stroke', 'red')
-            // .attr('stroke-width', 1);
-
     }
 
     private loadJsonFromAeroc = (missionId: number, dateBegin: Date, dateEnd: Date, capteurX: IChannelOfTypeFromMission, capteurY: IChannelOfTypeFromMission) => {
@@ -281,7 +279,10 @@ const defaultTransition = d3.transition()
                                     transform="rotate(-90 0 0)"
                                     fontSize="12"
                                 >
-                                    legende y
+                                    {this.props.capteurY.capteur_reference_id}&nbsp;
+                                    [plan {this.props.capteurY.plan_id}]
+                                    [channel {this.props.capteurY.channel_id}] -&nbsp;
+                                    {this.props.channelY.measure_type} ({this.props.channelY.unit})
                                 </text>
                             </g>
                             <text
@@ -291,7 +292,10 @@ const defaultTransition = d3.transition()
                                 // transform="rotate(-90 0 0)"
                                 fontSize="12"
                             >
-                                legende X
+                                    {this.props.capteurX.capteur_reference_id}&nbsp;
+                                    [plan {this.props.capteurX.plan_id}]
+                                    [channel {this.props.capteurX.channel_id}] -&nbsp;
+                                    {this.props.channelX.measure_type} ({this.props.channelX.unit})
                             </text>
                         </g>
                     </svg>

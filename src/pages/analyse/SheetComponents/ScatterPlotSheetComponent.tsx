@@ -10,11 +10,14 @@ import { GenericSheetComponent, IGenericSheetComponentProps } from './GenericShe
 import { IDateInterval } from 'src/pages/Graph/GraphBoard';
 import { TimeContextBar } from '../Detail/TimeContextBar';
 import { ScatterPlotComponent } from 'src/pages/Graph/CrossGraph/ScatterPlotComponent';
+import { IChannel } from 'src/interfaces/IChannel';
 
 @observer export class ScatterPlotSheetComponent<P extends IGenericSheetComponentProps> extends GenericSheetComponent {
 
     @observable private sensorX: IChannelOfTypeFromMission;
     @observable private sensorY: IChannelOfTypeFromMission;
+    @observable private channelX: IChannel;
+    @observable private channelY: IChannel;
 
     public constructor(props: P) {
         super(props);
@@ -47,6 +50,8 @@ import { ScatterPlotComponent } from 'src/pages/Graph/CrossGraph/ScatterPlotComp
                                 dateInterval={dateInterval}
                                 capteurX={this.sensorX}
                                 capteurY={this.sensorY}
+                                channelX={this.channelX}
+                                channelY={this.channelY}
                                 crosshairX={undefined}
                                 crosshairY={undefined}
                             /> : ''
@@ -76,19 +81,21 @@ import { ScatterPlotComponent } from 'src/pages/Graph/CrossGraph/ScatterPlotComp
                     legend="Ordonnées"
                     mission={this.props.sheet.sheetDef.mission}
                     sensorSelected={this.sensorY}
-                    handleSelect={(sensor: IChannelOfTypeFromMission) => {
+                    handleSelect={(sensor: IChannelOfTypeFromMission, channel: IChannel) => {
                         this.sensorY = sensor;
+                        this.channelY = channel;
                     }}
                     filter={(sensor: IChannelOfTypeFromMission) => true}
                 />
-                = f(
+                &nbsp;= f(
                 <MultiSensorSelector
                     globalStore={this.props.globalStore}
                     legend="Abscisses"
                     mission={this.props.sheet.sheetDef.mission}
                     sensorSelected={this.sensorX}
-                    handleSelect={(sensor: IChannelOfTypeFromMission) => {
+                    handleSelect={(sensor: IChannelOfTypeFromMission, channel: IChannel) => {
                         this.sensorX = sensor;
+                        this.channelX = channel;
                     }}
                     filter={(sensor: IChannelOfTypeFromMission) => true}
                 />

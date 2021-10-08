@@ -241,7 +241,7 @@ export class GlobalStore {
     public getChannel(channelId: number, capteurReferenceId: string): Promise<IChannel> {
         return fetch(`https://api.alia-france.com/alia_getChannel.php?channel_id=${channelId}&capteur_reference_id=${capteurReferenceId}`)
             .then((response) => response.json())
-            .then((results) => results);
+            .then((results) => results[0]);
     }
 
     public getMesureType(measureTypeId: number): Promise<ITypeMesure> {
