@@ -157,33 +157,33 @@ const defaultTransition = d3.transition()
                     this.drawGraph();
                 });
 
-                this.props.globalStore.getCrossMesures(missionId, dateBegin, dateEnd, capteurX, capteurY)
-                .then((data: ICrossValue[]) => {
-                    let xValues: number[] = [];
-                    let yValues: number[] = [];
+                // this.props.globalStore.getCrossMesures(missionId, dateBegin, dateEnd, capteurX, capteurY)
+                // .then((data: ICrossValue[]) => {
+                //     let xValues: number[] = [];
+                //     let yValues: number[] = [];
 
-                    data.forEach((line: ICrossValue) => {
-                        xValues.push(Number(line.channel1));
-                        yValues.push(Number(line.channel2));
-                    })
+                //     data.forEach((line: ICrossValue) => {
+                //         xValues.push(Number(line.channel1));
+                //         yValues.push(Number(line.channel2));
+                //     })
             
-                    // import the fn
-                    const calculateCorrelation = require('calculate-correlation');
+                //     // import the fn
+                //     const calculateCorrelation = require('calculate-correlation');
 
-                    // given 4 points: (2,3), (5,3), (4,6) and (1,7)
-                    // const config = {
-                    //     string: true,
-                    //     decimals: 5,
-                    // };
+                //     // given 4 points: (2,3), (5,3), (4,6) and (1,7)
+                //     // const config = {
+                //     //     string: true,
+                //     //     decimals: 5,
+                //     // };
 
-                    // const correlation = calculateCorrelation(xValues, yValues, config);
-                    console.log(xValues);
-                    console.log(yValues);
-                    const correlation = calculateCorrelation(xValues, yValues);
+                //     // const correlation = calculateCorrelation(xValues, yValues, config);
+                //     console.log(xValues);
+                //     console.log(yValues);
+                //     const correlation = calculateCorrelation(xValues, yValues);
 
-                    console.log(correlation); // logs -0.44281
-                    console.log(typeof correlation); // logs string
-                });
+                //     console.log(correlation); // logs -0.44281
+                //     console.log(typeof correlation); // logs string
+                // });
         }
     }
 
