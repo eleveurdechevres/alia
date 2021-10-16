@@ -141,13 +141,13 @@ const defaultTransition = d3.transition()
                         this.datum.push( {x: line.channel1, y: line.channel2, date: date} )
                     })
             
-                    let maxChannel1: number = d3.max(this.datum, (d: Ixy) => d.x);
-                    let minChannel1: number = d3.min(this.datum, (d: Ixy) => d.x);
-                    let maxChannel2: number = d3.max(this.datum, (d: Ixy) => d.y);
-                    let minChannel2: number = d3.min(this.datum, (d: Ixy) => d.y);
+                    let maxChannelX: number = d3.max(this.datum, (d: Ixy) => d.x);
+                    let minChannelX: number = d3.min(this.datum, (d: Ixy) => d.x);
+                    let maxChannelY: number = d3.max(this.datum, (d: Ixy) => d.y);
+                    let minChannelY: number = d3.min(this.datum, (d: Ixy) => d.y);
 
-                    this.defaultDomainX = [minChannel1, maxChannel1];
-                    this.defaultDomainY = [minChannel2, maxChannel2];
+                    this.defaultDomainX = [minChannelX, maxChannelX];
+                    this.defaultDomainY = [minChannelY, maxChannelY];
                     this.scaleX.domain(this.defaultDomainX);
 
                     this.scaleY.domain(this.defaultDomainY);
@@ -155,6 +155,34 @@ const defaultTransition = d3.transition()
                     this.drawYAxis();
 
                     this.drawGraph();
+                });
+
+                this.props.globalStore.getCrossMesures(missionId, dateBegin, dateEnd, capteurX, capteurY)
+                .then((data: ICrossValue[]) => {
+                    let xValues: number[] = [];
+                    let yValues: number[] = [];
+
+                    data.forEach((line: ICrossValue) => {
+                        xValues.push(Number(line.channel1));
+                        yValues.push(Number(line.channel2));
+                    })
+            
+                    // import the fn
+                    const calculateCorrelation = require('calculate-correlation');
+
+                    // given 4 points: (2,3), (5,3), (4,6) and (1,7)
+                    // const config = {
+                    //     string: true,
+                    //     decimals: 5,
+                    // };
+
+                    // const correlation = calculateCorrelation(xValues, yValues, config);
+                    console.log(xValues);
+                    console.log(yValues);
+                    const correlation = calculateCorrelation(xValues, yValues);
+
+                    console.log(correlation); // logs -0.44281
+                    console.log(typeof correlation); // logs string
                 });
         }
     }
