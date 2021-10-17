@@ -14,6 +14,7 @@ import { PlansTable } from 'src/pages/Plan/PlansTable';
 import { IPlan } from 'src/interfaces/IPlan';
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { ActionElementBar, IPropsActionElement } from 'src/components/ActionBar';
+import { LocalisationMap } from './Map';
 
 interface IProps {
     globalStore: GlobalStore;
@@ -147,11 +148,14 @@ const dialogFieldValueStyle = style(csstips.flex);
                 this.dialogCreateHabitatOpened = true;
             }
         };
-        
+        const habitatsForClient: IHabitat[] = this.props.globalStore.habitatsForClient.slice();
         return (
             <div className={style(csstips.margin(10), { boxShadow: '1px 1px 10px #888' })}>
+                <LocalisationMap
+                    habitats={habitatsForClient}
+                />
                 <ReactTable
-                    data={this.props.globalStore.habitatsForClient.slice()}
+                    data={habitatsForClient}
                     columns={columns}
                     noDataText="Pas d'habitat pour ce client"
                     defaultPageSize={10}
