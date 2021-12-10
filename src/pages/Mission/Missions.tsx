@@ -73,6 +73,7 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
   }
 
     render() {
+        console.log('Render Missions')
         const columns = [
             {   Header: 'Mission id',
                 accessor: 'id',
@@ -123,16 +124,16 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
             }
         ];
 
-        if ( this.props.globalStore.missionsForHabitat.length === 0 ||
-            (
-                this.props.globalStore.missionsForHabitat.length === 1 &&
-                this.props.globalStore.missionsForHabitat[0] === undefined
-            )
-        ) {
-            return (
-                <div/>
-            );
-        }
+        // if ( this.props.globalStore.missionsForHabitat.length === 0 ||
+        //     (
+        //         this.props.globalStore.missionsForHabitat.length === 1 &&
+        //         this.props.globalStore.missionsForHabitat[0] === undefined
+        //     )
+        // ) {
+        //     return (
+        //         <div/>
+        //     );
+        // }
         let createMissionButton: IPropsActionElement = {
             id: 'createNewMissionButton',
             iconName: 'add',
@@ -141,7 +142,6 @@ handleEventsOnMission = (state: any, rowInfo: any, column: any, instance: any) =
                 this.dialogCreateMissionOpened = true;
             }
         };
-
         return (
             <div className={style(csstips.margin(10), { boxShadow: '1px 1px 10px #888' })}>
                 <ReactTable

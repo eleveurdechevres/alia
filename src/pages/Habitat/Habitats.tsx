@@ -141,9 +141,9 @@ const dialogFieldValueStyle = style(csstips.flex);
         ];
 
         let createHabitatButton: IPropsActionElement = {
-            id: 'createNewAnalysisButton',
+            id: 'createNewAHabitatButton',
             iconName: 'add',
-            name: 'Créer une nouvelle analyse',
+            name: 'Créer un nouvel habitat',
             onClick: () => { 
                 this.dialogCreateHabitatOpened = true;
             }

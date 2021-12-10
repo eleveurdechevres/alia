@@ -257,7 +257,7 @@ const zoomTransition = defaultTransition;
         // LOAD DATA from AEROC
         if (channel1 !== undefined && channel2 !== undefined) {
             
-            // https://api.alia-france.com/alia_readDeltaJourNuit.php?date_begin=2017-12-09%2020:30:00&date_end=2017-12-26%2000:00:00&capteur_id=1&channel_id=1
+            // https://api.alia-france.com/alia_readDeltaJourNuit.php?habitat_id=1&mission_id=1&date_begin=2017-12-09%2020:30:00&date_end=2017-12-26%2000:00:00&capteur_id=1&channel_id=1
             const httpReqChannel1 = 'https://api.alia-france.com/alia_readDeltaJourNuit.php?' 
                 + 'habitat_id=' + this.props.sheet.sheetDef.habitat.id
                 + '&mission_id=' + this.props.sheet.sheetDef.mission.id
