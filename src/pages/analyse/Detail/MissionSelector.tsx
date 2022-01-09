@@ -80,7 +80,7 @@ const MISSION_SELECT = Suggest.ofType<IMission>();
     };
 
     private filterLine: ItemPredicate<IMission> = (query, mission) => {
-        if ( mission.date_debut.toString().indexOf(query.toLowerCase()) >= 0 ) {
+        if ( mission.date_debut.toString().toLowerCase().indexOf(query.toLowerCase()) >= 0 ) {
             return true;
         } else if ( mission.date_fin.toString().indexOf(query.toLowerCase()) >= 0 ) {
             return true;

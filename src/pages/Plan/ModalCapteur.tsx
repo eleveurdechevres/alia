@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 import * as Modal from '../../components/Modal';
-import { ICapteur } from 'src/interfaces/ICapteur';
+import { ICapteur } from 'src/interfaces/ICapteurForPlan';
 import 'react-table/react-table.css';
 import * as DateUtils from '../../utils/DateUtils'
 import { GlobalStore } from 'src/stores/GlobalStore';

@@ -140,14 +140,24 @@ const defaultTransition = d3.transition()
                         this.mapValues.set(date, {x: line.channel1, y: line.channel2});
                         this.datum.push( {x: line.channel1, y: line.channel2, date: date} )
                     })
+                    console.log(this.datum)
             
-                    let maxChannelX: number = d3.max(this.datum, (d: Ixy) => d.x);
-                    let minChannelX: number = d3.min(this.datum, (d: Ixy) => d.x);
-                    let maxChannelY: number = d3.max(this.datum, (d: Ixy) => d.y);
-                    let minChannelY: number = d3.min(this.datum, (d: Ixy) => d.y);
-
-                    this.defaultDomainX = [minChannelX, maxChannelX];
-                    this.defaultDomainY = [minChannelY, maxChannelY];
+                    const maxChannelX: number = d3.max(this.datum, (d: Ixy) => d.x);
+                    const minChannelX: number = d3.min(this.datum, (d: Ixy) => d.x);
+                    const maxChannelY: number = d3.max(this.datum, (d: Ixy) => d.y);
+                    const minChannelY: number = d3.min(this.datum, (d: Ixy) => d.y);
+                    
+                    const maxBothChannels = Math.max(maxChannelX, maxChannelY);
+                    const minBothChannels = Math.min(minChannelX, minChannelY);
+                    
+                    if (this.props.channelX.measure_type === this.props.channelY.measure_type) {
+                        this.defaultDomainX = [minBothChannels, maxBothChannels];
+                        this.defaultDomainY = [minBothChannels, maxBothChannels];
+                    }
+                    else {
+                        this.defaultDomainX = [minChannelX, maxChannelX];
+                        this.defaultDomainY = [minChannelY, maxChannelY];
+                    }
                     this.scaleX.domain(this.defaultDomainX);
 
                     this.scaleY.domain(this.defaultDomainY);
@@ -228,9 +238,10 @@ const defaultTransition = d3.transition()
     }
 
     private drawXAxis = () => {
+        
         d3.select(this.xAxisRef)
         .transition(defaultTransition)    
-        .call(d3.axisTop(this.scaleX).tickFormat((value: number) => value + '... X'));
+        .call(d3.axisTop(this.scaleX).tickFormat((value: number) => value + ' ' + this.props.channelX.unit));
             // .call(d3.axisTop(this.scaleX).tickValues([0, 5, 10, 15, 20, 25, 30, 35, 40]).tickFormat((value: number) => value + '°C'))
             // .selectAll('text');
             // .append("text")
@@ -243,7 +254,7 @@ const defaultTransition = d3.transition()
     private drawYAxis = () => {
         d3.select(this.yAxisRef)
         .transition(defaultTransition)    
-            .call(d3.axisLeft(this.scaleY).tickFormat((value: number) => value + '... Y'));
+            .call(d3.axisLeft(this.scaleY).tickFormat((value: number) => value + ' ' + this.props.channelY.unit));
             // .selectAll('text');
             // .append("text")
             // .attr("fill", "black")

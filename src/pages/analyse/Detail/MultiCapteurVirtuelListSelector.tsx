@@ -83,7 +83,7 @@ const SENSOR_MULTI_SELECT = MultiSelect.ofType<ICapteurVirtuelForMission>();
     }
 
     private filterLine: ItemPredicate<ICapteurVirtuelForMission> = (query, capteurVirtuel) => {
-        if ( TextRenderers.capteurVirtuelNameRenderer(capteurVirtuel).indexOf(query.toLowerCase()) >= 0 ) {
+        if ( TextRenderers.capteurVirtuelNameRenderer(capteurVirtuel).toLowerCase().indexOf(query.toLowerCase()) >= 0 ) {
             return true;
         }
         // else if ( line.line_name.indexOf(query.toLowerCase()) >= 0 ) return true;

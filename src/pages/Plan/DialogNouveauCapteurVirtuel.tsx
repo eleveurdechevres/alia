@@ -8,8 +8,10 @@ import { ICapteurVirtuel } from '../../interfaces/ICapteurVirtuel';
 import { IMission } from 'src/interfaces/IMission';
 import { TypeMesureSelector } from '../../components/TypeMesureSelector';
 import { ITypeMesure } from 'src/interfaces/ITypeMesure';
+import { GlobalStore } from 'src/stores/GlobalStore';
 
 interface IProps {
+    globalStore: GlobalStore;
     mission: IMission;
     planId: number;
     coordonneePlanX: number;
@@ -91,6 +93,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                     <div className={dialogLineStyle}>
                         <div className={dialogFieldValueStyle}>
                             <TypeMesureSelector
+                                globalStore={this.props.globalStore}
                                 typeMesure={this.typeMesure}
                                 handleSelectTypeMesure={(typeMesure: ITypeMesure) => {
                                     this.typeMesure = typeMesure;

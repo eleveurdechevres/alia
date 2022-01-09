@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
-import { ICapteur } from 'src/interfaces/ICapteur';
+import { ICapteur } from 'src/interfaces/ICapteurForPlan';
 import { NestedCSSProperties } from 'typestyle/lib/types';
 import { style, keyframes } from 'typestyle';
 

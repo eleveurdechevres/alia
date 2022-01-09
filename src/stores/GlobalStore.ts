@@ -12,7 +12,7 @@ import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMiss
 import { IChannelFromMission } from 'src/interfaces/IChannelFromMission';
 import { IMesure, IAvgMesure } from 'src/managers/GraphDataManager';
 import { dateToSql } from 'src/utils/DateUtils';
-import { ICapteur } from 'src/interfaces/ICapteur';
+import { ICapteur } from 'src/interfaces/ICapteurForPlan';
 import { IChannel } from 'src/interfaces/IChannel';
 import { ITypeMesure } from 'src/interfaces/ITypeMesure';
 import { ICapteurVirtuel } from 'src/interfaces/ICapteurVirtuel';
@@ -20,6 +20,7 @@ import { IObservation } from 'src/interfaces/IObservation';
 import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMission';
 import { Auth0ContextInterface, User } from '@auth0/auth0-react';
 import { ICrossValue } from 'src/interfaces/ICrossValue';
+import { ICapteurForMission } from 'src/interfaces/ICapteurForMission';
 
 export type TPeriod = 'YEAR' | 'MONTH' | 'DAY';
 
@@ -238,6 +239,23 @@ export class GlobalStore {
             .then((results) => results[0]);
     }
 
+    public getAvailableCapteurs(dateDebut: Date, dateFin: Date): Promise<IAvailableCapteur[]> {
+        return fetch(`https://api.alia-france.com/alia_getAvailableCapteurs.php?date_debut=${dateToSql(dateDebut)}&date_fin=${dateToSql(dateFin)}`)
+            .then((response) => response.json())
+            .then((results) => 
+                results.map((result: any) => {
+                    return {
+                        id: result.id,
+                        capteur_reference_id: result.capteur_reference_id,
+                        marque: result.marque,
+                        ref_fabricant: result.ref_fabricant,
+                        description: result.description,
+                        available: result.available === 'true' ? true : false
+                    }
+                })
+            );
+    }
+
     public getChannel(channelId: number, capteurReferenceId: string): Promise<IChannel> {
         return fetch(`https://api.alia-france.com/alia_getChannel.php?channel_id=${channelId}&capteur_reference_id=${capteurReferenceId}`)
             .then((response) => response.json())
@@ -246,6 +264,13 @@ export class GlobalStore {
 
     public getMesureType(measureTypeId: number): Promise<ITypeMesure> {
         return fetch(`https://api.alia-france.com/alia_getTypeMesure.php?id=${measureTypeId}`)
+            .then((response) => response.json())
+            .then((results) => results);
+    }
+
+    public getTypeMesures = () => {
+        var request = `https://api.alia-france.com/alia_getTypeMesures.php`;
+        return fetch(request)
             .then((response) => response.json())
             .then((results) => results);
     }
@@ -386,10 +411,15 @@ export class GlobalStore {
             + '&channel1_id=' + capteurX.channel_id
             + '&capteur2_id=' + capteurY.capteur_id
             + '&channel2_id=' + capteurY.channel_id;
+        console.log(httpReq);
         return fetch(httpReq)
             .then((response) => response.json())
-            .then((data: ICrossValue[]) => {
-                return data
+            .then((datas: any) => {
+                return datas.map((data: any): ICrossValue => { return {
+                    date: data.date,
+                    channel1: Number.parseFloat(data.channel1),
+                    channel2: Number.parseFloat(data.channel2)
+                }})
             });
     }
 
@@ -460,6 +490,37 @@ export class GlobalStore {
         ).then((response) => {
             if (response.status === 200) {
                 this.reloadHabitatsFromClient(this.client);
+            }
+            else {
+                console.log(response);
+                // TODO : impossible de sauvegarder...
+            }
+        });
+    }
+
+    public writeCapteurForMission = (missionId: number, capteurForMission: ICapteurForMission, then: () => void) => {
+        const body: string = JSON.stringify({
+            mission_id: missionId,
+            capteur_id: capteurForMission.mission_id,
+            plan_id: capteurForMission.plan_id,
+            coordonneePlanX: capteurForMission.coordonneePlanX,
+            coordonneePlanY: capteurForMission.coordonneePlanY,
+            coordonneePlanZ: capteurForMission.coordonneePlanZ,
+            label: capteurForMission.label,
+            description: capteurForMission.description
+        });
+        fetch(`https://api.alia-france.com/alia_addCapteurToMission.php`, {
+                method: 'POST',
+                headers: {
+                    // 'Access-Control-Allow-Origin:': '*',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: body
+            }
+        ).then((response) => {
+            if (response.status === 200) {
+                then();
             }
             else {
                 console.log(response);

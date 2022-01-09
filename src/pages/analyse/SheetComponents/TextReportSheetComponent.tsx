@@ -8,7 +8,7 @@ import { GenericSheetComponent, IGenericSheetComponentProps } from './GenericShe
 import { IDateInterval } from 'src/pages/Graph/GraphBoard';
 // import { MultiSensorListSelector } from '../Detail/MultiSensorListSelector';
 import { IChannelFromMission } from 'src/interfaces/IChannelFromMission';
-import { ICapteur } from 'src/interfaces/ICapteur';
+import { ICapteur } from 'src/interfaces/ICapteurForPlan';
 
 // import { ISerieData } from 'src/interfaces/ISerieData';
 // import { IMesure } from 'src/managers/GraphDataManager';

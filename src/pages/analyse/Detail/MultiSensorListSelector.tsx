@@ -83,7 +83,7 @@ const SENSOR_MULTI_SELECT = MultiSelect.ofType<IChannelFromMission>();
     }
 
     private filterLine: ItemPredicate<IChannelFromMission> = (query, channel) => {
-        if ( TextRenderers.channelNameRenderer(channel).indexOf(query.toLowerCase()) >= 0 ) {
+        if ( TextRenderers.channelNameRenderer(channel).toLowerCase().indexOf(query.toLowerCase()) >= 0 ) {
             return true;
         }
         // else if ( line.line_name.indexOf(query.toLowerCase()) >= 0 ) return true;

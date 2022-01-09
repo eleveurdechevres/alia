@@ -13,7 +13,7 @@ import { IChannelFromMission } from 'src/interfaces/IChannelFromMission';
 import { ISerieData } from 'src/interfaces/ISerieData';
 import { IMesure } from 'src/managers/GraphDataManager';
 import { ISerieDef, ISerieVirtuelleDef } from 'src/interfaces/ISeriesDef';
-import { ICapteur } from 'src/interfaces/ICapteur';
+import { ICapteur } from 'src/interfaces/ICapteurForPlan';
 import { IChannel } from 'src/interfaces/IChannel';
 import { ITypeMesure } from 'src/interfaces/ITypeMesure';
 import { IPlan } from 'src/interfaces/IPlan';

@@ -6,8 +6,10 @@ import { ITypeMesure } from 'src/interfaces/ITypeMesure';
 import { style } from 'typestyle/lib';
 import * as csstips from 'csstips';
 import { Button, Menu, MenuItem, Popover, Position } from '@blueprintjs/core';
+import { GlobalStore } from 'src/stores/GlobalStore';
 
 interface IProps {
+    globalStore: GlobalStore,
     typeMesure: ITypeMesure,
     handleSelectTypeMesure: (typeMesure: ITypeMesure) => void;
 }
@@ -23,7 +25,9 @@ interface IProps {
     }
 
     public componentDidMount() {
-        this.getTypeMesures();
+        this.props.globalStore.getTypeMesures().then((typeMesureList: ITypeMesure[]) => {
+            this.typeMesureList = typeMesureList;
+        });
     }
 
     public render() {
@@ -80,17 +84,5 @@ interface IProps {
 
     private renderTypeMesure(typeMesure: ITypeMesure) {
         return typeMesure ? typeMesure.measure_type + ' (' + typeMesure.unit + ')' : undefined;
-    }
-
-    private getTypeMesures = () => {
-        var request = `https://api.alia-france.com/alia_getTypeMesures.php`;
-        return fetch(request)
-            .then((response) => {
-                return( response.json() );
-            })
-            .then((typeMesureList: ITypeMesure[]) => {
-                this.typeMesureList = typeMesureList;
-            }
-        );
     }
 }

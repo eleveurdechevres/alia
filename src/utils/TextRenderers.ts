@@ -1,9 +1,15 @@
 import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMission';
 import { IChannelFromMission } from 'src/interfaces/IChannelFromMission';
 import { ISerieData } from 'src/interfaces/ISerieData';
+import { ITypeMesure } from 'src/interfaces/ITypeMesure';
 
 export function channelNameRenderer(channel: IChannelFromMission): string {
     return 'Plan[' + channel.plan_id + '] - Capteur[' + channel.capteur_reference_id + ']' + ' (' + channel.measure_type + ')';
+}
+
+export function typeMesureTagRenderer(typeMesure: ITypeMesure): string {
+    console.log('typeMesureTagRenderer');
+    return `${typeMesure.measure_type} (${typeMesure.unit})`;
 }
 
 export function capteurVirtuelNameRenderer(capteurVirtuel: ICapteurVirtuelForMission): string {

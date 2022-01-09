@@ -4,7 +4,7 @@ import { style } from 'typestyle/lib';
 import * as csstips from 'csstips';
 import { observable, autorun } from 'mobx';
 import { observer } from 'mobx-react';
-import { ICapteur } from 'src/interfaces/ICapteur';
+import { ICapteur } from 'src/interfaces/ICapteurForPlan';
 import { IHabitat } from 'src/interfaces/IHabitat';
 import { IMission } from 'src/interfaces/IMission';
 import { GlobalStore } from 'src/stores/GlobalStore';
@@ -20,6 +20,8 @@ import { ICapteurVirtuel } from 'src/interfaces/ICapteurVirtuel';
 import { ILocalizable } from 'src/interfaces/ILocalizable';
 import { ModalCapteurVirtuel } from './ModalCapteurVirtuel';
 import { ModalCapteur } from './ModalCapteur';
+import { ICapteurForMission } from 'src/interfaces/ICapteurForMission';
+import { DialogNouveauCapteur } from './DialogNouveauCapteur';
 
 // const transitionNewCapteur = d3.transition()
 // .duration(3000)
@@ -56,8 +58,9 @@ interface IProps {
     @observable observationDisplayed: IObservation = undefined;
     @observable capteurVirtuelDisplayed: ICapteurVirtuel = undefined;
 
-    @observable isDialogObservationOpened: boolean = false;
+    @observable isDialogCapteurOpened: boolean = false;
     @observable isDialogCapteurVirtuelOpened: boolean = false;
+    @observable isDialogObservationOpened: boolean = false;
     
     // private svgRef: SVGGElement;
     private imageRef: SVGGElement;
@@ -162,7 +165,24 @@ interface IProps {
             <div className="container">
                 {
                     this.props.mission ? 
+                        <DialogNouveauCapteur
+                            globalStore={this.props.globalStore}
+                            isOpen={this.isDialogCapteurOpened}
+                            close={() => {
+                                this.hideAddCapteurModal();
+                            }}
+                            coordonneePlanX={this.xLastClickPercent}
+                            coordonneePlanY={this.yLastClickPercent}
+                            mission={this.props.mission}
+                            planId={this.props.planId}
+                            handleAddCapteurToMission={this.handleAddCapteurToMission}
+                        />
+                    : <React.Fragment/>
+                }
+                {
+                    this.props.mission ? 
                         <DialogNouveauCapteurVirtuel
+                            globalStore={this.props.globalStore}
                             isOpen={this.isDialogCapteurVirtuelOpened}
                             close={() => {
                                 this.hideAddVirtualCapteurModal();
@@ -469,6 +489,7 @@ interface IProps {
                 {
                     item === undefined ?
                     [
+                        <MenuItem key={'contextMenuCapteurMenuItem'} text="Capteur" icon="add" onClick={() => this.showAddCapteurModal()}/>,
                         <MenuItem key={'contextMenuCapteurVirtuelMenuItem'} text="Capteur virtuel" icon="add" onClick={() => this.showAddVirtualCapteurModal()}/>,
                         <MenuDivider key={'contextMenuDivider1'} />,
                         <MenuItem key={'contextMenuObservationMenuItem'} text="Observation" icon="add" onClick={() => this.showAddObservationModal()}/>
@@ -485,6 +506,14 @@ interface IProps {
                 // menu was closed; callback optional
             });
         }
+    }
+    
+    private showAddCapteurModal = () => {
+        this.isDialogCapteurOpened = true;
+    }
+
+    private hideAddCapteurModal = () => {
+        this.isDialogCapteurOpened = false;
     }
 
     private showAddVirtualCapteurModal = () => {
@@ -504,6 +533,11 @@ interface IProps {
     }
 
     
+    private handleAddCapteurToMission = (capteurForMission: ICapteurForMission) => {
+        this.props.globalStore.writeCapteurForMission(this.props.mission.id, capteurForMission, this.reloadCapteurs);
+        this.hideAddCapteurModal();
+    }
+
     private handleAddCapteurVirtuelToMission = (capteurVirtuel: ICapteurVirtuel) => {
         this.props.globalStore.writeCapteurVirtuel(capteurVirtuel, this.reloadCapteursVirtuels);
         this.hideAddVirtualCapteurModal();
@@ -511,8 +545,13 @@ interface IProps {
 
     private handleAddObservationToMission = (observation: IObservation) => {
         this.props.globalStore.writeObservation(observation, this.reloadObservations);
-        this.hideAddObservationModal();    }
+        this.hideAddObservationModal();
+    }
 
+    private reloadCapteurs = () => {
+        this.getCapteursForPlan(this.props.planId, this.props.mission.id);
+    }
+    
     private reloadObservations = () => {
         this.getObservationsForPlan(this.props.planId, this.props.mission.id);
     }

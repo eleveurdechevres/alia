@@ -8,7 +8,7 @@ import * as d3 from 'd3';
 import { Crosshair } from './Crosshair';
 // import { LuminosityTemperature } from './CrossGraph/LuminosityTemperature';
 import { GraphType } from './Channel/GraphType';
-import { ICapteur } from 'src/interfaces/ICapteur';
+import { ICapteur } from 'src/interfaces/ICapteurForPlan';
 import { observe, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { IChannel } from 'src/interfaces/IChannel';

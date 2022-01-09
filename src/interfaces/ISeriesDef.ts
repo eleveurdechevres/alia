@@ -1,5 +1,5 @@
 import { IPlan } from './IPlan';
-import { ICapteur } from './ICapteur';
+import { ICapteur } from './ICapteurForPlan';
 import { IChannel } from './IChannel';
 import { ITypeMesure } from './ITypeMesure';
 import { ICapteurVirtuel } from './ICapteurVirtuel';
