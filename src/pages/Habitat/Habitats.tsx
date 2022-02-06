@@ -7,7 +7,7 @@ import * as csstips from 'csstips';
 import ReactTable, { RowInfo } from 'react-table';
 import 'react-table/react-table.css';
 import { IHabitat } from 'src/interfaces/IHabitat';
-import { observable } from 'mobx';
+import { autorun, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { Dialog, Button, Intent, InputGroup, Icon, FileInput } from '@blueprintjs/core';
 import { PlansTable } from 'src/pages/Plan/PlansTable';
@@ -56,6 +56,12 @@ const dialogFieldValueStyle = style(csstips.flex);
     // https://react-table.js.org/#/story/readme
     public constructor(props: IProps) {
         super(props);
+
+        autorun(() => {
+            if (this.props.globalStore.habitat) {
+                this.forceUpdate();
+            }
+        });
     }
 
     // id
@@ -164,9 +170,15 @@ const dialogFieldValueStyle = style(csstips.flex);
                     showPagination={true}
                     showPageJump={true}
                     sortable={true}
-                    getTrGroupProps={() => {
+                    getTrGroupProps={(finalState: any, rowInfo?: RowInfo, column?: undefined, instance?: any) => {
+                        let background: string = undefined;
+                        if (rowInfo !== undefined) {
+                            background = rowInfo.original === this.props.globalStore.habitat ? 'lightgreen' : undefined;
+                        }
+
                         return {
                             style: {
+                                background: background,
                                 cursor: 'pointer'
                             }
                         }

@@ -8,6 +8,8 @@ import 'react-table/react-table.css';
 import { observer } from 'mobx-react';
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { Icon, Intent } from '@blueprintjs/core';
+import { IAvailableCapteur } from 'src/interfaces/IAvailableCapteur';
+import { IChannel } from 'src/interfaces/IChannel';
 
 interface IProps {
     dateDebut: Date;
@@ -36,28 +38,9 @@ interface IProps {
     public render() {
         const columns = [
             {
-                Header: 'Capteur id',
-                accessor: 'id',
-            },
-            {
-                Header: 'Ref',
-                accessor: 'capteur_reference_id',
-            },
-            {
-                Header: 'Marque',
-                accessor: 'marque'
-            },
-            {
-                Header: 'Fabricant',
-                accessor: 'ref_fabricant',
-            },
-            {
-                Header: 'Description',
-                accessor: 'description',
-            },
-            {
                 Header: '',
                 accessor: 'available',
+                width: 28,
                 Cell: (row: RowInfo) => {
                     const capteur: IAvailableCapteur = row.original;
                     return (
@@ -67,8 +50,43 @@ interface IProps {
                         />
                     );
                 }
+            },
+            {
+                Header: 'Capteur id',
+                accessor: 'id',
+                width: 80
+            },
+            {
+                Header: 'Ref interne',
+                accessor: 'capteur_reference_id',
+                width: 260
+            },
+            {
+                Header: 'Marque',
+                accessor: 'marque',
+                width: 130
+            },
+            {
+                Header: 'Ref fabricant',
+                accessor: 'ref_fabricant',
+                width: 150
+            },
+            {
+                Header: 'Description',
+                accessor: 'description',
+                width: 410
+            },
+            {
+                Header: 'Channels',
+                accessor: 'channels',
+                style: { overflow: 'visible' },
+                Cell: (row: RowInfo) => {
+                    const capteur: IAvailableCapteur = row.original;
+                    return (
+                        capteur.channels.map((channel: IChannel) => channel.measure_type).join(', ')
+                    );
+                }
             }
-
         ];
 
         return (
@@ -83,16 +101,19 @@ interface IProps {
                     showPagination={true}
                     showPageJump={true}
                     sortable={true}
-                    getTrGroupProps={() => {
+                    getTrGroupProps={(finalState: any, rowInfo?: RowInfo, column?: undefined, instance?: any) => {
+                        let background: string = undefined;
+                        if (rowInfo !== undefined) {
+                            background = rowInfo.original === this.props.selectedCapteur ? 'lightgreen' : undefined;
+                        }
+
                         return {
                             style: {
+                                background: background,
                                 cursor: 'pointer'
                             }
-                           }
+                        }
                     }}
-                    // SubComponent={ row => {
-                    //     return (<HabitatsTable client={row.original} />);
-                    // }}
                 />
             </div>
         );

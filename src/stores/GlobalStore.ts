@@ -21,6 +21,7 @@ import { ICapteurVirtuelForMission } from 'src/interfaces/ICapteurVirtuelForMiss
 import { Auth0ContextInterface, User } from '@auth0/auth0-react';
 import { ICrossValue } from 'src/interfaces/ICrossValue';
 import { ICapteurForMission } from 'src/interfaces/ICapteurForMission';
+import { IAvailableCapteur } from 'src/interfaces/IAvailableCapteur';
 
 export type TPeriod = 'YEAR' | 'MONTH' | 'DAY';
 
@@ -250,7 +251,20 @@ export class GlobalStore {
                         marque: result.marque,
                         ref_fabricant: result.ref_fabricant,
                         description: result.description,
-                        available: result.available === 'true' ? true : false
+                        available: result.available === 'true' ? true : false,
+                        propriete_alia: parseInt(result.propriete_alia, 10) === 1 ? true : false,
+                        channels: JSON.parse(result.channels).map((json: any) => {
+                            return {
+                                id: parseInt(json.id, 10),
+                                capteur_reference_id: json.capteur_reference_id,
+                                min_range: parseInt(json.min_range, 10),
+                                max_range: parseInt(json.max_range, 10),
+                                precision_step: parseInt(json.precision_step, 10),
+                                id_type_mesure: parseInt(json.id_type_mesure, 10),
+                                measure_type: json.measure_type,
+                                unit: json.unit
+                            };
+                        })
                     }
                 })
             );
@@ -268,11 +282,17 @@ export class GlobalStore {
             .then((results) => results);
     }
 
-    public getTypeMesures = () => {
+    public getTypeMesures = (): Promise<ITypeMesure[]> => {
         var request = `https://api.alia-france.com/alia_getTypeMesures.php`;
         return fetch(request)
             .then((response) => response.json())
-            .then((results) => results);
+            .then((results) => results.map((json: any) => {
+                return {
+                    id: parseInt(json.id, 10),
+                    measure_type: json.measure_type,
+                    unit: json.unit
+                }
+            }));
     }
 
     public getPlan(planId: number): Promise<IPlan> {

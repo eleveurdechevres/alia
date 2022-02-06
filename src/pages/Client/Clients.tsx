@@ -8,7 +8,7 @@ import 'react-table/react-table.css';
 // import { HabitatsTable } from '../Habitat/HabitatsTable';
 import { IClient } from 'src/interfaces/IClient';
 import { observer } from 'mobx-react';
-import { toJS, observable } from 'mobx';
+import { autorun, observable } from 'mobx';
 import { Icon, Dialog, Button, Intent, InputGroup } from '@blueprintjs/core';
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { Auth0Context, Auth0ContextInterface, User } from '@auth0/auth0-react';
@@ -42,6 +42,12 @@ const dialogFieldValueStyle = style(csstips.flex);
     // https://react-table.js.org/#/story/readme
     constructor(props: IProps) {
         super(props);
+
+        autorun(() => {
+            if (this.props.globalStore.client) {
+                this.forceUpdate();
+            }
+        });
     }
 
     public componentDidMount() {
@@ -150,7 +156,7 @@ const dialogFieldValueStyle = style(csstips.flex);
 
             <div className={style(csstips.margin(10), { boxShadow: '1px 1px 10px #888' })}>
                 <ReactTable
-                    data={toJS(this.props.globalStore.clients.filter(filterVisibleClient).slice())}
+                    data={this.props.globalStore.clients.filter(filterVisibleClient)}
                     columns={columns}
                     defaultPageSize={10}
                     className="-striped -highlight"
@@ -158,16 +164,19 @@ const dialogFieldValueStyle = style(csstips.flex);
                     showPagination={true}
                     showPageJump={true}
                     sortable={true}
-                    getTrGroupProps={() => {
+                    getTrGroupProps={(finalState: any, rowInfo?: RowInfo, column?: undefined, instance?: any) => {
+                        let background: string = undefined;
+                        if (rowInfo !== undefined) {
+                            background = rowInfo.original === this.props.globalStore.client ? 'lightgreen' : undefined;
+                        }
+
                         return {
                             style: {
+                                background: background,
                                 cursor: 'pointer'
                             }
-                           }
+                        }
                     }}
-                    // SubComponent={ row => {
-                    //     return (<HabitatsTable client={row.original} />);
-                    // }}
                 />
                 <ActionElementBar elements={[createClientButton]} />
                 <Dialog

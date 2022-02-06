@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { observable, computed } from 'mobx';
+import { observable, computed, observe } from 'mobx';
 import { observer } from 'mobx-react';
 import { Dialog, InputGroup, Button, Intent, TextArea, Checkbox } from '@blueprintjs/core';
 import { style } from 'typestyle/lib';
@@ -12,6 +12,7 @@ import { ITypeMesure } from 'src/interfaces/ITypeMesure';
 import * as d3 from 'd3';
 import { ScaleOrdinal } from 'd3';
 import { AvailableCapteurTable } from './AvailableCapteurs';
+import { IAvailableCapteur } from 'src/interfaces/IAvailableCapteur';
 
 interface IProps {
     globalStore: GlobalStore,
@@ -44,17 +45,49 @@ const dialogFieldValueStyle = style(csstips.flex);
     };
 
     @observable private isOnlyAvailableCapteurs: boolean = true;
+    @observable private isAliaProperty: boolean = true;
     @observable private availableCapteurs: IAvailableCapteur[] = [];
     @observable private selectedCapteur: IAvailableCapteur = undefined;
     @observable private selectedTypeMesureList: ITypeMesure[] = [];
 
-    @computed get filteredCapteurs(): IAvailableCapteur[] {
-        // TODO : filtrer les capteurs par type de mesure (le remonter de la DB pour ça !)
-        return this.availableCapteurs.filter((capteur: IAvailableCapteur) => true);
-    }
-
     public constructor(props: IProps) {
         super(props)
+
+        observe(this.selectedTypeMesureList, () => {
+            if (this.selectedCapteur !== undefined && !this.capteurHasTypesMesures(this.selectedCapteur, this.selectedTypeMesureList)) {
+                this.selectedCapteur = undefined;
+            } 
+        })
+    }
+
+    @computed get filteredCapteurs(): IAvailableCapteur[] {
+        return this.availableCapteurs.filter((capteur: IAvailableCapteur) => {
+            let filtreTypeMesureOk = this.selectedTypeMesureList.length > 0 ? this.capteurHasTypesMesures(capteur, this.selectedTypeMesureList) : true;
+            let ret: boolean = filtreTypeMesureOk;
+            if (this.isOnlyAvailableCapteurs) {
+                ret = ret && capteur.available;
+            }
+            if (this.isAliaProperty) {
+                ret = ret && capteur.propriete_alia;
+            }
+            return ret;
+        });
+    }
+
+    private capteurHasTypesMesures = (capteur: IAvailableCapteur, typesMesures: ITypeMesure[]): boolean => {
+        let allTypesMesuresFound = true;
+        typesMesures.forEach((typeMesure: ITypeMesure) => {
+            let typeMesureFound = false;
+            for (let i = 0 ; i < capteur.channels.length ; i++) {
+                let channel = capteur.channels[i];
+                if (channel.id_type_mesure === typeMesure.id) {
+                    typeMesureFound = true;
+                    break;
+                }
+            }
+            allTypesMesuresFound = allTypesMesuresFound && typeMesureFound;
+        });
+        return allTypesMesuresFound;
     }
 
     public componentDidMount(): void {
@@ -69,7 +102,7 @@ const dialogFieldValueStyle = style(csstips.flex);
     public render() {
         return (
             <Dialog
-                style={csstips.width(800)}
+                style={csstips.width(1400)}
                 autoFocus={true}
                 enforceFocus={true}
                 usePortal={true}
@@ -109,10 +142,17 @@ const dialogFieldValueStyle = style(csstips.flex);
                     <div className={dialogLineStyle}>
                         <div className={dialogFieldValueStyle}>
                             <Checkbox
-                                label="Capteurs disponibles"
-                                checked={this.isOnlyAvailableCapteurs}
+                                    label="Capteurs disponibles"
+                                    checked={this.isOnlyAvailableCapteurs}
+                                    onChange={() => {
+                                        this.isOnlyAvailableCapteurs = !this.isOnlyAvailableCapteurs;
+                                    }}
+                            />
+                            <Checkbox
+                                label="Propriété ALIA"
+                                checked={this.isAliaProperty}
                                 onChange={() => {
-                                    this.isOnlyAvailableCapteurs = !this.isOnlyAvailableCapteurs;
+                                    this.isAliaProperty = !this.isAliaProperty;
                                 }}
                             />
                         </div>
@@ -136,7 +176,14 @@ const dialogFieldValueStyle = style(csstips.flex);
                                 dateFin={new Date(this.props.mission.date_fin)}
                                 filteredCapteurs={this.filteredCapteurs}
                                 selectedCapteur={this.selectedCapteur}
-                                handleSelectCapteur={(capteur: IAvailableCapteur) => { this.selectedCapteur = capteur; }}
+                                handleSelectCapteur={(capteur: IAvailableCapteur) => {
+                                    if (this.selectedCapteur === capteur) {
+                                        this.selectedCapteur = undefined;
+                                    }
+                                    else {
+                                        this.selectedCapteur = capteur;
+                                    }
+                                }}
                             />
                         </div>
                     </div>
@@ -185,7 +232,8 @@ const dialogFieldValueStyle = style(csstips.flex);
     private isCapteurValide = (): boolean => {
         return (
             this.descriptionMissionRowToAdd.label !== undefined && this.descriptionMissionRowToAdd.label !== '' &&
-            this.descriptionMissionRowToAdd.description !== undefined && this.descriptionMissionRowToAdd.description !== ''
+            this.descriptionMissionRowToAdd.description !== undefined && this.descriptionMissionRowToAdd.description !== '' &&
+            this.selectedCapteur !== undefined
         );
     }
 

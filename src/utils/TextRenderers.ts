@@ -8,7 +8,6 @@ export function channelNameRenderer(channel: IChannelFromMission): string {
 }
 
 export function typeMesureTagRenderer(typeMesure: ITypeMesure): string {
-    console.log('typeMesureTagRenderer');
     return `${typeMesure.measure_type} (${typeMesure.unit})`;
 }
 
