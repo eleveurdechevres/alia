@@ -93,6 +93,16 @@ interface IProps {
                             disabled={false}
                         />
                     }
+                    {
+                        this.props.globalStore.isRoleAdmin(this.context) &&
+                        <NavBarButton
+                            icon="cog"
+                            tabEnum={NavBarTabEnum.ADMIN}
+                            selectedTab={this.props.globalStore.selectedTab}
+                            onClick={this.handleGotoAdmin}
+                            disabled={false}
+                        />
+                    }
                     <Popover
                         // className={style(csstips.fillParent, csstips.width('100%'))}
                         canEscapeKeyClose={true}
@@ -162,4 +172,7 @@ interface IProps {
         this.props.globalStore.navigateToTab(NavBarTabEnum.DEBUG);
     }
 
+    private handleGotoAdmin = () => {
+        this.props.globalStore.navigateToTab(NavBarTabEnum.ADMIN);
+    }
 }

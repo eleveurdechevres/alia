@@ -183,6 +183,9 @@ const dialogFieldValueStyle = style(csstips.flex);
                             }
                         }
                     }}
+                    collapseOnPageChange={false}
+                    collapseOnDataChange={false}
+                    collapseOnSortingChange={true}
                     SubComponent={ row => {
                         return (
                             <div className={style(csstips.gridSpaced(5), csstips.margin(10))}>

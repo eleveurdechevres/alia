@@ -13,6 +13,7 @@ import { Missions } from 'src/pages/Mission/Missions';
 import { Analyses } from 'src/pages/analyse/Analyses';
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { Auth0Context, Auth0ContextInterface, User } from '@auth0/auth0-react';
+import { Admin } from './pages/admin/Admin';
 
 interface IProps {
     globalStore: GlobalStore
@@ -23,7 +24,8 @@ export const enum NavBarTabEnum {
     HABITATS = 'Habitats',
     MISSIONS = 'Missions',
     ANALYSES = 'Analyses',
-    DEBUG = 'Debug'
+    DEBUG = 'Debug',
+    ADMIN = 'Admin',
 }
 
 @observer export default class App extends React.Component<IProps> {
@@ -59,6 +61,9 @@ export const enum NavBarTabEnum {
                 break;
             case NavBarTabEnum.DEBUG:
                 mainContent = <DebugPage/>;
+                break;
+            case NavBarTabEnum.ADMIN:
+                mainContent = <Admin globalStore={this.props.globalStore}/>;
                 break;
             default:
                 break;

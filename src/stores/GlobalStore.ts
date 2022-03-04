@@ -22,6 +22,7 @@ import { Auth0ContextInterface, User } from '@auth0/auth0-react';
 import { ICrossValue } from 'src/interfaces/ICrossValue';
 import { ICapteurForMission } from 'src/interfaces/ICapteurForMission';
 import { IAvailableCapteur } from 'src/interfaces/IAvailableCapteur';
+import { ICapteurReference } from 'src/interfaces/ICapteurReference';
 
 export type TPeriod = 'YEAR' | 'MONTH' | 'DAY';
 
@@ -238,6 +239,32 @@ export class GlobalStore {
         return fetch(`https://api.alia-france.com/alia_getCapteur.php?capteur_id=${capteurId}&mission_id=${missionId}`)
             .then((response) => response.json())
             .then((results) => results[0]);
+    }
+
+    // TODO FREDDY: alia_getAllCapteurReferences.php
+    public getAllCapteurReferences(): Promise<ICapteurReference[]> {
+        return fetch(`https://api.alia-france.com/alia_getAllCapteurReferences.php`)
+            .then((response) => response.json())
+            .then((results): ICapteurReference[] => results.map((result: any): ICapteurReference => {
+                return {
+                    id: result.id,
+                    marque: result.marque,
+                    ref_fabricant: result.ref_fabricant,
+                    description: result.description,
+                    channels: JSON.parse(result.channels).map((json: any): IChannel => {
+                        return {
+                            id: parseInt(json.id, 10),
+                            capteur_reference_id: json.capteur_reference_id,
+                            min_range: parseInt(json.min_range, 10),
+                            max_range: parseInt(json.max_range, 10),
+                            precision_step: parseInt(json.precision_step, 10),
+                            id_type_mesure: parseInt(json.id_type_mesure, 10),
+                            measure_type: json.measure_type,
+                            unit: json.unit
+                        };
+                    })
+                };
+            }));    // conversion éventuelle ?
     }
 
     public getAvailableCapteurs(dateDebut: Date, dateFin: Date): Promise<IAvailableCapteur[]> {
