@@ -56,10 +56,13 @@ export class ActionElementBar extends React.Component<IProps, {}> {
     }
 }
 
+const frontColor = '#2787C3';
+const frontColorHvover = '#2477AB';
 @observer export class ActionElementButton extends React.Component<IPropsActionElement, {}> {
 
+    
     @observable private buttonNewSheetSize = 60;
-    @observable private buttonNewSheetColor = 'blue';
+    @observable private buttonNewSheetColor = frontColor;
     @observable private isPopupOpened = true;
 
     public componentDidMount() {
@@ -77,11 +80,11 @@ export class ActionElementBar extends React.Component<IProps, {}> {
                 className={styleClassName}
                 onMouseOver={() => {
                     this.buttonNewSheetSize = 65 ;
-                    this.buttonNewSheetColor = 'purple';
+                    this.buttonNewSheetColor = frontColorHvover;
                 }}
                 onMouseLeave={() => {
                     this.buttonNewSheetSize = 60 ;
-                    this.buttonNewSheetColor = 'blue';
+                    this.buttonNewSheetColor = frontColor;
                 }}
                 onClick={this.props.onClick}
             >

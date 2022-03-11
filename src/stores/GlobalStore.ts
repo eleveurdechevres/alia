@@ -240,8 +240,7 @@ export class GlobalStore {
             .then((response) => response.json())
             .then((results) => results[0]);
     }
-
-    // TODO FREDDY: alia_getAllCapteurReferences.php
+    
     public getAllCapteurReferences(): Promise<ICapteurReference[]> {
         return fetch(`https://api.alia-france.com/alia_getAllCapteurReferences.php`)
             .then((response) => response.json())
@@ -251,6 +250,7 @@ export class GlobalStore {
                     marque: result.marque,
                     ref_fabricant: result.ref_fabricant,
                     description: result.description,
+                    image: undefined,
                     channels: JSON.parse(result.channels).map((json: any): IChannel => {
                         return {
                             id: parseInt(json.id, 10),
@@ -264,7 +264,7 @@ export class GlobalStore {
                         };
                     })
                 };
-            }));    // conversion éventuelle ?
+            }));
     }
 
     public getAvailableCapteurs(dateDebut: Date, dateFin: Date): Promise<IAvailableCapteur[]> {
@@ -710,6 +710,34 @@ export class GlobalStore {
         ).then((response) => {
             if (response.status === 200) {
                 this.reloadHabitatsFromClient(this.client)
+            }
+            else {
+                console.log(response);
+                // TODO : impossible de sauvegarder...
+            }
+        });
+    }
+
+    public writeCapteurReference = (capteurReference: ICapteurReference) => {
+        const body = JSON.stringify({
+            id: capteurReference.id,
+            marque: capteurReference.marque,
+            ref_fabricant: capteurReference.ref_fabricant,
+            description: capteurReference.description,
+            image: capteurReference.image
+        });
+
+        return fetch(`https://api.alia-france.com/alia_writeCapteurReference.php`, {
+                method: 'post',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: body
+            }
+        ).then((response) => {
+            if (response.status === 200) {
+                // this.reloadCapteurReferences(this.client)
             }
             else {
                 console.log(response);

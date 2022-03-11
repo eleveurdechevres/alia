@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as d3 from 'd3';
 import { style } from 'typestyle';
 import * as csstips from 'csstips';
 import 'react-table/react-table.css';
@@ -7,7 +8,7 @@ import { observer } from 'mobx-react';
 import { observable } from 'mobx';
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { ActionElementBar, IPropsActionElement } from 'src/components/ActionBar';
-import { Button, Dialog, Icon, Intent } from '@blueprintjs/core';
+import { Button, Dialog, FileInput, Icon, InputGroup, Intent } from '@blueprintjs/core';
 import ReactTable, { RowInfo } from 'react-table';
 import { ICapteurReference } from 'src/interfaces/ICapteurReference';
 import { IChannel } from 'src/interfaces/IChannel';
@@ -16,25 +17,47 @@ interface IProps {
     globalStore: GlobalStore
 }
 
-// const dialogLineStyle = style(csstips.margin(10), csstips.flex, csstips.horizontal);
-// const dialogFieldNameStyle = style(csstips.width(80), csstips.margin(5, 5));
-// const dialogFieldValueStyle = style(csstips.flex);
+const dialogLineStyle = style(csstips.margin(10), csstips.flex, csstips.horizontal);
+const dialogFieldNameStyle = style(csstips.width(80), csstips.margin(5, 5));
+const dialogFieldValueStyle = style(csstips.flex);
 
 @observer export class AdminCapteurs extends React.Component<IProps, {}> {
 
     @observable private capteurRefs: ICapteurReference[];
 
     @observable private dialogEditCapteurRefOpened: boolean;
-    @observable private capteurRefToModify: ICapteurReference[];
     @observable private dialogEditChannelOpened: boolean;
-    @observable private channelToModify: IChannel;
+    @observable private channelToSave: IChannel;
+    
+    @observable private capteurRefToSave: ICapteurReference = {
+        id: undefined,
+        marque: undefined,
+        ref_fabricant: undefined,
+        description: undefined,
+        channels: [],
+        image: undefined
+    };
+
+    @observable private isEditionMode: boolean;
 
     @observable private capteurRefSelected: ICapteurReference;
+    @observable private imageToUpload: string = undefined;
+
     @observable private channelSelected: IChannel;
+    private imageRefMap: Map<String, SVGImageElement> = new Map();
+    @observable private capteurRefToSaveImage: SVGImageElement;
 
     // https://react-table.js.org/#/story/readme
     public constructor(props: IProps) {
         super(props);
+
+        // autorun
+        // observe(this.capteurRefToSave, (change: IObjectDidChange) => {
+        //     let imageRef = d3.select(this.capteurRefToSaveImage);
+        //     imageRef.attr('xlink:href', this.capteurRefToSave.image)
+        //         .attr('x', 0)
+        //         .attr('y', 0);
+        // });
     }
 
     public componentDidMount() {
@@ -46,8 +69,16 @@ interface IProps {
             id: 'createNewCapteurRefButton',
             iconName: 'add',
             name: 'Créer une nouvelle référence de capteur',
-            onClick: () => { 
-                this.capteurRefToModify = undefined;
+            onClick: () => {
+                this.isEditionMode = false;
+                this.capteurRefToSave = {
+                    id: undefined,
+                    marque: undefined,
+                    ref_fabricant: undefined,
+                    description: undefined,
+                    channels: [],
+                    image: undefined
+                };
                 this.dialogEditCapteurRefOpened = true;
             }
         };
@@ -73,15 +104,33 @@ interface IProps {
                 accessor: 'description'
             },
             {
+                width: 150,
+                Cell: (row: RowInfo) => {
+
+                    return (
+                        <svg width={128} height={128}>
+                            <image ref={(ref) => { this.imageRefMap.set(row.original.id, ref); }} />
+                        </svg>
+                    );
+                }
+            },
+            {
                 width: 40,
                 Cell: (row: RowInfo) => {
+                    
                     return (
                         <Icon
                             className={style({cursor: 'pointer'})}    
                             icon="edit"
                             intent={Intent.PRIMARY}
                             onClick={() => {
-                                this.capteurRefToModify = row.original;
+                                this.capteurRefToSave = { ...row.original };
+                                this.isEditionMode = true;
+                                
+                                this.getImageCapteur(this.capteurRefToSave.id).then((imageCapteur) => {
+                                    this.capteurRefToSave.image = imageCapteur;
+                                });
+
                                 this.dialogEditCapteurRefOpened = true;
                             }}
                         />
@@ -128,7 +177,7 @@ interface IProps {
                             icon="edit"
                             intent={Intent.PRIMARY}
                             onClick={() => {
-                                this.channelToModify = row.original;
+                                this.channelToSave = row.original;
                                 this.dialogEditChannelOpened = true;
                             }}
                         />
@@ -139,18 +188,128 @@ interface IProps {
 
         return (
             <div>
-                <Dialog
+                <Dialog /* Création modification de capteurs */
                     autoFocus={true}
                     enforceFocus={true}
                     usePortal={true}
                     canOutsideClickClose={true}
                     canEscapeKeyClose={true}
                     isOpen={this.dialogEditCapteurRefOpened}
-                    title={this.capteurRefToModify !== undefined ? 'Edition Reference' : 'Nouvelle référence'}
+                    title={this.isEditionMode ? 'Edition Reference' : 'Nouvelle référence'}
                     icon="dashboard"
                     onClose={() => { this.dialogEditCapteurRefOpened = false; }}
                 >
-                    <div>Capteur...</div>
+                    <div className={style(csstips.flex, csstips.vertical)}>
+                        <div className={dialogLineStyle}>
+                            <div className={dialogFieldNameStyle}>
+                                id
+                            </div>
+                            <div className={dialogFieldValueStyle}>
+                                <InputGroup
+                                    leftIcon="tag"
+                                    placeholder="id"
+                                    onChange={(event: any) => { this.capteurRefToSave.id = event.target.value }}
+                                    value={this.capteurRefToSave.id}
+                                    disabled={this.isEditionMode}
+                                />
+                            </div>
+                        </div>
+                        <div className={dialogLineStyle}>
+                            <div className={dialogFieldNameStyle}>
+                                Marque
+                            </div>
+                            <div className={dialogFieldValueStyle}>
+                                <InputGroup
+                                    placeholder="Marque"
+                                    onChange={(event: any) => { this.capteurRefToSave.marque = event.target.value }}
+                                    value={this.capteurRefToSave.marque}
+                                />
+                            </div>
+                        </div>
+                        <div className={dialogLineStyle}>
+                            <div className={dialogFieldNameStyle}>
+                                Ref Fabricant
+                            </div>
+                            <div className={dialogFieldValueStyle}>
+                                <InputGroup
+                                    placeholder="Ref Fabricant"
+                                    onChange={(event: any) => { this.capteurRefToSave.ref_fabricant = event.target.value }}
+                                    value={this.capteurRefToSave.ref_fabricant}
+                                />
+                            </div>
+                        </div>
+                        <div className={dialogLineStyle}>
+                            <div className={dialogFieldNameStyle}>
+                                Description
+                            </div>
+                            <div className={dialogFieldValueStyle}>
+                                <InputGroup
+                                    placeholder="Description"
+                                    onChange={(event: any) => { this.capteurRefToSave.description = event.target.value }}
+                                    value={this.capteurRefToSave.description}
+                                />
+                            </div>
+                        </div>
+                        <div className={dialogLineStyle}>
+                            <div className={dialogFieldNameStyle}>
+                                Image
+                            </div>
+                            <div className={dialogFieldValueStyle}>
+                                <FileInput
+                                    className={style(csstips.fillParent)}
+                                    disabled={false}
+                                    text={this.imageToUpload ? this.imageToUpload : 'Choisissez un fichier'}
+                                    onChange={(event: any) => {
+                                        event.preventDefault();
+                                        let file: File = event.target.files[0];
+                                        let fileReader = new FileReader();
+                                        fileReader.onload = () => {
+                                            this.imageToUpload = file.name;
+                                        };
+                                        fileReader.onerror = () => { console.log('Error reading file')};
+                                        fileReader.onloadend = () => { 
+                                            this.capteurRefToSave.image = fileReader.result as string;
+                                            let imageRef = d3.select(this.capteurRefToSaveImage);
+                                            imageRef.attr('xlink:href', this.capteurRefToSave.image)
+                                                .attr('x', 0)
+                                                .attr('y', 0);
+                                        }
+                                        fileReader.readAsDataURL(file);
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className={dialogLineStyle}>
+                            <svg width={128} height={128}>
+                                <image ref={(ref) => { this.capteurRefToSaveImage = ref }} />
+                            </svg>
+                        </div>
+                        {/* <div className={dialogLineStyle}>
+                            <div className={dialogFieldNameStyle}/>
+                            <div className={dialogFieldValueStyle}>
+                                <InputGroup
+                                    placeholder="password"
+                                    onChange={(event: any) => { this.password = event.target.value }}
+                                    type="password"
+                                />
+                            </div>
+                        </div> */}
+                        <div className={style(csstips.horizontal, csstips.flex)}>
+                            <Button
+                                className={style(csstips.margin(10), csstips.flex)}
+                                intent={Intent.NONE}
+                                text="Annuler"
+                                onClick={() => { this.dialogEditCapteurRefOpened = false; }}
+                            />
+                            <Button
+                                className={style(csstips.margin(10), csstips.flex)}
+                                intent={Intent.PRIMARY}
+                                icon="cloud-upload"
+                                text={this.isEditionMode ? 'Modifier' : 'Créer'}
+                                onClick={this.handleWriteCapteurReference}
+                            />
+                        </div>
+                    </div>
                 </Dialog>
                 <Dialog
                     autoFocus={true}
@@ -159,7 +318,7 @@ interface IProps {
                     canOutsideClickClose={true}
                     canEscapeKeyClose={true}
                     isOpen={this.dialogEditChannelOpened}
-                    title={this.channelToModify !== undefined ? 'Edition Channel' : 'Nouveau channel'}
+                    title={this.channelToSave !== undefined ? 'Edition Channel' : 'Nouveau channel'}
                     icon="property"
                     onClose={() => { this.dialogEditChannelOpened = false; }}
                 >
@@ -223,7 +382,7 @@ interface IProps {
                                     icon="insert"
                                     text="Ajouter un channel"
                                     onClick={() => {
-                                        this.channelToModify = undefined;
+                                        this.channelToSave = undefined;
                                         this.dialogEditChannelOpened = true;
                                     }}
                                 />
@@ -258,6 +417,34 @@ interface IProps {
     }
 
     private reloadCapteurReferences = () => {
-        this.props.globalStore.getAllCapteurReferences().then((capteurRefs: ICapteurReference[]) => this.capteurRefs = capteurRefs);
+        this.props.globalStore.getAllCapteurReferences().then((capteurRefs: ICapteurReference[]) => {
+            this.capteurRefs = capteurRefs;
+            this.capteurRefs.forEach((capteurRef: ICapteurReference) => {
+                this.getImageCapteur(capteurRef.id).then((imageCapteur) => {
+                    let image = d3.select(this.imageRefMap.get(capteurRef.id));
+                    image.attr('xlink:href', imageCapteur)
+                        .attr('x', 0)
+                        .attr('y', 0);
+                });
+            });
+        });
     }
+
+    private handleWriteCapteurReference = () => {
+        this.props.globalStore.writeCapteurReference(this.capteurRefToSave).then(this.reloadCapteurReferences);
+        this.dialogEditCapteurRefOpened = false;
+        this.imageToUpload = undefined;
+    }
+
+    private getImageCapteur = (id: string) => {
+        return new Promise<string>((resolve, reject) => {
+            var request = `https://api.alia-france.com/alia_afficheImageCapteur.php?id=${id}`;
+            return fetch(request)
+                .then((response) => {
+                    resolve(response.text());
+                })
+    
+        });
+    }
+
 }

@@ -5,5 +5,6 @@ export interface ICapteurReference {
     marque: string;
     ref_fabricant: string;
     description: string;
+    image: string;
     channels: IChannel[];
 }
