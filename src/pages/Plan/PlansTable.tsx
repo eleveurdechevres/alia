@@ -114,7 +114,7 @@ interface IProps {
                     defaultPageSize={plans.length}
                     showPagination={false}
                     showPageJump={false}
-                    className="-striped -highlight"
+                    className={'-striped -highlight ' + style({ background: 'white' })}
                     getTrProps={this.handleEventsOnPlan}
                     SubComponent={ row => {
                         return (

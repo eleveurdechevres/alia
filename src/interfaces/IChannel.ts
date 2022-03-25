@@ -7,4 +7,5 @@ export interface IChannel {
     id_type_mesure: number;
     measure_type: string;
     unit: string;
+    description: string;
 }

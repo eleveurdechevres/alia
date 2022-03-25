@@ -260,7 +260,8 @@ export class GlobalStore {
                             precision_step: parseInt(json.precision_step, 10),
                             id_type_mesure: parseInt(json.id_type_mesure, 10),
                             measure_type: json.measure_type,
-                            unit: json.unit
+                            unit: json.unit,
+                            description: json.description
                         };
                     })
                 };
@@ -737,6 +738,36 @@ export class GlobalStore {
             }
         ).then((response) => {
             if (response.status === 200) {
+                // this.reloadCapteurReferences(this.client)
+            }
+            else {
+                console.log(response);
+                // TODO : impossible de sauvegarder...
+            }
+        });
+    }
+
+    public writeChannel = (channel: IChannel) => {
+        const body = JSON.stringify({
+            id: channel.id,
+            capteur_reference_id: channel.capteur_reference_id,
+            min_range: channel.min_range,
+            max_range: channel.max_range,
+            precision_step: channel.precision_step,
+            id_type_mesure: channel.id_type_mesure,
+            description: channel.description
+        });
+        return fetch(`https://api.alia-france.com/alia_writeChannel.php`, {
+                method: 'post',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: body
+            }
+        ).then((response) => {
+            if (response.status === 200) {
+                console.log('response', response.blob())
                 // this.reloadCapteurReferences(this.client)
             }
             else {

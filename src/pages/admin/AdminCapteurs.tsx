@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as d3 from 'd3';
 import { style } from 'typestyle';
 import * as csstips from 'csstips';
 import 'react-table/react-table.css';
@@ -8,10 +7,12 @@ import { observer } from 'mobx-react';
 import { observable } from 'mobx';
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { ActionElementBar, IPropsActionElement } from 'src/components/ActionBar';
-import { Button, Dialog, FileInput, Icon, InputGroup, Intent } from '@blueprintjs/core';
+import { Button, Dialog, FileInput, Icon, InputGroup, Intent, NumericInput } from '@blueprintjs/core';
 import ReactTable, { RowInfo } from 'react-table';
 import { ICapteurReference } from 'src/interfaces/ICapteurReference';
 import { IChannel } from 'src/interfaces/IChannel';
+import { TypeMesureSelector } from 'src/components/TypeMesureSelector';
+import { ITypeMesure } from 'src/interfaces/ITypeMesure';
 
 interface IProps {
     globalStore: GlobalStore
@@ -27,8 +28,7 @@ const dialogFieldValueStyle = style(csstips.flex);
 
     @observable private dialogEditCapteurRefOpened: boolean;
     @observable private dialogEditChannelOpened: boolean;
-    @observable private channelToSave: IChannel;
-    
+
     @observable private capteurRefToSave: ICapteurReference = {
         id: undefined,
         marque: undefined,
@@ -38,14 +38,17 @@ const dialogFieldValueStyle = style(csstips.flex);
         image: undefined
     };
 
+    @observable private channelToSave: IChannel;
+
     @observable private isEditionMode: boolean;
 
     @observable private capteurRefSelected: ICapteurReference;
+    @observable private channelSelected: IChannel;
+
     @observable private imageToUpload: string = undefined;
 
-    @observable private channelSelected: IChannel;
-    private imageRefMap: Map<String, SVGImageElement> = new Map();
-    @observable private capteurRefToSaveImage: SVGImageElement;
+    // private imageRefMap: Map<String, string> = new Map();
+    // @observable private capteurRefToSaveImage: SVGImageElement;
 
     // https://react-table.js.org/#/story/readme
     public constructor(props: IProps) {
@@ -106,11 +109,11 @@ const dialogFieldValueStyle = style(csstips.flex);
             {
                 width: 150,
                 Cell: (row: RowInfo) => {
-
                     return (
-                        <svg width={128} height={128}>
-                            <image ref={(ref) => { this.imageRefMap.set(row.original.id, ref); }} />
-                        </svg>
+                        <img src={row.original.image} alt="Logo" />
+                        // <svg width={128} height={128}>
+                        //     <image ref={(ref) => { this.imageRefMap.set(row.original.id, ref); }} />
+                        // </svg>
                     );
                 }
             },
@@ -258,7 +261,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                                 <FileInput
                                     className={style(csstips.fillParent)}
                                     disabled={false}
-                                    text={this.imageToUpload ? this.imageToUpload : 'Choisissez un fichier'}
+                                    text={this.imageToUpload ? this.imageToUpload : 'Choisissez une image (128x128)'}
                                     onChange={(event: any) => {
                                         event.preventDefault();
                                         let file: File = event.target.files[0];
@@ -269,10 +272,10 @@ const dialogFieldValueStyle = style(csstips.flex);
                                         fileReader.onerror = () => { console.log('Error reading file')};
                                         fileReader.onloadend = () => { 
                                             this.capteurRefToSave.image = fileReader.result as string;
-                                            let imageRef = d3.select(this.capteurRefToSaveImage);
-                                            imageRef.attr('xlink:href', this.capteurRefToSave.image)
-                                                .attr('x', 0)
-                                                .attr('y', 0);
+                                            // let imageRef = d3.select(this.capteurRefToSaveImage);
+                                            // imageRef.attr('xlink:href', this.capteurRefToSave.image)
+                                            //     .attr('x', 0)
+                                            //     .attr('y', 0);
                                         }
                                         fileReader.readAsDataURL(file);
                                     }}
@@ -280,21 +283,13 @@ const dialogFieldValueStyle = style(csstips.flex);
                             </div>
                         </div>
                         <div className={dialogLineStyle}>
-                            <svg width={128} height={128}>
+                            <img src={this.capteurRefToSave.image} alt="Logo" />
+                            {/* <svg width={128} height={128}>
                                 <image ref={(ref) => { this.capteurRefToSaveImage = ref }} />
-                            </svg>
+                            </svg> */}
                         </div>
-                        {/* <div className={dialogLineStyle}>
-                            <div className={dialogFieldNameStyle}/>
-                            <div className={dialogFieldValueStyle}>
-                                <InputGroup
-                                    placeholder="password"
-                                    onChange={(event: any) => { this.password = event.target.value }}
-                                    type="password"
-                                />
-                            </div>
-                        </div> */}
-                        <div className={style(csstips.horizontal, csstips.flex)}>
+                    </div>
+                    <div className={style(csstips.horizontal, csstips.flex)}>
                             <Button
                                 className={style(csstips.margin(10), csstips.flex)}
                                 intent={Intent.NONE}
@@ -309,7 +304,6 @@ const dialogFieldValueStyle = style(csstips.flex);
                                 onClick={this.handleWriteCapteurReference}
                             />
                         </div>
-                    </div>
                 </Dialog>
                 <Dialog
                     autoFocus={true}
@@ -318,11 +312,85 @@ const dialogFieldValueStyle = style(csstips.flex);
                     canOutsideClickClose={true}
                     canEscapeKeyClose={true}
                     isOpen={this.dialogEditChannelOpened}
-                    title={this.channelToSave !== undefined ? 'Edition Channel' : 'Nouveau channel'}
+                    title={this.channelToSave && this.channelToSave.id !== undefined ? 'Edition Channel' : 'Nouveau channel'}
                     icon="property"
                     onClose={() => { this.dialogEditChannelOpened = false; }}
                 >
-                    <div>Channel...</div>
+                    <div>
+                        <div className={dialogLineStyle}>
+                            <div className={dialogFieldNameStyle}>
+                                Type de mesure
+                            </div>
+                            <div className={dialogFieldValueStyle}>
+                                <TypeMesureSelector
+                                    globalStore={this.props.globalStore}
+                                    typeMesure={ this.channelSelected ? {
+                                        id: this.channelSelected.id_type_mesure,
+                                        measure_type: this.channelSelected.measure_type,
+                                        unit: this.channelSelected.unit } : undefined }
+                                    handleSelectTypeMesure={(typeMesure: ITypeMesure) => {
+                                        this.channelToSave.id_type_mesure = typeMesure.id;
+                                        this.channelToSave.measure_type = typeMesure.measure_type;
+                                        this.channelToSave.unit = typeMesure.unit;
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className={dialogLineStyle}>
+                            <div className={dialogFieldNameStyle}>
+                                Min range
+                            </div>
+                            <div className={dialogFieldValueStyle}>
+                                <NumericInput
+                                    buttonPosition="none"
+                                    placeholder="min range"
+                                    onValueChange={(valueAsNumber: number) => { this.channelToSave.min_range = valueAsNumber }}
+                                    value={this.channelToSave ? this.channelToSave.min_range : undefined}
+                                />
+                            </div>
+                        </div>
+                        <div className={dialogLineStyle}>
+                            <div className={dialogFieldNameStyle}>
+                                Max range
+                            </div>
+                            <div className={dialogFieldValueStyle}>
+                                <NumericInput
+                                    buttonPosition="none"
+                                    placeholder="max range"
+                                    onValueChange={(valueAsNumber: number) => { this.channelToSave.max_range = valueAsNumber }}
+                                    value={this.channelToSave ? this.channelToSave.max_range : undefined}
+                                />
+                            </div>
+                        </div>
+                        <div className={dialogLineStyle}>
+                            <div className={dialogFieldNameStyle}>
+                                Precision step
+                            </div>
+                            <div className={dialogFieldValueStyle}>
+                                <NumericInput
+                                    buttonPosition="none"
+                                    placeholder="precision step"
+                                    onValueChange={(valueAsNumber: number) => { this.channelToSave.precision_step = valueAsNumber }}
+                                    value={this.channelToSave ? this.channelToSave.precision_step : undefined}
+                                />
+                            </div>
+                        </div>
+                        <div className={style(csstips.horizontal, csstips.flex)}>
+                            <Button
+                                className={style(csstips.margin(10), csstips.flex)}
+                                intent={Intent.NONE}
+                                text="Annuler"
+                                onClick={() => { this.dialogEditChannelOpened = false; }}
+                            />
+                            <Button
+                                className={style(csstips.margin(10), csstips.flex)}
+                                intent={Intent.PRIMARY}
+                                icon="cloud-upload"
+                                text={this.isEditionMode ? 'Modifier' : 'Créer'}
+                                onClick={this.handleWriteChannel}
+                            />
+                        </div>
+                    </div>
                 </Dialog>
                 <ActionElementBar elements={[createCapteurRefButton]} />
                 {
@@ -339,7 +407,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                         getTrGroupProps={(finalState: any, rowInfo?: RowInfo, column?: undefined, instance?: any) => {
                             let background: string = undefined;
                             if (rowInfo !== undefined) {
-                                background = rowInfo.original === this.props.globalStore.client ? 'lightgreen' : undefined;
+                                background = this.capteurRefSelected && (rowInfo.original.id === this.capteurRefSelected.id) ? 'lightgreen' : undefined;
                             }
 
                             return {
@@ -361,13 +429,13 @@ const dialogFieldValueStyle = style(csstips.flex);
                                         columns={columnsChannel}
                                         defaultPageSize={capteurRef.channels.length}
                                         showPagination={false}
-                                        className="-striped -highlight"
+                                        className={'-striped -highlight ' + style({ background: 'white' })}
                                         getTrProps={this.handleEventsOnChannelRef}
                                         sortable={true}
                                         getTrGroupProps={(finalState: any, rowInfo?: RowInfo, column?: undefined, instance?: any) => {
                                             let background: string = undefined;
                                             if (rowInfo !== undefined) {
-                                                background = rowInfo.original === this.props.globalStore.client ? 'lightgreen' : undefined;
+                                                background = this.channelSelected === rowInfo.original ? 'palegreen' : 'white';
                                             }
 
                                             return {
@@ -382,7 +450,17 @@ const dialogFieldValueStyle = style(csstips.flex);
                                     icon="insert"
                                     text="Ajouter un channel"
                                     onClick={() => {
-                                        this.channelToSave = undefined;
+                                        this.channelToSave = {
+                                            id: undefined,
+                                            capteur_reference_id: this.capteurRefSelected.id,
+                                            min_range: undefined,
+                                            max_range: undefined,
+                                            precision_step: undefined,
+                                            id_type_mesure: undefined,
+                                            measure_type: undefined,
+                                            unit: undefined,
+                                            description: undefined
+                                        };
                                         this.dialogEditChannelOpened = true;
                                     }}
                                 />
@@ -402,7 +480,8 @@ const dialogFieldValueStyle = style(csstips.flex);
         return {
             onClick: (e: any) => {
                 this.capteurRefSelected = rowInfo.original;
-                console.log(this.capteurRefSelected);
+                this.channelSelected = undefined;
+                this.forceUpdate();
             }
         }
     }
@@ -411,9 +490,9 @@ const dialogFieldValueStyle = style(csstips.flex);
         return {
             onClick: (e: any) => {
                 this.channelSelected = rowInfo.original;
-                console.log(this.channelSelected);
-            }
-        }
+                this.forceUpdate();
+            },
+}
     }
 
     private reloadCapteurReferences = () => {
@@ -421,21 +500,34 @@ const dialogFieldValueStyle = style(csstips.flex);
             this.capteurRefs = capteurRefs;
             this.capteurRefs.forEach((capteurRef: ICapteurReference) => {
                 this.getImageCapteur(capteurRef.id).then((imageCapteur) => {
-                    let image = d3.select(this.imageRefMap.get(capteurRef.id));
-                    image.attr('xlink:href', imageCapteur)
-                        .attr('x', 0)
-                        .attr('y', 0);
+                    capteurRef.image = imageCapteur;
+//                    this.imageRefMap.set(capteurRef.id, imageCapteur);
+                    // let image = d3.select(this.imageRefMap.get(capteurRef.id));
+                    // image.attr('xlink:href', imageCapteur)
+                    //     .attr('x', 0)
+                    //     .attr('y', 0);
+                    this.forceUpdate();
                 });
             });
         });
     }
 
     private handleWriteCapteurReference = () => {
-        this.props.globalStore.writeCapteurReference(this.capteurRefToSave).then(this.reloadCapteurReferences);
+        this.props.globalStore.writeCapteurReference(this.capteurRefToSave).then(() => {
+            this.reloadCapteurReferences();
+            this.forceUpdate();
+        });
         this.dialogEditCapteurRefOpened = false;
         this.imageToUpload = undefined;
     }
 
+    private handleWriteChannel = () => {
+        console.log(this.channelToSave)
+        this.props.globalStore.writeChannel(this.channelToSave)
+            .then(this.reloadCapteurReferences);
+        this.dialogEditChannelOpened = false;
+    }
+    
     private getImageCapteur = (id: string) => {
         return new Promise<string>((resolve, reject) => {
             var request = `https://api.alia-france.com/alia_afficheImageCapteur.php?id=${id}`;
