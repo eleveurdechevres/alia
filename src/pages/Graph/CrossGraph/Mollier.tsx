@@ -38,6 +38,13 @@ interface Ixy {
     date: Date;
 }
 
+type TZoneDescription = {
+    zone: string,
+    description: string,
+    x: number,
+    y: number
+    'text-anchor': 'start' | 'middle' | 'end'};
+
 export enum EnumAlarm {
     confort = 'Confort',
     qualiteAir = 'Qualité de l\'air'
@@ -63,9 +70,9 @@ const VERTICAL_LEGEND_WIDTH = 15;
     A2EnveloppeRef: SVGGElement;
     A3EnveloppeRef: SVGGElement;
     A4EnveloppeRef: SVGGElement;
-    Z1BacteriesMicrochampignons: SVGGElement;
+    Z1Sécheresse: SVGGElement;
     Z2BacteriesMicrochampignons: SVGGElement;
-    Z3SecheresseAcariens: SVGGElement;
+    Z3Accariens: SVGGElement;
     legendsRef: SVGGElement;
     checkBoxes: SVGGElement;
 
@@ -284,14 +291,19 @@ const VERTICAL_LEGEND_WIDTH = 15;
             {η: 18, x: get_x_from_η_φ(18, 60)},  // η=20, φ=60%
             {η: 18, x: 6.2},
         ];
-        this.drawEnveloppe( this.A0EnveloppeRef, dataA0, Colors.GREEN3, Colors.GREEN5);
-        d3.select(this.A0EnveloppeRef).append('text')
-            .attr('x', this.scaleX(24))
-            .attr('y', this.scaleY(10.5))
-            .attr('font-weight', 'bold')
-            .attr('font-size', '10')
-            .attr('fill', Colors.GREEN3)
-            .text('A0');
+        this.drawEnveloppe(
+            this.A0EnveloppeRef,
+            dataA0,
+            Colors.GREEN3,
+            Colors.GREEN5,
+            {
+                zone: 'A0',
+                description: 'Confort Hygrométrique A0 - Bon',
+                x: this.scaleX(24),
+                y: this.scaleY(10.5),
+                'text-anchor': 'start'
+            }
+        );
     }
 
     drawA1Enveloppe = () => {
@@ -311,14 +323,19 @@ const VERTICAL_LEGEND_WIDTH = 15;
             {η: 15,   x: get_x_from_η_φ(15, 80)},
             {η: 15,   x: get_x_from_η_φ(15, 20)},
         ];
-        this.drawEnveloppe( this.A1EnveloppeRef, dataA1, Colors.ORANGE3, Colors.ORANGE5);
-        d3.select(this.A1EnveloppeRef).append('text')
-            .attr('x', this.scaleX(27))
-            .attr('y', this.scaleY(12.5))
-            .attr('font-weight', 'bold')
-            .attr('font-size', '10')
-            .attr('fill', Colors.ORANGE3)
-            .text('A1');
+        this.drawEnveloppe(
+            this.A1EnveloppeRef,
+            dataA1,
+            Colors.ORANGE3,
+            Colors.ORANGE5,
+            {
+                zone: 'A1',
+                description: 'Confort Hygrométrique A1 - Mauvais',
+                x: this.scaleX(27),
+                y: this.scaleY(12.5),
+                'text-anchor': 'middle'
+            }
+        );
     }
 
     drawA2Enveloppe = () => {
@@ -344,14 +361,19 @@ const VERTICAL_LEGEND_WIDTH = 15;
             {η: 10,   x: get_x_from_η_φ(10, 80)},
             {η: 10,   x: get_x_from_η_φ(10, 20)},
         ];
-        this.drawEnveloppe( this.A2EnveloppeRef, dataA2, Colors.RED3, Colors.RED5);
-        d3.select(this.A2EnveloppeRef).append('text')
-            .attr('x', this.scaleX(31))
-            .attr('y', this.scaleY(16))
-            .attr('font-weight', 'bold')
-            .attr('font-size', 10)
-            .attr('fill', Colors.RED3)
-            .text('A2');
+        this.drawEnveloppe(
+            this.A2EnveloppeRef,
+            dataA2,
+            Colors.RED3,
+            Colors.RED5,
+            {
+                zone: 'A2',
+                description: 'Confort Hygrométrique A1 - Très mauvais',
+                x: this.scaleX(31),
+                y: this.scaleY(16),
+                'text-anchor': 'middle'
+            }
+        );
     }
 
     drawZ1Enveloppe = () => {
@@ -366,14 +388,19 @@ const VERTICAL_LEGEND_WIDTH = 15;
             {η: 15,   x: 0},
             {η: 15,   x: get_x_from_η_φ(15, 40)},
         ];
-        this.drawEnveloppe( this.Z1BacteriesMicrochampignons, dataZ1, Colors.BLUE3, Colors.BLUE5);
-        d3.select(this.Z1BacteriesMicrochampignons).append('text')
-            .attr('x', this.scaleX(29))
-            .attr('y', this.scaleY(8))
-            .attr('font-size', 10)
-            .attr('font-weight', 'bold')
-            .attr('fill', Colors.BLUE3)
-            .text('Z1');
+        this.drawEnveloppe(
+            this.Z1Sécheresse,
+            dataZ1,
+            Colors.BLUE3,
+            Colors.BLUE5,
+            {
+                zone: 'Z1',
+                description: 'Sécheresse',
+                x: this.scaleX(29),
+                y: this.scaleY(8),
+                'text-anchor': 'start'
+            }
+        );
     }
 
     drawZ2Enveloppe = () => {
@@ -388,18 +415,23 @@ const VERTICAL_LEGEND_WIDTH = 15;
             {η: 15,   x: get_x_from_η_φ(15, 70)},
             {η: 15,   x: get_x_from_η_φ(15, 100)},
         ];
-        this.drawEnveloppe( this.Z2BacteriesMicrochampignons, dataZ2, Colors.ORANGE3, Colors.ORANGE5);
-        d3.select(this.Z2BacteriesMicrochampignons).append('text')
-            .attr('x', this.scaleX(12))
-            .attr('y', this.scaleY(8))
-            .attr('font-size', 10)
-            .attr('font-weight', 'bold')
-            .attr('fill', Colors.ORANGE3)
-            .text('Z2');
+        this.drawEnveloppe(
+            this.Z2BacteriesMicrochampignons,
+            dataZ2,
+            Colors.ORANGE3,
+            Colors.ORANGE5,
+            {
+                zone: 'Z2',
+                description: 'Développement de bactéries et microchampignons',
+                x: this.scaleX(15),
+                y: this.scaleY(12.5),
+                'text-anchor': 'end'
+            }
+        );
     }
 
     drawZ3Enveloppe = () => {
-        var dataZ2 = [
+        var dataZ3 = [
             {η: 23, x: get_x_from_η_φ(23, 100)},
             {η: 25, x: get_x_from_η_φ(25, 100)},
             {η: 27, x: get_x_from_η_φ(27, 100)},
@@ -408,14 +440,19 @@ const VERTICAL_LEGEND_WIDTH = 15;
             {η: 23, x: get_x_from_η_φ(23, 70)},
             {η: 23, x: get_x_from_η_φ(23, 100)},
         ];
-        this.drawEnveloppe( this.Z2BacteriesMicrochampignons, dataZ2, Colors.RED3, Colors.RED3);
-        d3.select(this.Z2BacteriesMicrochampignons).append('text')
-            .attr('x', this.scaleX(28))
-            .attr('y', this.scaleY(18))
-            .attr('font-size', 10)
-            .attr('font-weight', 'bold')
-            .attr('fill', Colors.RED3)
-            .text('Z3');
+        this.drawEnveloppe(
+            this.Z3Accariens,
+            dataZ3,
+            Colors.RED3,
+            Colors.RED3,
+            {
+                zone: 'Z3',
+                description: 'Développement d\'Accariens',
+                x: this.scaleX(28),
+                y: this.scaleY(18),
+                'text-anchor': 'start'
+            }
+        );
     }
 
     isInA0 = (η: number, φ: number) => {
@@ -473,7 +510,16 @@ const VERTICAL_LEGEND_WIDTH = 15;
         return true;
     }
 
-    drawEnveloppe = (ref: SVGElement, data: Iηx[], colorStroke: string, colorFill: string) => {
+    drawEnveloppe = (ref: SVGElement, data: Iηx[], colorStroke: string, colorFill: string, zoneDescription: TZoneDescription ) => {
+        d3.select(ref).append('text')
+            .attr('x', zoneDescription.x)
+            .attr('y', zoneDescription.y)
+            .attr('font-size', 10)
+            .attr('font-weight', 'bold')
+            .attr('fill', colorStroke)
+            .attr('text-anchor', zoneDescription['text-anchor'])
+            .text(zoneDescription.zone)
+
         d3.select(ref)
             .datum(data)
             .append('path')
@@ -484,8 +530,14 @@ const VERTICAL_LEGEND_WIDTH = 15;
             .attr('stroke-width', 1)
             .attr('stroke-opacity', 1)
             .attr('interpolate', 'basis-closed')
-            .on('mouseover', function() {d3.select(this).transition().attr('fill', colorFill).attr('fill-opacity', 0.2)})
-            .on('mouseout', function() {d3.select(this).transition().attr('fill', 'white').attr('fill-opacity', 0)});
+            .on('mouseover', function() {
+                d3.select(this).transition().attr('fill', colorFill).attr('fill-opacity', 0.2);
+                d3.select(ref).select('text').text(zoneDescription.description);
+            })
+            .on('mouseout', function() {
+                d3.select(this).transition().attr('fill', 'white').attr('fill-opacity', 0);
+                d3.select(ref).select('text').text(zoneDescription.zone);
+            })
     }
 
     functionColor = (d: Ixy) => {
@@ -616,9 +668,9 @@ const VERTICAL_LEGEND_WIDTH = 15;
                                 <g ref={(ref) => {this.A0EnveloppeRef = ref}}/>
                             </g>
                             <g ref={(ref) => {this.enveloppesQualiteAirRef = ref}} opacity={this.alarmSelected === EnumAlarm.qualiteAir ? 1 : 0}>
-                                <g ref={(ref) => {this.Z1BacteriesMicrochampignons = ref}}/>
+                                <g ref={(ref) => {this.Z1Sécheresse = ref}}/>
                                 <g ref={(ref) => {this.Z2BacteriesMicrochampignons = ref}}/>
-                                <g ref={(ref) => {this.Z3SecheresseAcariens = ref}}/>
+                                <g ref={(ref) => {this.Z3Accariens = ref}}/>
                             </g>
                             <g ref={(ref) => {this.legendsRef = ref}}/>
                             <g ref={(ref) => {this.checkBoxes = ref}}>
