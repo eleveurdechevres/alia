@@ -25,14 +25,17 @@ interface IProps {
 
     public map: Map = undefined;
 
+
+    // !!! Pb d'affichage. Voir peut-être https://codesandbox.io/s/43p10r6w94?file=/src/MyMap.js:727-732
+
     public constructor(props: IProps) {
         super(props);
     }
+
     public componentDidMount() {
         this.createMap();
         this.map.updateSize();
     }
-
 
     private createMap = () => {
         useGeographic();

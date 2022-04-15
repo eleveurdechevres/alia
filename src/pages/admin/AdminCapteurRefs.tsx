@@ -22,7 +22,7 @@ const dialogLineStyle = style(csstips.margin(10), csstips.flex, csstips.horizont
 const dialogFieldNameStyle = style(csstips.width(80), csstips.margin(5, 5));
 const dialogFieldValueStyle = style(csstips.flex);
 
-@observer export class AdminCapteurs extends React.Component<IProps, {}> {
+@observer export class AdminCapteurRefs extends React.Component<IProps, {}> {
 
     @observable private capteurRefs: ICapteurReference[];
 
@@ -90,21 +90,23 @@ const dialogFieldValueStyle = style(csstips.flex);
             {
                 Header: 'id',
                 accessor: 'id',
-                width: 300
+                width: 250
             },
             {
                 Header: 'Marque',
                 accessor: 'marque',
-                width: 300
+                width: 250
             },
             {
                 Header: 'Ref Fabricant',
                 accessor: 'ref_fabricant',
-                width: 300
+                width: 250
             },
             {
                 Header: 'Description',
-                accessor: 'description'
+                accessor: 'description',
+                width: 400,
+                style: { 'whiteSpace': 'unset' }
             },
             {
                 width: 150,
@@ -191,6 +193,7 @@ const dialogFieldValueStyle = style(csstips.flex);
 
         return (
             <div>
+            {/* <div className={style(csstips.margin(10), { boxShadow: '1px 1px 10px #888' })}> */}
                 <Dialog /* Création modification de capteurs */
                     autoFocus={true}
                     enforceFocus={true}
@@ -393,84 +396,83 @@ const dialogFieldValueStyle = style(csstips.flex);
                     </div>
                 </Dialog>
                 <ActionElementBar elements={[createCapteurRefButton]} />
-                {
-                    // Liste des références de capteurs => ajout ref, modif ref
-                    <ReactTable
-                        data={this.capteurRefs}
-                        columns={columnsCapteur}
-                        defaultPageSize={20}
-                        className="-striped -highlight"
-                        getTrProps={this.handleEventsOnCapteurRef}
-                        showPagination={true}
-                        showPageJump={true}
-                        sortable={true}
-                        getTrGroupProps={(finalState: any, rowInfo?: RowInfo, column?: undefined, instance?: any) => {
-                            let background: string = undefined;
-                            if (rowInfo !== undefined) {
-                                background = this.capteurRefSelected && (rowInfo.original.id === this.capteurRefSelected.id) ? 'lightgreen' : undefined;
-                            }
-
-                            return {
-                                style: {
-                                    background: background,
-                                    cursor: 'pointer'
+                    <div className={style(csstips.horizontal)}>
+                        <div className={style(csstips.flex)}/>
+                        <ReactTable
+                            data={this.capteurRefs}
+                            columns={columnsCapteur}
+                            defaultPageSize={20}
+                            className="-striped -highlight"
+                            getTrProps={this.handleEventsOnCapteurRef}
+                            showPagination={true}
+                            showPageJump={true}
+                            sortable={true}
+                            getTrGroupProps={(finalState: any, rowInfo?: RowInfo, column?: undefined, instance?: any) => {
+                                let background: string = undefined;
+                                if (rowInfo !== undefined) {
+                                    background = this.capteurRefSelected && (rowInfo.original.id === this.capteurRefSelected.id) ? 'lightgreen' : undefined;
                                 }
-                            }
-                        }}
-                        collapseOnPageChange={false}
-                        collapseOnDataChange={false}
-                        collapseOnSortingChange={true}
-                        SubComponent={ row => {
-                            let capteurRef: ICapteurReference = row.original;
-                            return (
-                                <div className={style(csstips.gridSpaced(5), csstips.margin(10))}>
-                                    <ReactTable
-                                        data={capteurRef.channels}
-                                        columns={columnsChannel}
-                                        defaultPageSize={capteurRef.channels.length}
-                                        showPagination={false}
-                                        className={'-striped -highlight ' + style({ background: 'white' })}
-                                        getTrProps={this.handleEventsOnChannelRef}
-                                        sortable={true}
-                                        getTrGroupProps={(finalState: any, rowInfo?: RowInfo, column?: undefined, instance?: any) => {
-                                            let background: string = undefined;
-                                            if (rowInfo !== undefined) {
-                                                background = this.channelSelected === rowInfo.original ? 'palegreen' : 'white';
-                                            }
 
-                                            return {
-                                                style: {
-                                                    background: background,
-                                                    cursor: 'pointer'
+                                return {
+                                    style: {
+                                        background: background,
+                                        cursor: 'pointer'
+                                    }
+                                }
+                            }}
+                            collapseOnPageChange={false}
+                            collapseOnDataChange={false}
+                            collapseOnSortingChange={true}
+                            SubComponent={ row => {
+                                let capteurRef: ICapteurReference = row.original;
+                                return (
+                                    <div className={style(csstips.gridSpaced(5), csstips.margin(10))}>
+                                        <ReactTable
+                                            data={capteurRef.channels}
+                                            columns={columnsChannel}
+                                            defaultPageSize={capteurRef.channels.length}
+                                            showPagination={false}
+                                            className={'-striped -highlight ' + style({ background: 'white' })}
+                                            getTrProps={this.handleEventsOnChannelRef}
+                                            sortable={true}
+                                            getTrGroupProps={(finalState: any, rowInfo?: RowInfo, column?: undefined, instance?: any) => {
+                                                let background: string = undefined;
+                                                if (rowInfo !== undefined) {
+                                                    background = this.channelSelected === rowInfo.original ? 'palegreen' : 'white';
                                                 }
-                                            }
+
+                                                return {
+                                                    style: {
+                                                        background: background,
+                                                        cursor: 'pointer'
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                    <Button
+                                        icon="insert"
+                                        text="Ajouter un channel"
+                                        onClick={() => {
+                                            this.channelToSave = {
+                                                id: undefined,
+                                                capteur_reference_id: this.capteurRefSelected.id,
+                                                min_range: undefined,
+                                                max_range: undefined,
+                                                precision_step: undefined,
+                                                id_type_mesure: undefined,
+                                                measure_type: undefined,
+                                                unit: undefined,
+                                                description: undefined
+                                            };
+                                            this.dialogEditChannelOpened = true;
                                         }}
                                     />
-                                <Button
-                                    icon="insert"
-                                    text="Ajouter un channel"
-                                    onClick={() => {
-                                        this.channelToSave = {
-                                            id: undefined,
-                                            capteur_reference_id: this.capteurRefSelected.id,
-                                            min_range: undefined,
-                                            max_range: undefined,
-                                            precision_step: undefined,
-                                            id_type_mesure: undefined,
-                                            measure_type: undefined,
-                                            unit: undefined,
-                                            description: undefined
-                                        };
-                                        this.dialogEditChannelOpened = true;
-                                    }}
-                                />
-                                </div>
-                            );
-                        }}
-                    />
-
-                    // liste des capteurs de chaque ref quand on clique dessus ? => ajout capteur, modif capteur
-                }
+                                    </div>
+                                );
+                            }}
+                        />
+                        <div className={style(csstips.flex)}/>
+                    </div>
                 <div className={style(csstips.height(120))}/>
             </div>
         );

@@ -323,6 +323,35 @@ export class GlobalStore {
             }));
     }
 
+    public writeTypeMesure = (typeMesure: ITypeMesure, then: () => void) => {
+        const body: string = JSON.stringify({
+            id: typeMesure.id,
+            measure_type: typeMesure.measure_type,
+            unit: typeMesure.unit
+        });
+        console.log('https://api.alia-france.com/alia_writeTypeMesure.php', body)
+
+        fetch(`https://api.alia-france.com/alia_writeTypeMesure.php`, {
+                method: 'POST',
+                headers: {
+                    // 'Access-Control-Allow-Origin:': '*',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: body
+            }
+        ).then((response) => {
+            if (response.status === 200) {
+                then();
+            }
+            else {
+                console.log(response);
+                // TODO : impossible de sauvegarder...
+            }
+        });
+    }
+
+
     public getPlan(planId: number): Promise<IPlan> {
         return fetch(`https://api.alia-france.com/alia_getPlan.php?id=${planId}`)
             .then((response) => response.json())
