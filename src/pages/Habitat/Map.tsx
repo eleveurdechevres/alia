@@ -30,10 +30,11 @@ interface IProps {
 
     public constructor(props: IProps) {
         super(props);
+        this.createMap();
     }
 
     public componentDidMount() {
-        this.createMap();
+        this.map.setTarget('map')
         this.map.updateSize();
     }
 
@@ -59,7 +60,6 @@ interface IProps {
         });
 
         this.map = new Map({
-            target: 'map',
             layers: [
                 new TileLayer({
                     source: new OSM()

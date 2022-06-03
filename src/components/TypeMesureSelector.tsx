@@ -10,7 +10,7 @@ import { GlobalStore } from 'src/stores/GlobalStore';
 
 interface IProps {
     globalStore: GlobalStore,
-    typeMesure: ITypeMesure,
+    typeMesure: ITypeMesure | undefined,
     handleSelectTypeMesure: (typeMesure: ITypeMesure) => void;
 }
 
@@ -38,12 +38,13 @@ interface IProps {
                 canEscapeKeyClose={true}
                 minimal={true}
                 position={Position.BOTTOM_LEFT}
+
                 content={this.buildTypeMesureList()}
             >
                 <Button
                     className={style(csstips.width('100%'))}
                     rightIcon="caret-down"
-                    text={this.props.typeMesure ? this.renderTypeMesure(this.props.typeMesure) : 'Type de mesure...'}
+                    text={this.renderTypeMesure(this.props.typeMesure)}
                 />
             </Popover>
 
@@ -83,6 +84,6 @@ interface IProps {
     // }
 
     private renderTypeMesure(typeMesure: ITypeMesure) {
-        return typeMesure ? typeMesure.measure_type + ' (' + typeMesure.unit + ')' : undefined;
+        return typeMesure !== undefined ? typeMesure.measure_type + ' (' + typeMesure.unit + ')' : 'Type de mesure...';
     }
 }

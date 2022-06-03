@@ -240,7 +240,13 @@ export class GlobalStore {
             .then((response) => response.json())
             .then((results) => results[0]);
     }
-    
+
+    public getChannelsForCapteurReference(capteurReference: ICapteurReference): Promise<IChannel[]> {
+        return fetch(`https://api.alia-france.com/alia_getChannelsForCapteurReference.php?capteur_reference=${capteurReference.id}`)
+            .then((response) => response.json())
+            .then((results) => results);
+    }
+
     public getAllCapteurReferences(): Promise<ICapteurReference[]> {
         return fetch(`https://api.alia-france.com/alia_getAllCapteurReferences.php`)
             .then((response) => response.json())

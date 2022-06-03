@@ -38,7 +38,7 @@ const dialogFieldValueStyle = style(csstips.flex);
         image: undefined
     };
 
-    @observable private channelToSave: IChannel;
+    @observable private channelToSave: IChannel = undefined;
 
     @observable private isEditionMode: boolean;
 
@@ -327,10 +327,13 @@ const dialogFieldValueStyle = style(csstips.flex);
                             <div className={dialogFieldValueStyle}>
                                 <TypeMesureSelector
                                     globalStore={this.props.globalStore}
-                                    typeMesure={ this.channelSelected ? {
-                                        id: this.channelSelected.id_type_mesure,
-                                        measure_type: this.channelSelected.measure_type,
-                                        unit: this.channelSelected.unit } : undefined }
+                                    typeMesure={ this.channelToSave && this.channelToSave.id_type_mesure !== undefined ?
+                                        {
+                                            id: this.channelToSave.id_type_mesure,
+                                            measure_type: this.channelToSave.measure_type,
+                                            unit: this.channelToSave.unit
+                                        } : undefined
+                                    }
                                     handleSelectTypeMesure={(typeMesure: ITypeMesure) => {
                                         this.channelToSave.id_type_mesure = typeMesure.id;
                                         this.channelToSave.measure_type = typeMesure.measure_type;
@@ -389,7 +392,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                                 className={style(csstips.margin(10), csstips.flex)}
                                 intent={Intent.PRIMARY}
                                 icon="cloud-upload"
-                                text={this.isEditionMode ? 'Modifier' : 'Créer'}
+                                text={this.channelToSave && this.channelToSave.id !== undefined ? 'Modifier' : 'Créer'}
                                 onClick={this.handleWriteChannel}
                             />
                         </div>
@@ -524,11 +527,18 @@ const dialogFieldValueStyle = style(csstips.flex);
     }
 
     private handleWriteChannel = () => {
-        console.log(this.channelToSave)
         this.props.globalStore.writeChannel(this.channelToSave)
-            .then(this.reloadCapteurReferences);
+            .then(this.reloadChannelsForCapteurReferenceSelected);
         this.dialogEditChannelOpened = false;
     }
+
+    private reloadChannelsForCapteurReferenceSelected = () => {
+        this.props.globalStore.getChannelsForCapteurReference(this.capteurRefSelected).then((channels: IChannel[]) => {
+            this.capteurRefSelected.channels = channels;
+            this.forceUpdate();
+        });
+    }
+
     
     private getImageCapteur = (id: string) => {
         return new Promise<string>((resolve, reject) => {
