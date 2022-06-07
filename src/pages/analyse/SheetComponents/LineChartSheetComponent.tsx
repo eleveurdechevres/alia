@@ -13,7 +13,7 @@ import { IChannelFromMission } from 'src/interfaces/IChannelFromMission';
 import { ISerieData } from 'src/interfaces/ISerieData';
 import { IMesure } from 'src/managers/GraphDataManager';
 import { ISerieDef, ISerieVirtuelleDef } from 'src/interfaces/ISeriesDef';
-import { ICapteur } from 'src/interfaces/ICapteurForPlan';
+import { ICapteurForPlan } from 'src/interfaces/ICapteurForPlan';
 import { IChannel } from 'src/interfaces/IChannel';
 import { ITypeMesure } from 'src/interfaces/ITypeMesure';
 import { IPlan } from 'src/interfaces/IPlan';
@@ -90,7 +90,7 @@ import { ScaleOrdinal } from 'd3';
             plan: undefined,
             typeMesure: undefined
         };
-        let promiseCapteur: Promise<ICapteur> = this.props.globalStore.getCapteur(channelForMission.capteur_id, channelForMission.mission_id);
+        let promiseCapteur: Promise<ICapteurForPlan> = this.props.globalStore.getCapteur(channelForMission.capteur_id, channelForMission.mission_id);
         let promiseChannel: Promise<IChannel> = this.props.globalStore.getChannel(channelForMission.channel_id, channelForMission.capteur_reference_id);
         let promiseMeasureType: Promise<ITypeMesure> = this.props.globalStore.getMesureType(channelForMission.measure_id);
         let promisePlan: Promise<IPlan> = this.props.globalStore.getPlan(channelForMission.plan_id);
@@ -108,7 +108,7 @@ import { ScaleOrdinal } from 'd3';
                 promiseMeasureType,
                 promisePlan,
                 promiseMesures
-            ]).then(([capteur, channel, typeMesure, plan, mesures]: [ICapteur, IChannel, ITypeMesure, IPlan, IMesure[]]) => {
+            ]).then(([capteur, channel, typeMesure, plan, mesures]: [ICapteurForPlan, IChannel, ITypeMesure, IPlan, IMesure[]]) => {
                 serieDef.capteur = capteur;    
                 serieDef.channel = channel[0];
                 serieDef.typeMesure = typeMesure[0];

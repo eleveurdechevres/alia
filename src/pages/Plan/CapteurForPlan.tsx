@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
-import { ICapteur } from 'src/interfaces/ICapteurForPlan';
+import { ICapteurForPlan } from 'src/interfaces/ICapteurForPlan';
 import { NestedCSSProperties } from 'typestyle/lib/types';
 import { style, keyframes } from 'typestyle';
 
@@ -10,8 +10,8 @@ const iconHeight = 0;
 interface IProps {
     x: number;
     y: number;
-    capteur: ICapteur;
-    onClick: (capteur: ICapteur) => void;
+    capteur: ICapteurForPlan;
+    onClick: (capteur: ICapteurForPlan) => void;
     onMouseOver: () => void;
     onMouseOut: () => void;
 }

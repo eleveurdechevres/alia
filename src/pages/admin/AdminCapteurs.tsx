@@ -7,10 +7,10 @@ import { observer } from 'mobx-react';
 import { observable } from 'mobx';
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { ActionElementBar, IPropsActionElement } from 'src/components/ActionBar';
-import { Button, Dialog, Icon, InputGroup, Intent } from '@blueprintjs/core';
+import { Button, Checkbox, Dialog, InputGroup, Intent } from '@blueprintjs/core';
 import ReactTable, { RowInfo } from 'react-table';
-import { ICapteurReference } from 'src/interfaces/ICapteurReference';
-import { ITypeMesure } from 'src/interfaces/ITypeMesure';
+import { ICapteur } from 'src/interfaces/ICapteur';
+import { CapteurReferenceSelector } from './CapteurReferenceSelector';
 
 interface IProps {
     globalStore: GlobalStore
@@ -20,21 +20,22 @@ const dialogLineStyle = style(csstips.margin(10), csstips.flex, csstips.horizont
 const dialogFieldNameStyle = style(csstips.width(80), csstips.margin(5, 5));
 const dialogFieldValueStyle = style(csstips.flex);
 
-@observer export class AdminTypeMesures extends React.Component<IProps, {}> {
+@observer export class AdminCapteurs extends React.Component<IProps, {}> {
 
-    @observable private typeMesures: ITypeMesure[];
+    @observable private capteurs: ICapteur[];
 
-    @observable private dialogEditTypeMesureOpened: boolean;
+    @observable private dialogEditCapteurOpened: boolean;
 
-    @observable private typeMesureToSave: ITypeMesure = {
+    @observable private capteurToSave: ICapteur = {
         id: undefined,
-        measure_type: undefined,
-        unit: undefined
+        capteur_reference_id: undefined,
+        description: undefined,
+        propriete_alia: true
     };
 
     @observable private isEditionMode: boolean;
 
-    @observable private typeMesureSelected: ICapteurReference;
+    @observable private capteurSelected: ICapteur;
 
     // https://react-table.js.org/#/story/readme
     public constructor(props: IProps) {
@@ -42,22 +43,23 @@ const dialogFieldValueStyle = style(csstips.flex);
     }
 
     public componentDidMount() {
-        this.reloadTypeMesures();
+        this.reloadCapteurs();
     }
 
     public render() {
-        let createCapteurRefButton: IPropsActionElement = {
-            id: 'createNewTypeMesure',
+        let createCapteurButton: IPropsActionElement = {
+            id: 'addNewCapteur',
             iconName: 'add',
-            name: 'Créer un nouveau type de mesure',
+            name: 'Enregistrer un nouveau capteur',
             onClick: () => {
                 this.isEditionMode = false;
-                this.typeMesureToSave = {
+                this.capteurToSave = {
                     id: undefined,
-                    measure_type: undefined,
-                    unit: undefined
+                    capteur_reference_id: undefined,
+                    description: undefined,
+                    propriete_alia: true
                 };
-                this.dialogEditTypeMesureOpened = true;
+                this.dialogEditCapteurOpened = true;
             }
         };
 
@@ -68,35 +70,30 @@ const dialogFieldValueStyle = style(csstips.flex);
                 width: 60
             },
             {
-                Header: 'Type de mesure',
-                accessor: 'measure_type',
+                Header: 'Reference',
+                accessor: 'capteur_reference_id',
                 width: 300
             },
             {
-                Header: 'Unité',
-                accessor: 'unit',
-                width: 100
+                Header: 'Description',
+                accessor: 'description',
+                width: 400
+            },
+            {
+                Header: 'Création',
+                accessor: 'dateCreation',
+                width: 200
             },
             {
                 width: 100,
+                Header: 'Propriété Alia',
                 Cell: (row: RowInfo) => {
-                    
                     return (
-                        <Icon
-                            className={style({cursor: 'pointer'})}    
-                            icon="edit"
-                            intent={Intent.PRIMARY}
-                            onClick={() => {
-                                this.typeMesureToSave = { ...row.original };
-                                this.isEditionMode = true;
-                                this.dialogEditTypeMesureOpened = true;
-                            }}
-                        />
+                        <Checkbox disabled={true} checked={row.original.propriete_alia === '1'}/>
                     );
                 }
             }
         ];
-
         return (
             <div>
                 <Dialog /* Création modification de capteurs */
@@ -105,10 +102,10 @@ const dialogFieldValueStyle = style(csstips.flex);
                     usePortal={true}
                     canOutsideClickClose={true}
                     canEscapeKeyClose={true}
-                    isOpen={this.dialogEditTypeMesureOpened}
-                    title={this.isEditionMode ? 'Edition type de mesure' : 'Nouveau type de mesure'}
+                    isOpen={this.dialogEditCapteurOpened}
+                    title={this.isEditionMode ? 'Edition capteur' : 'Nouveau capteur'}
                     icon="tag"
-                    onClose={() => { this.dialogEditTypeMesureOpened = false; }}
+                    onClose={() => { this.dialogEditCapteurOpened = false; }}
                 >
                     <div className={style(csstips.flex, csstips.vertical)}>
                         {
@@ -121,8 +118,8 @@ const dialogFieldValueStyle = style(csstips.flex);
                                     <InputGroup
                                         leftIcon="tag"
                                         placeholder="id"
-                                        onChange={(event: any) => { this.typeMesureToSave.id = event.target.value }}
-                                        value={this.typeMesureToSave.id.toString()}
+                                        onChange={(event: any) => { this.capteurToSave.id = event.target.value }}
+                                        value={this.capteurToSave.id.toString()}
                                         disabled={true}
                                     />
                                 </div>
@@ -130,25 +127,36 @@ const dialogFieldValueStyle = style(csstips.flex);
                         }
                         <div className={dialogLineStyle}>
                             <div className={dialogFieldNameStyle}>
-                                Type de mesure
+                                Référence de capteur
                             </div>
                             <div className={dialogFieldValueStyle}>
-                                <InputGroup
-                                    placeholder="Type de mesure"
-                                    onChange={(event: any) => { this.typeMesureToSave.measure_type = event.target.value }}
-                                    value={this.typeMesureToSave.measure_type}
+                                <CapteurReferenceSelector
+                                    globalStore={this.props.globalStore}
+                                    capteurReferenceSelected={this.capteurToSave.capteur_reference_id}
+                                    handleSelect={(capteurRefId: string) => {this.capteurToSave.capteur_reference_id = capteurRefId}}
                                 />
                             </div>
                         </div>
                         <div className={dialogLineStyle}>
                             <div className={dialogFieldNameStyle}>
-                                Unité
+                                Description
                             </div>
                             <div className={dialogFieldValueStyle}>
                                 <InputGroup
-                                    placeholder="Unité"
-                                    onChange={(event: any) => { this.typeMesureToSave.unit = event.target.value }}
-                                    value={this.typeMesureToSave.unit}
+                                    placeholder="Description"
+                                    onChange={(event: any) => { this.capteurToSave.description = event.target.value }}
+                                    value={this.capteurToSave.description}
+                                />
+                            </div>
+                        </div>
+                        <div className={dialogLineStyle}>
+                            <div className={dialogFieldNameStyle}>
+                                Propriété ALIA
+                            </div>
+                            <div className={dialogFieldValueStyle}>
+                                <Checkbox
+                                    onChange={(event: any) => { this.capteurToSave.propriete_alia = event.target.value }}
+                                    checked={this.capteurToSave.propriete_alia}
                                 />
                             </div>
                         </div>
@@ -158,23 +166,23 @@ const dialogFieldValueStyle = style(csstips.flex);
                                 className={style(csstips.margin(10), csstips.flex)}
                                 intent={Intent.NONE}
                                 text="Annuler"
-                                onClick={() => { this.dialogEditTypeMesureOpened = false; }}
+                                onClick={() => { this.dialogEditCapteurOpened = false; }}
                             />
                             <Button
                                 className={style(csstips.margin(10), csstips.flex)}
                                 intent={Intent.PRIMARY}
                                 icon="cloud-upload"
                                 text={this.isEditionMode ? 'Modifier' : 'Créer'}
-                                onClick={this.handleWriteTypeMesure}
+                                onClick={this.handleWriteCapteur}
                             />
                         </div>
                 </Dialog>
                 
-                <ActionElementBar elements={[createCapteurRefButton]} />
+                <ActionElementBar elements={[createCapteurButton]} />
                     <div className={style(csstips.horizontal)}>
                         <div className={style(csstips.flex)}/>
                         <ReactTable
-                            data={this.typeMesures}
+                            data={this.capteurs}
                             columns={columnsTypeMesure}
                             defaultPageSize={20}
                             className="-striped -highlight"
@@ -185,7 +193,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                             getTrGroupProps={(finalState: any, rowInfo?: RowInfo, column?: undefined, instance?: any) => {
                                 let background: string = undefined;
                                 if (rowInfo !== undefined) {
-                                    background = this.typeMesureSelected && (rowInfo.original.id === this.typeMesureSelected.id) ? 'lightgreen' : undefined;
+                                    background = this.capteurSelected && (rowInfo.original.id === this.capteurSelected.id) ? 'lightgreen' : undefined;
                                 }
 
                                 return {
@@ -209,23 +217,24 @@ const dialogFieldValueStyle = style(csstips.flex);
     private handleEventsOnTypeMesure = (state: any, rowInfo: any, column: any, instance: any) => {
         return {
             onClick: (e: any) => {
-                this.typeMesureSelected = rowInfo.original;
+                this.capteurSelected = rowInfo.original;
                 this.forceUpdate();
             }
         }
     }
 
-    private reloadTypeMesures = () => {
-        this.props.globalStore.getTypeMesures().then((typeMesures: ITypeMesure[]) => {
-            this.typeMesures = typeMesures;
+    private reloadCapteurs = () => {
+        // this.props.globalStore.getCapteurs();
+        this.props.globalStore.getCapteurs().then((capteurs: ICapteur[]) => {
+            this.capteurs = capteurs;
         });
     }
 
-    private handleWriteTypeMesure = () => {
-        this.props.globalStore.writeTypeMesure(this.typeMesureToSave, () => {
-            this.reloadTypeMesures();
+    private handleWriteCapteur = () => {
+        this.props.globalStore.writeCapteur(this.capteurToSave, () => {
+            this.reloadCapteurs();
             this.forceUpdate();
         });
-        this.dialogEditTypeMesureOpened = false;
+        this.dialogEditCapteurOpened = false;
     }
 }

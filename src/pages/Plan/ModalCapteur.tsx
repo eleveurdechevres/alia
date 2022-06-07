@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 import * as Modal from '../../components/Modal';
-import { ICapteur } from 'src/interfaces/ICapteurForPlan';
+import { ICapteurForPlan } from 'src/interfaces/ICapteurForPlan';
 import 'react-table/react-table.css';
 import * as DateUtils from '../../utils/DateUtils'
 import { GlobalStore } from 'src/stores/GlobalStore';
@@ -10,7 +10,7 @@ import { GraphBoard } from '../Graph/GraphBoard';
 import { IHabitat } from 'src/interfaces/IHabitat';
 
 interface IProps extends Modal.IProps {
-    capteur: ICapteur;
+    capteur: ICapteurForPlan;
     mission: IMission;
     habitat: IHabitat;
     globalStore: GlobalStore;

@@ -11,19 +11,21 @@ import { GlobalStore } from 'src/stores/GlobalStore';
 import { Tab, Tabs } from '@blueprintjs/core';
 import { AdminCapteurRefs } from './AdminCapteurRefs';
 import { AdminTypeMesures } from './AdminTypeMesures';
+import { AdminCapteurs } from './AdminCapteurs';
 
 interface IProps {
     globalStore: GlobalStore
 }
 
-type TAdminTab = 'capteur_refs' | 'mesureTypes';
+type TAdminTab = 'capteur_refs' | 'mesureTypes' | 'capteurs';
 interface ITabDef {
     title: string
 }
 
 const adminTabsDef: Map<TAdminTab, ITabDef> = new Map<TAdminTab, ITabDef>([
     ['capteur_refs', { title: 'Types capteurs'}],
-    ['mesureTypes', { title: 'Types de mesures'}]
+    ['mesureTypes', { title: 'Types de mesures'}],
+    ['capteurs', { title: 'Capteurs'}]
   ]);
 
 
@@ -49,6 +51,7 @@ const adminTabsDef: Map<TAdminTab, ITabDef> = new Map<TAdminTab, ITabDef>([
                 >
                     {this.createAdminTab('capteur_refs')}
                     {this.createAdminTab('mesureTypes')}
+                    {this.createAdminTab('capteurs')}
                     <Tabs.Expander />
                 </Tabs>
             </div>
@@ -71,6 +74,8 @@ const adminTabsDef: Map<TAdminTab, ITabDef> = new Map<TAdminTab, ITabDef>([
                 return <AdminCapteurRefs globalStore={this.props.globalStore}/>;
             case 'mesureTypes':
                 return <AdminTypeMesures globalStore={this.props.globalStore}/>;
+            case 'capteurs':
+                return <AdminCapteurs globalStore={this.props.globalStore}/>;
             default:
                 return <div/>;
         }

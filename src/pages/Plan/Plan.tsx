@@ -4,7 +4,7 @@ import { style } from 'typestyle/lib';
 import * as csstips from 'csstips';
 import { observable, autorun } from 'mobx';
 import { observer } from 'mobx-react';
-import { ICapteur } from 'src/interfaces/ICapteurForPlan';
+import { ICapteurForPlan } from 'src/interfaces/ICapteurForPlan';
 import { IHabitat } from 'src/interfaces/IHabitat';
 import { IMission } from 'src/interfaces/IMission';
 import { GlobalStore } from 'src/stores/GlobalStore';
@@ -47,14 +47,14 @@ interface IProps {
     @observable planImage: string = undefined;
     @observable width: number = undefined;
     @observable height: number = undefined;
-    @observable capteurs: ICapteur[] = [];
+    @observable capteurs: ICapteurForPlan[] = [];
     @observable capteursVirtuels: ICapteurVirtuel[] = [];
     @observable observations: IObservation[] = [];
     @observable isModalCapteurOpen: boolean = false;
     @observable isModalObservationOpen: boolean = false;
     @observable isModalCapteurVirtuelOpen: boolean = false;
 
-    @observable capteurDisplayed: ICapteur = undefined;
+    @observable capteurDisplayed: ICapteurForPlan = undefined;
     @observable observationDisplayed: IObservation = undefined;
     @observable capteurVirtuelDisplayed: ICapteurVirtuel = undefined;
 
@@ -237,7 +237,7 @@ interface IProps {
                         <image ref={(ref) => {this.imageRef = ref}} />
                         {
                             this.props.mission ? 
-                                this.capteurs.map((capteur: ICapteur) => {
+                                this.capteurs.map((capteur: ICapteurForPlan) => {
                                     let x = capteur.coordonneePlanX * this.width / 100;
                                     let y = capteur.coordonneePlanY * this.height / 100;
                                     return <CapteurForPlan
@@ -407,7 +407,7 @@ interface IProps {
     }
 
 
-    private openModalCapteur = (capteur: ICapteur) => {
+    private openModalCapteur = (capteur: ICapteurForPlan) => {
         this.isModalCapteurOpen = true;
         this.capteurDisplayed = capteur;
     }

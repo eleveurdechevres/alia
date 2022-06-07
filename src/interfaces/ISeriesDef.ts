@@ -1,5 +1,5 @@
 import { IPlan } from './IPlan';
-import { ICapteur } from './ICapteurForPlan';
+import { ICapteurForPlan } from './ICapteurForPlan';
 import { IChannel } from './IChannel';
 import { ITypeMesure } from './ITypeMesure';
 import { ICapteurVirtuel } from './ICapteurVirtuel';
@@ -7,7 +7,7 @@ import { ICapteurVirtuel } from './ICapteurVirtuel';
 export interface ISerieDef {
     _objId: 'ISerieDef';
     plan: IPlan | undefined;
-    capteur: ICapteur;
+    capteur: ICapteurForPlan;
     channel: IChannel;
     typeMesure: ITypeMesure;
 }

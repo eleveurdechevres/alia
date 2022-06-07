@@ -8,7 +8,7 @@ import { GenericSheetComponent, IGenericSheetComponentProps } from './GenericShe
 import { IDateInterval } from 'src/pages/Graph/GraphBoard';
 // import { MultiSensorListSelector } from '../Detail/MultiSensorListSelector';
 import { IChannelFromMission } from 'src/interfaces/IChannelFromMission';
-import { ICapteur } from 'src/interfaces/ICapteurForPlan';
+import { ICapteurForPlan } from 'src/interfaces/ICapteurForPlan';
 
 // import { ISerieData } from 'src/interfaces/ISerieData';
 // import { IMesure } from 'src/managers/GraphDataManager';
@@ -25,7 +25,7 @@ interface IChannelDescription extends IChannelFromMission {
     count: number
 }
 interface ICapteurDescription {
-    capteur: ICapteur,
+    capteur: ICapteurForPlan,
     channels: IChannelDescription[]
 }
 
@@ -204,8 +204,8 @@ interface ICapteurDescription {
 
         this.capteurIdList.forEach(async (capteurId: number) => {
             let capteurChannels: IChannelFromMission[] = this.channelList.filter((channel: IChannelFromMission) => channel.capteur_id === capteurId)
-            let promiseCapteur: Promise<ICapteur> = this.props.globalStore.getCapteur(capteurId, this.props.sheet.sheetDef.mission.id);
-            await promiseCapteur.then((capteur: ICapteur) => {
+            let promiseCapteur: Promise<ICapteurForPlan> = this.props.globalStore.getCapteur(capteurId, this.props.sheet.sheetDef.mission.id);
+            await promiseCapteur.then((capteur: ICapteurForPlan) => {
 
                 let promisesCount: Promise<number>[] = [];
                 capteurChannels.forEach((channel: IChannelFromMission) => {

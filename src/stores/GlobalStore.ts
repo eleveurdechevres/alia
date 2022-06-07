@@ -12,7 +12,7 @@ import { IChannelOfTypeFromMission } from 'src/interfaces/IChannelOfTypeFromMiss
 import { IChannelFromMission } from 'src/interfaces/IChannelFromMission';
 import { IMesure, IAvgMesure } from 'src/managers/GraphDataManager';
 import { dateToSql } from 'src/utils/DateUtils';
-import { ICapteur } from 'src/interfaces/ICapteurForPlan';
+import { ICapteurForPlan } from 'src/interfaces/ICapteurForPlan';
 import { IChannel } from 'src/interfaces/IChannel';
 import { ITypeMesure } from 'src/interfaces/ITypeMesure';
 import { ICapteurVirtuel } from 'src/interfaces/ICapteurVirtuel';
@@ -23,6 +23,7 @@ import { ICrossValue } from 'src/interfaces/ICrossValue';
 import { ICapteurForMission } from 'src/interfaces/ICapteurForMission';
 import { IAvailableCapteur } from 'src/interfaces/IAvailableCapteur';
 import { ICapteurReference } from 'src/interfaces/ICapteurReference';
+import { ICapteur } from 'src/interfaces/ICapteur';
 
 export type TPeriod = 'YEAR' | 'MONTH' | 'DAY';
 
@@ -235,10 +236,41 @@ export class GlobalStore {
             }));
     }
 
-    public getCapteur(capteurId: number, missionId: number): Promise<ICapteur> {
+    public getCapteur(capteurId: number, missionId: number): Promise<ICapteurForPlan> {
         return fetch(`https://api.alia-france.com/alia_getCapteur.php?capteur_id=${capteurId}&mission_id=${missionId}`)
             .then((response) => response.json())
             .then((results) => results[0]);
+    }
+
+    public getCapteurs(): Promise<ICapteur[]> {
+        
+        return fetch(`https://api.alia-france.com/alia_getAllCapteurs.php`)
+            .then((response) => response.json())
+            .then((results) => results);
+    }
+
+    public writeCapteur(capteur: ICapteur, then: () => void) {
+        
+        const body: string = JSON.stringify(capteur);
+
+        fetch(`https://api.alia-france.com/alia_writeCapteur.php`, {
+                method: 'POST',
+                headers: {
+                    // 'Access-Control-Allow-Origin:': '*',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: body
+            }
+        ).then((response) => {
+            if (response.status === 200) {
+                then();
+            }
+            else {
+                console.log(response);
+                // TODO : impossible de sauvegarder...
+            }
+        });
     }
 
     public getChannelsForCapteurReference(capteurReference: ICapteurReference): Promise<IChannel[]> {
@@ -335,7 +367,6 @@ export class GlobalStore {
             measure_type: typeMesure.measure_type,
             unit: typeMesure.unit
         });
-        console.log('https://api.alia-france.com/alia_writeTypeMesure.php', body)
 
         fetch(`https://api.alia-france.com/alia_writeTypeMesure.php`, {
                 method: 'POST',
