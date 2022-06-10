@@ -215,7 +215,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                                     leftIcon="tag"
                                     placeholder="id"
                                     onChange={(event: any) => { this.capteurRefToSave.id = event.target.value }}
-                                    value={this.capteurRefToSave.id}
+                                    defaultValue={this.capteurRefToSave.id}
                                     disabled={this.isEditionMode}
                                 />
                             </div>
@@ -228,7 +228,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                                 <InputGroup
                                     placeholder="Marque"
                                     onChange={(event: any) => { this.capteurRefToSave.marque = event.target.value }}
-                                    value={this.capteurRefToSave.marque}
+                                    defaultValue={this.capteurRefToSave.marque}
                                 />
                             </div>
                         </div>
@@ -240,7 +240,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                                 <InputGroup
                                     placeholder="Ref Fabricant"
                                     onChange={(event: any) => { this.capteurRefToSave.ref_fabricant = event.target.value }}
-                                    value={this.capteurRefToSave.ref_fabricant}
+                                    defaultValue={this.capteurRefToSave.ref_fabricant}
                                 />
                             </div>
                         </div>
@@ -252,7 +252,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                                 <InputGroup
                                     placeholder="Description"
                                     onChange={(event: any) => { this.capteurRefToSave.description = event.target.value }}
-                                    value={this.capteurRefToSave.description}
+                                    defaultValue={this.capteurRefToSave.description}
                                 />
                             </div>
                         </div>
@@ -351,7 +351,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                                     buttonPosition="none"
                                     placeholder="min range"
                                     onValueChange={(valueAsNumber: number) => { this.channelToSave.min_range = valueAsNumber }}
-                                    value={this.channelToSave ? this.channelToSave.min_range : undefined}
+                                    defaultValue={this.channelToSave ? this.channelToSave.min_range : undefined}
                                 />
                             </div>
                         </div>
@@ -364,7 +364,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                                     buttonPosition="none"
                                     placeholder="max range"
                                     onValueChange={(valueAsNumber: number) => { this.channelToSave.max_range = valueAsNumber }}
-                                    value={this.channelToSave ? this.channelToSave.max_range : undefined}
+                                    defaultValue={this.channelToSave ? this.channelToSave.max_range : undefined}
                                 />
                             </div>
                         </div>
@@ -377,7 +377,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                                     buttonPosition="none"
                                     placeholder="precision step"
                                     onValueChange={(valueAsNumber: number) => { this.channelToSave.precision_step = valueAsNumber }}
-                                    value={this.channelToSave ? this.channelToSave.precision_step : undefined}
+                                    defaultValue={this.channelToSave ? this.channelToSave.precision_step : undefined}
                                 />
                             </div>
                         </div>

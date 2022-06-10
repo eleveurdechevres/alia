@@ -122,7 +122,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                                         leftIcon="tag"
                                         placeholder="id"
                                         onChange={(event: any) => { this.typeMesureToSave.id = event.target.value }}
-                                        value={this.typeMesureToSave.id.toString()}
+                                        defaultValue={this.typeMesureToSave.id.toString()}
                                         disabled={true}
                                     />
                                 </div>
@@ -136,7 +136,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                                 <InputGroup
                                     placeholder="Type de mesure"
                                     onChange={(event: any) => { this.typeMesureToSave.measure_type = event.target.value }}
-                                    value={this.typeMesureToSave.measure_type}
+                                    defaultValue={this.typeMesureToSave.measure_type}
                                 />
                             </div>
                         </div>
@@ -148,7 +148,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                                 <InputGroup
                                     placeholder="Unité"
                                     onChange={(event: any) => { this.typeMesureToSave.unit = event.target.value }}
-                                    value={this.typeMesureToSave.unit}
+                                    defaultValue={this.typeMesureToSave.unit}
                                 />
                             </div>
                         </div>

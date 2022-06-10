@@ -252,7 +252,6 @@ export class GlobalStore {
     public writeCapteur(capteur: ICapteur, then: () => void) {
         
         const body: string = JSON.stringify(capteur);
-
         fetch(`https://api.alia-france.com/alia_writeCapteur.php`, {
                 method: 'POST',
                 headers: {
@@ -833,7 +832,7 @@ export class GlobalStore {
             }
         ).then((response) => {
             if (response.status === 200) {
-                console.log('response', response.blob())
+                // console.log('response', response.blob())
                 // this.reloadCapteurReferences(this.client)
             }
             else {

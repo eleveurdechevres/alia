@@ -23,7 +23,6 @@ interface IProps {
         autorun(() => {
             this.props.globalStore.getAllCapteurReferences().then(
                 (capteurReferences: ICapteurReference[]) => {
-                    console.log(capteurReferences)
                     this.capteurReferenceList = capteurReferences;
                 }
             )

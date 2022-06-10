@@ -7,7 +7,7 @@ import { observer } from 'mobx-react';
 import { observable } from 'mobx';
 import { GlobalStore } from 'src/stores/GlobalStore';
 import { ActionElementBar, IPropsActionElement } from 'src/components/ActionBar';
-import { Button, Checkbox, Dialog, InputGroup, Intent } from '@blueprintjs/core';
+import { Button, Checkbox, Dialog, Icon, InputGroup, Intent } from '@blueprintjs/core';
 import ReactTable, { RowInfo } from 'react-table';
 import { ICapteur } from 'src/interfaces/ICapteur';
 import { CapteurReferenceSelector } from './CapteurReferenceSelector';
@@ -92,6 +92,23 @@ const dialogFieldValueStyle = style(csstips.flex);
                         <Checkbox disabled={true} checked={row.original.propriete_alia === '1'}/>
                     );
                 }
+            },
+            {
+                width: 40,
+                Cell: (row: RowInfo) => {
+                    return (
+                        <Icon
+                            className={style({cursor: 'pointer'})}    
+                            icon="edit"
+                            intent={Intent.PRIMARY}
+                            onClick={() => {
+                                this.isEditionMode = true;
+                                this.capteurToSave = row.original;
+                                this.dialogEditCapteurOpened = true;
+                            }}
+                        />
+                    );
+                }
             }
         ];
         return (
@@ -119,7 +136,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                                         leftIcon="tag"
                                         placeholder="id"
                                         onChange={(event: any) => { this.capteurToSave.id = event.target.value }}
-                                        value={this.capteurToSave.id.toString()}
+                                        defaultValue={this.capteurToSave.id.toString()}
                                         disabled={true}
                                     />
                                 </div>
@@ -145,7 +162,7 @@ const dialogFieldValueStyle = style(csstips.flex);
                                 <InputGroup
                                     placeholder="Description"
                                     onChange={(event: any) => { this.capteurToSave.description = event.target.value }}
-                                    value={this.capteurToSave.description}
+                                    defaultValue={this.capteurToSave.description}
                                 />
                             </div>
                         </div>
@@ -224,7 +241,6 @@ const dialogFieldValueStyle = style(csstips.flex);
     }
 
     private reloadCapteurs = () => {
-        // this.props.globalStore.getCapteurs();
         this.props.globalStore.getCapteurs().then((capteurs: ICapteur[]) => {
             this.capteurs = capteurs;
         });
