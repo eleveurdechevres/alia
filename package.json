@@ -45,7 +45,7 @@
     "@types/node": "^11.15.2",
     "@types/react": "^16.9.12",
     "@types/react-dom": "^16.9.4",
-    "react-scripts-ts": "3.1.0",
+    "react-scripts-ts": "4.0.8",
     "typescript": "^3.7.2"
   },
   "scripts": {
