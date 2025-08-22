@@ -9,6 +9,7 @@ import { observer } from 'mobx-react';
 import { SvgCheckBox } from 'src/pages/Graph/SvgComponents/SvgCheckBox';
 import { observable } from 'mobx';
 import { Colors } from '@blueprintjs/core';
+import { GraphTypeConfig } from '../Channel/GraphType';
 
 interface IProps {
     missionId: number;
@@ -20,8 +21,8 @@ interface IProps {
     // channelX: IChannel; 
     channelY: number; 
     // channelY: IChannel;
-    channelXType: GraphType;
-    channelYType: GraphType;
+    channelXType: GraphTypeConfig;
+    channelYType: GraphTypeConfig;
     currentHumidity: number;
     currentTemperature: number;
     showLegend: boolean;
@@ -629,7 +630,7 @@ const VERTICAL_LEGEND_WIDTH = 15;
             var translateCrosshair = 'translate(-10,-10)';
             var displayCrosshair = false;
         
-            if (translateX !== NaN && translateY !== NaN) {
+            if (!Number.isNaN(translateX) && !Number.isNaN(translateY)) {
                 translateCrosshair = 'translate(' + translateX + ',' + translateY + ')';
                 displayCrosshair = true;
             }

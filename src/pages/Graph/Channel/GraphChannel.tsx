@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as d3 from 'd3';
-import { GraphType } from './GraphType';
+import { GraphType } from '../Channel/GraphType';
 import { dateTimeString } from '../../../utils/DateUtils';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
