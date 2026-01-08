@@ -21,7 +21,7 @@
     "axios": "^0.18.1",
     "bootstrap": "^4.3.1",
     "csstips": "^0.3.0",
-    "d3": "^5.14.2",
+    "d3": "^7.6.1",
     "es6-promise": "^4.2.8",
     "isomorphic-fetch": "^2.2.1",
     "jquery": "^3.4.1",
